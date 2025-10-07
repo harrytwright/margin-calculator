@@ -1,0 +1,8 @@
+object: ingredient
+data:
+  name: Ham
+  category: raw-meat
+  purchaseUnit: 120g
+  purchaseCost: 2.14
+  includesVat: true
+  supplierId: asda

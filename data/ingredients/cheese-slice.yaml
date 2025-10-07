@@ -1,0 +1,8 @@
+object: ingredient
+data:
+  name: Cheese Slice
+  category: dairy
+  purchaseUnit: 250g
+  purchaseCost: 2.54
+  includesVat: true
+  supplierId: asda

@@ -1,0 +1,109 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator kysely {
+  provider    = "prisma-kysely"
+  output      = "../src/datastore"
+  fileName    = "types.ts"
+  readOnlyIds = true
+}
+
+// Allow for one `Generic` supplier
+model Supplier {
+  id   Int    @id @default(autoincrement())
+  /// Slugified name for the supplier, used for linking ingredients
+  slug String @unique
+  name String
+
+  ingredients Ingredient[]
+}
+
+model Ingredient {
+  id       Int    @id @default(autoincrement())
+  slug     String @unique
+  name     String
+  category String // 'dairy', 'meat', 'produce', 'drinks', 'dry-goods'
+
+  // Purchase details
+  purchaseUnit String // "1kg", "1 box", "1 keg", "500ml bottle"
+  purchaseCost Decimal
+
+  // Optional: for custom units that convert-units can't handle
+  // Format: "X unitA = Y unitB" (e.g., "1 box = 24 bags")
+  conversionRule String?
+
+  // Supplier
+  supplierId Int?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  // Metadata
+  notes         String?
+  lastPurchased DateTime?
+
+  // Relations
+  recipes RecipeIngredients[]
+
+  @@index([category])
+  @@index([slug])
+}
+
+enum RecipeStage {
+  development
+  active
+  discontinued
+}
+
+enum RecipeClass {
+  menu_item // What customers can order
+  base_template // For inheritance (base_pizza)
+  sub_recipe // Compound ingredient (sauce, dressing)
+}
+
+model Recipe {
+  id           Int         @id @default(autoincrement())
+  /// Slugified name for the supplier, used for linking when importing
+  slug         String      @unique
+  name         String
+  /// Metadata for usage
+  stage        RecipeStage @default(development)
+  class        RecipeClass @default(menu_item)
+  category     String?
+  /// What we are selling at
+  sellPrice    Int
+  /// Do we need to strip vat from the above
+  includesVat  Boolean     @default(true)
+  /// The taget profit margin.
+  targetMargin Int         @default(20)
+  // For sub-recipes: what does this recipe yield?
+  yieldAmount  Decimal?
+  yieldUnit    String?
+  // Allow for inheritance
+  parentId     Int?
+
+  parent      Recipe?             @relation("inheritance", fields: [parentId], references: [id])
+  children    Recipe[]            @relation("inheritance")
+  ingredients RecipeIngredients[] @relation("recipe")
+  usedIn      RecipeIngredients[] @relation("subRecipe")
+}
+
+model RecipeIngredients {
+  id           Int  @id @default(autoincrement())
+  recipeId     Int
+  ingredientId Int?
+  subRecipeId  Int?
+
+  // Freeform unit string: "50g", "2 bags", "1.5 pints"
+  unit String
+
+  // Optional notes for the recipe
+  notes String? // "finely chopped", "to taste", etc.
+
+  recipe     Recipe      @relation("recipe", fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient? @relation(fields: [ingredientId], references: [id])
+  subRecipe  Recipe?     @relation("subRecipe", fields: [subRecipeId], references: [id])
+
+  @@index([recipeId])
+  @@index([ingredientId])
+}

@@ -1,0 +1,9 @@
+object: ingredient
+data:
+  name: Hovis Thick White Bread
+  category: bread
+  purchaseUnit: 1loaf
+  purchaseCost: 1.39
+  includesVat: true
+  conversionRate: 1 loaf = 16 slices
+  supplierId: asda

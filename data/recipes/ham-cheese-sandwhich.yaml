@@ -1,0 +1,18 @@
+object: recipe
+
+data:
+  slug: ham-cheese-sandwich
+  name: Ham And Cheese Sandwich (white
+  class: menu_item
+  stage: active
+  sellPrice: 400 # £4 in pence
+  targetMargin: 25
+  includesVat: true
+
+  ingredients:
+    - ingredient: ham
+      unit: 20g
+    - ingredient: cheese-slice
+      unit: 25g
+    - ingredient: hovis_thick_white_bread
+      unit: 2slices
