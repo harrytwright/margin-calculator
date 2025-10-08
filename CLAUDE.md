@@ -20,6 +20,11 @@ zx scripts/migration.mjs
 
 # Regenerate Kysely types after modifying prisma/schema.prisma
 npx prisma-kysely
+
+# Run tests
+npm test
+npm run test:watch      # Watch mode
+npm run test:coverage   # With coverage
 ```
 
 ## Architecture
@@ -46,6 +51,90 @@ When modifying the schema:
 - Use `database(path)` function to get/create database instances
 - Default path is `:memory:` for ephemeral databases
 - Migrations are run via `migrate()` method bound to Kysely instance
+
+### Service Layer Pattern
+
+Database operations are centralized in service files (`src/services/`). Each entity has its own service module:
+
+**Key Functions (bound to `Kysely<DB>` via `.call(db, ...)`):**
+
+- `findById(slug)` - Retrieve entity by slug
+- `upsert(slug, data)` - Insert or update entity
+- `exists(slug)` - Check if entity exists
+
+**Example Usage:**
+
+```typescript
+import { findById, upsert } from '../services/supplier'
+
+const existing = await findById.call(db, 'asda')
+await upsert.call(db, 'asda', importData)
+```
+
+This pattern:
+
+- Keeps database logic separate from command logic
+- Ensures consistent queries across the codebase
+- Makes testing easier (services can be tested independently)
+
+### Import System
+
+The project uses a centralized `Importer` class (`src/lib/importer.ts`) for handling YAML/JSON file imports:
+
+**Key Features:**
+
+- **Processor Registry**: Register handlers for each entity type (`supplier`, `ingredient`, `recipe`)
+- **Shared Context**: All processors access `this.database`, `this.slugify()`, etc.
+- **Statistics Tracking**: Automatically tracks `created`, `upserted`, `ignored`, `failed` counts
+- **Dependency Resolution**: Supports importing referenced files to resolve dependencies
+- **Circular Prevention**: Tracks imported files to prevent infinite loops
+- **Error Handling**: Fail-fast mode or continue-on-error with detailed error reporting
+
+**Example Processor:**
+
+```typescript
+const importer = new Importer(db, { verbose: true })
+
+importer.addProcessor<SupplierImportData>('supplier', async function (data) {
+  const slug = data.slug || (await this.slugify(data.name))
+  const existing = await findById.call(this.database, slug)
+
+  if (existing && !hasChanges(existing, data, { name: 'name' })) {
+    return 'ignored'
+  }
+
+  await upsert.call(this.database, slug, data)
+  return existing ? 'upserted' : 'created'
+})
+
+const stats = await importer.import(['file1.yaml', 'file2.yaml'])
+```
+
+**Processors must return:** `'created' | 'upserted' | 'ignored'`
+
+### Import Validation
+
+All imports are validated using Zod schemas (`src/schema.ts`):
+
+- **Discriminated Union**: Uses `object` field to distinguish entity types
+- **Type Safety**: Generated TypeScript types from schemas
+- **Validation**: Automatic validation of required fields, types, and constraints
+
+**Import Format:**
+
+```yaml
+object: supplier # or 'ingredient', 'recipe'
+data:
+  name: Supplier Name
+  # ... entity-specific fields
+```
+
+**Immutable Fields After Creation:**
+
+- `Ingredient.supplierId` - Cannot change supplier after creation
+- `Recipe.parentId` - Cannot change parent recipe after creation
+
+These constraints enforce data integrity and prevent accidental relationship changes.
 
 ### Data Model Structure
 
@@ -113,6 +202,64 @@ Command implementations should be placed in `src/commands/` and imported in `src
    - Optionally implement `down()` for rollback
 
 3. **Run migrations**: Automatically runs on database initialization via `migrate()` method
+
+## Testing
+
+The project uses **Jest** with **ts-jest** for testing.
+
+### Test Structure
+
+- Tests are colocated with source code in `__tests__/` directories
+- Pattern: `src/lib/__tests__/importer.test.ts`
+- Use in-memory SQLite databases for fast, isolated tests
+- Migrations run automatically in tests using actual migration files
+
+### Running Tests
+
+```bash
+npm test              # Run all tests
+npm run test:watch    # Watch mode for development
+npm run test:coverage # Generate coverage report
+```
+
+### Writing Tests
+
+**Example test setup:**
+
+```typescript
+import Database from 'better-sqlite3'
+import { Kysely, SqliteDialect } from 'kysely'
+import { migrate } from '../../datastore/database'
+
+let db: Kysely<DB>
+
+beforeEach(async () => {
+  db = new Kysely<DB>({
+    dialect: new SqliteDialect({
+      database: new Database(':memory:'),
+    }),
+  })
+
+  // Run migrations to set up schema
+  await migrate.call(
+    db,
+    'up',
+    path.join(__dirname, '../../datastore/migrations')
+  )
+})
+
+afterEach(async () => {
+  await db.destroy()
+})
+```
+
+**Key Testing Patterns:**
+
+- Use actual migrations (not manual schema creation) to stay in sync with production schema
+- Mock ESM modules (like `@sindresorhus/slugify`) to avoid import issues
+- Create temporary directories for file-based tests
+- Test all stats return values: `created`, `upserted`, `ignored`, `failed`
+- Test error handling in both fail-fast and continue-on-error modes
 
 ## Linting
 

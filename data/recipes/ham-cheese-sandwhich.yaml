@@ -14,5 +14,5 @@ data:
       unit: 20g
     - ingredient: cheese-slice
       unit: 25g
-    - ingredient: hovis_thick_white_bread
+    - ingredient: hovis-thick-white-bread
       unit: 2slices

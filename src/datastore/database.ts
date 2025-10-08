@@ -3,7 +3,7 @@ import path from 'path'
 
 import log from '@harrytwright/logger'
 import Database from 'better-sqlite3'
-import { FileMigrationProvider, Kysely, Migrator, SqliteDialect } from 'kysely'
+import {FileMigrationProvider, Kysely, Migrator, ParseJSONResultsPlugin, SqliteDialect} from 'kysely'
 
 import { spin } from '../utils/spinner'
 import { DB } from './types'
@@ -20,7 +20,8 @@ export function database(path: string = ':memory:') {
         dialect: new SqliteDialect({
           database: Database(path),
         }),
-      })
+        plugins: [new ParseJSONResultsPlugin()],
+      }),
     )
   }
 

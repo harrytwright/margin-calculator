@@ -8,17 +8,15 @@ import yaml from 'yaml'
 import ora from 'ora'
 import { database } from '../datastore/database'
 import {
-  IngredientImportData,
-  isIngredientImport,
+  SupplierImportData,
+  isSupplierImport,
   parseImportFile,
 } from '../schema'
+import { findById, upsert } from '../services/supplier'
 import { hasChanges } from '../utils/has-changes'
 import { isInitialised } from '../utils/is-initialised'
 import { slugify } from '../utils/slugify'
 import { defaultWorkingDir } from './initialise'
-
-import { exists as supplierExists } from '../services/supplier'
-import {findById, upsert} from "../services/ingredient";
 
 /**
  * Import command
@@ -26,7 +24,7 @@ import {findById, upsert} from "../services/ingredient";
 
 const importer = new Command()
   .name('import')
-  .description('Import ingredients inside the database')
+  .description('Import suppliers inside the database')
   .argument(
     '<files...>',
     'Set the file, or files to be looked up',
@@ -48,7 +46,7 @@ const importer = new Command()
   .action(async (files, { working, database: dbName, failFast }) => {
     if (!(await isInitialised(path.join(working)))) {
       log.error(
-        'ingredients.import',
+        'suppliers.import',
         'margin is not yet initialised. Call `$ margin initialise` first'
       )
       process.exit(409)
@@ -64,8 +62,8 @@ const importer = new Command()
     const errors: Array<{ file: string; error: string }> = []
 
     // Load the data, validate it against zod, and save it into a processed array for later usage
-    let spinner = ora('✨Loading ingredients')
-    const processed: Array<{ file: string; data: IngredientImportData }> = []
+    let spinner = ora('✨Loading suppliers')
+    const processed: Array<{ file: string; data: SupplierImportData }> = []
 
     for (const file of files) {
       try {
@@ -73,8 +71,8 @@ const importer = new Command()
         const parsed = yaml.parse(content)
         const data = parseImportFile(parsed)
 
-        if (!isIngredientImport(data)) {
-          throw new Error('Not a valid ingredient object')
+        if (!isSupplierImport(data)) {
+          throw new Error('Not a valid supplier object')
         }
 
         log.verbose('importer', '%o', data)
@@ -95,52 +93,26 @@ const importer = new Command()
     }
 
     if (processed.length === 0) {
-      spinner.fail('No valid ingredients to import')
+      spinner.fail('No valid suppliers to import')
       process.exit(1)
     }
 
-    spinner.succeed(`Loaded ${processed.length}/${files.length} ingredients`)
+    spinner.succeed(`Loaded ${processed.length}/${files.length} suppliers`)
 
-    spinner.start('⚙ Saving ingredients to database')
+    spinner.start('⚙ Saving suppliers to database')
     const db = database(path.join(working, './data', dbName))
 
-    for (const { file, data: ingredientImportDatum } of processed) {
+    for (const { file, data: supplierImportDatum } of processed) {
       try {
         const slug =
-          ingredientImportDatum.slug ||
-          (await slugify(ingredientImportDatum.name))
+          supplierImportDatum.slug || (await slugify(supplierImportDatum.name))
 
-        // Check that the supplier described exists. We only offer `generic` for null suppliers
-        if (ingredientImportDatum.supplierId != null && !(await supplierExists.call(db, ingredientImportDatum.supplierId))) {
-          throw new Error(
-            `Cannot create ingredient '${slug}' with missing '${ingredientImportDatum.supplierId}'. ` +
-            `Supplier if defined should be imported in prior to ingredients`
-          )
-        }
-
-        // Default to 'generic' supplier if none specified
-        const supplierSlug = ingredientImportDatum.supplierId || 'generic'
-
-        // Check if the ingredient already exists (with supplier info for validation)
+        // Check if the supplier already exists
         const existing = await findById.call(db, slug)
 
-        // Validate that the supplier hasn't changed (immutable after creation)
-        if (existing && existing.supplierSlug !== supplierSlug) {
-          throw new Error(
-            `Cannot change supplier for ingredient '${slug}' from '${existing.supplierSlug}' to '${supplierSlug}'. ` +
-              `Supplier is immutable after creation. Create a new ingredient with a different slug instead.`
-          )
-        }
-
-        // Check if any mutable fields have changed
-        const hasChanged = hasChanges(existing, ingredientImportDatum, {
+        // Check if any fields have changed
+        const hasChanged = hasChanges(existing, supplierImportDatum, {
           name: 'name',
-          category: 'category',
-          purchaseUnit: 'purchaseUnit',
-          purchaseCost: 'purchaseCost',
-          conversionRule: 'conversionRate',
-          notes: 'notes',
-          lastPurchased: 'lastPurchased',
         })
 
         // Skip if no changes detected
@@ -150,7 +122,8 @@ const importer = new Command()
           continue
         }
 
-        await upsert.call(db, slug, ingredientImportDatum, supplierSlug)
+        // Perform upsert
+        await upsert.call(db, slug, supplierImportDatum)
 
         if (existing) {
           stats.upserted++
@@ -197,7 +170,7 @@ const importer = new Command()
  * Main command
  * */
 
-export const ingredient = new Command()
-  .name('ingredient')
-  .description('Handle the ingredients within the database')
+export const supplier = new Command()
+  .name('supplier')
+  .description('Handle the suppliers within the database')
   .addCommand(importer)

@@ -6,6 +6,8 @@ import { Command } from 'commander'
 
 import { ingredient } from './commands/ingredient'
 import { initialise } from './commands/initialise'
+import { recipe } from './commands/recipe'
+import { supplier } from './commands/supplier'
 import { getPackageInfo } from './utils/package-info'
 
 process.on('SIGINT', () => process.exit(0))
@@ -24,7 +26,11 @@ async function main() {
       'display the version number'
     )
 
-  program.addCommand(initialise).addCommand(ingredient)
+  program
+    .addCommand(initialise)
+    .addCommand(supplier)
+    .addCommand(ingredient)
+    .addCommand(recipe)
 
   program.parse()
 }

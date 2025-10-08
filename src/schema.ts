@@ -32,6 +32,17 @@ export const ingredientImportSchema = z.object({
   data: ingredientImportDataSchema,
 })
 
+// Supplier import schema
+export const supplierImportDataSchema = z.object({
+  slug: z.string().optional(), // Optional - will be generated from name if not provided
+  name: z.string().min(1, 'Supplier name is required'),
+})
+
+export const supplierImportSchema = z.object({
+  object: z.literal('supplier'),
+  data: supplierImportDataSchema,
+})
+
 // Recipe ingredient reference schema (for use within recipes)
 export const recipeIngredientReferenceSchema = z
   .object({
@@ -78,11 +89,13 @@ export const recipeImportSchema = z.object({
 
 // Union type for any import
 export const importSchema = z.discriminatedUnion('object', [
+  supplierImportSchema,
   ingredientImportSchema,
   recipeImportSchema,
 ])
 
 // Type exports
+export type SupplierImportData = z.infer<typeof supplierImportDataSchema>
 export type IngredientImportData = z.infer<typeof ingredientImportDataSchema>
 export type RecipeImportData = z.infer<typeof recipeImportDataSchema>
 export type RecipeIngredientReference = z.infer<
@@ -100,6 +113,12 @@ export function parseImportFile(data: unknown): ImportData {
 /**
  * Helper to check import type
  */
+export function isSupplierImport(
+  data: ImportData
+): data is z.infer<typeof supplierImportSchema> {
+  return data.object === 'supplier'
+}
+
 export function isIngredientImport(
   data: ImportData
 ): data is z.infer<typeof ingredientImportSchema> {

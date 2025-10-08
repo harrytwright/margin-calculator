@@ -7,18 +7,17 @@ import yaml from 'yaml'
 
 import ora from 'ora'
 import { database } from '../datastore/database'
+import { RecipeImportData, isRecipeImport, parseImportFile } from '../schema'
 import {
-  IngredientImportData,
-  isIngredientImport,
-  parseImportFile,
-} from '../schema'
+  findById,
+  exists as parentExists,
+  upsert,
+  upsertIngredients,
+} from '../services/recipe'
 import { hasChanges } from '../utils/has-changes'
 import { isInitialised } from '../utils/is-initialised'
 import { slugify } from '../utils/slugify'
 import { defaultWorkingDir } from './initialise'
-
-import { exists as supplierExists } from '../services/supplier'
-import {findById, upsert} from "../services/ingredient";
 
 /**
  * Import command
@@ -26,7 +25,7 @@ import {findById, upsert} from "../services/ingredient";
 
 const importer = new Command()
   .name('import')
-  .description('Import ingredients inside the database')
+  .description('Import recipes inside the database')
   .argument(
     '<files...>',
     'Set the file, or files to be looked up',
@@ -48,7 +47,7 @@ const importer = new Command()
   .action(async (files, { working, database: dbName, failFast }) => {
     if (!(await isInitialised(path.join(working)))) {
       log.error(
-        'ingredients.import',
+        'recipes.import',
         'margin is not yet initialised. Call `$ margin initialise` first'
       )
       process.exit(409)
@@ -64,8 +63,8 @@ const importer = new Command()
     const errors: Array<{ file: string; error: string }> = []
 
     // Load the data, validate it against zod, and save it into a processed array for later usage
-    let spinner = ora('✨Loading ingredients')
-    const processed: Array<{ file: string; data: IngredientImportData }> = []
+    let spinner = ora('✨Loading recipes')
+    const processed: Array<{ file: string; data: RecipeImportData }> = []
 
     for (const file of files) {
       try {
@@ -73,8 +72,8 @@ const importer = new Command()
         const parsed = yaml.parse(content)
         const data = parseImportFile(parsed)
 
-        if (!isIngredientImport(data)) {
-          throw new Error('Not a valid ingredient object')
+        if (!isRecipeImport(data)) {
+          throw new Error('Not a valid recipe object')
         }
 
         log.verbose('importer', '%o', data)
@@ -95,52 +94,55 @@ const importer = new Command()
     }
 
     if (processed.length === 0) {
-      spinner.fail('No valid ingredients to import')
+      spinner.fail('No valid recipes to import')
       process.exit(1)
     }
 
-    spinner.succeed(`Loaded ${processed.length}/${files.length} ingredients`)
+    spinner.succeed(`Loaded ${processed.length}/${files.length} recipes`)
 
-    spinner.start('⚙ Saving ingredients to database')
+    spinner.start('⚙ Saving recipes to database')
     const db = database(path.join(working, './data', dbName))
 
-    for (const { file, data: ingredientImportDatum } of processed) {
+    for (const { file, data: recipeImportDatum } of processed) {
       try {
         const slug =
-          ingredientImportDatum.slug ||
-          (await slugify(ingredientImportDatum.name))
+          recipeImportDatum.slug || (await slugify(recipeImportDatum.name))
 
-        // Check that the supplier described exists. We only offer `generic` for null suppliers
-        if (ingredientImportDatum.supplierId != null && !(await supplierExists.call(db, ingredientImportDatum.supplierId))) {
+        // Check that the parent recipe exists if specified
+        if (
+          recipeImportDatum.parent != null &&
+          !(await parentExists.call(db, recipeImportDatum.parent))
+        ) {
           throw new Error(
-            `Cannot create ingredient '${slug}' with missing '${ingredientImportDatum.supplierId}'. ` +
-            `Supplier if defined should be imported in prior to ingredients`
+            `Cannot create recipe '${slug}' with missing parent '${recipeImportDatum.parent}'. ` +
+              `Parent recipe should be imported prior to child recipes.`
           )
         }
 
-        // Default to 'generic' supplier if none specified
-        const supplierSlug = ingredientImportDatum.supplierId || 'generic'
-
-        // Check if the ingredient already exists (with supplier info for validation)
+        // Check if the recipe already exists (with parent info for validation)
         const existing = await findById.call(db, slug)
 
-        // Validate that the supplier hasn't changed (immutable after creation)
-        if (existing && existing.supplierSlug !== supplierSlug) {
+        // Validate that parent hasn't changed (immutable after creation)
+        const parentSlug = recipeImportDatum.parent || null
+        if (existing && existing.parentSlug !== parentSlug) {
           throw new Error(
-            `Cannot change supplier for ingredient '${slug}' from '${existing.supplierSlug}' to '${supplierSlug}'. ` +
-              `Supplier is immutable after creation. Create a new ingredient with a different slug instead.`
+            `Cannot change parent for recipe '${slug}' from '${existing.parentSlug}' to '${parentSlug}'. ` +
+              `Parent is immutable after creation. Create a new recipe with a different slug instead.`
           )
         }
 
         // Check if any mutable fields have changed
-        const hasChanged = hasChanges(existing, ingredientImportDatum, {
+        const hasChanged = hasChanges(existing, recipeImportDatum, {
           name: 'name',
+          stage: 'stage',
+          class: 'class',
           category: 'category',
-          purchaseUnit: 'purchaseUnit',
-          purchaseCost: 'purchaseCost',
-          conversionRule: 'conversionRate',
-          notes: 'notes',
-          lastPurchased: 'lastPurchased',
+          sellPrice: 'sellPrice',
+          includesVat: (data) => (data.includesVat ? 1 : 0),
+          targetMargin: 'targetMargin',
+          yieldAmount: 'yieldAmount',
+          yieldUnit: 'yieldUnit',
+          ingredients: 'ingredients',
         })
 
         // Skip if no changes detected
@@ -150,7 +152,14 @@ const importer = new Command()
           continue
         }
 
-        await upsert.call(db, slug, ingredientImportDatum, supplierSlug)
+        // Perform upsert
+        const recipeId = await upsert.call(db, slug, recipeImportDatum)
+        if (!recipeId) {
+          throw new Error('Failed to get recipe ID after upsert')
+        }
+
+        // Handle recipe ingredients
+        await upsertIngredients.call(db, recipeId, recipeImportDatum)
 
         if (existing) {
           stats.upserted++
@@ -197,7 +206,7 @@ const importer = new Command()
  * Main command
  * */
 
-export const ingredient = new Command()
-  .name('ingredient')
-  .description('Handle the ingredients within the database')
+export const recipe = new Command()
+  .name('recipe')
+  .description('Handle the recipes within the database')
   .addCommand(importer)
