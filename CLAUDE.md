@@ -178,18 +178,84 @@ The CLI uses Commander.js with a subcommand structure:
 
 ```
 margin
+├── import <files...>     # Import any entity type (auto-detects from YAML/JSON)
 ├── recipe
-│   ├── import <file>     # Import recipe from YAML/JSON
+│   ├── import <file>     # DEPRECATED: Use `margin import` instead
 │   ├── cost <slug>       # Calculate recipe cost breakdown
 │   └── list              # List recipes with margins
 ├── ingredient
-│   └── import <file>     # Import ingredient from YAML/JSON
+│   └── import <file>     # DEPRECATED: Use `margin import` instead
+├── supplier
+│   └── import <file>     # DEPRECATED: Use `margin import` instead
 ├── explore               # Launch web UI for browsing
 └── config
     └── set               # Update configuration (VAT rate, margins)
 ```
 
 Command implementations should be placed in `src/commands/` and imported in `src/index.ts`.
+
+## Importing Data
+
+Use the **global `margin import` command** to import suppliers, ingredients, and recipes. The importer automatically detects entity types from the `object` field in YAML/JSON files.
+
+### Basic Usage
+
+```bash
+# Import a single file
+margin import data/suppliers/asda.yaml
+
+# Import multiple files (auto-detects types)
+margin import data/suppliers/*.yaml data/ingredients/*.yaml
+
+# Import with automatic dependency resolution
+margin import data/recipes/pizza.yaml  # Auto-imports ingredients and suppliers
+```
+
+### Options
+
+```bash
+# Use custom project root for @/ references
+margin import --root ~/my-data @/recipes/*.yaml
+
+# Stop on first error instead of continuing
+margin import --fail-fast data/*.yaml
+```
+
+### How It Works
+
+1. **Auto-detection**: Reads the `object` field from each file to determine type
+2. **Dependency resolution**: Automatically imports referenced files (via `uses:` fields)
+3. **Change detection**: Only creates/updates records when data has changed
+4. **Statistics**: Reports created, upserted, ignored, and failed imports
+
+### Example Workflow
+
+```bash
+# 1. Initialize the working directory
+margin initialise
+
+# 2. Import suppliers first (optional - can auto-import)
+margin import data/suppliers/*.yaml
+
+# 3. Import ingredients (auto-imports suppliers if referenced)
+margin import data/ingredients/*.yaml
+
+# 4. Import recipes (auto-imports ingredients/suppliers if referenced)
+margin import data/recipes/*.yaml
+
+# Or import everything at once
+margin import data/**/*.yaml
+```
+
+### Entity-Specific Import Commands (Deprecated)
+
+The following commands still work but are deprecated in favor of `margin import`:
+
+```bash
+margin supplier import <file>     # Shows deprecation warning
+margin ingredient import <file>   # Shows deprecation warning
+margin recipe import <file>       # Shows deprecation warning
+```
 
 ## Migration Workflow
 

@@ -1,0 +1,11 @@
+object: recipe
+data:
+  name: Test Recipe
+  stage: development
+  class: menu_item
+  category: test
+  costing:
+    price: 500
+    vat: false
+    margin: 65
+  ingredients: []

@@ -1,0 +1,5 @@
+object: recipe
+data:
+  name: Invalid Recipe
+  # Missing required costing.price field
+  ingredients: []
