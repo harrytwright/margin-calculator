@@ -1,8 +1,11 @@
 object: ingredient
+
 data:
   name: Cheese Slice
   category: dairy
-  purchaseUnit: 250g
-  purchaseCost: 2.54
-  includesVat: true
-  supplierId: asda
+  purchase:
+    unit: 250g
+    cost: 2.54
+    vat: true
+  supplier:
+    uses: ../suppliers/asda.yaml # Or `@/suppliers/asda.yaml` or slug:asda

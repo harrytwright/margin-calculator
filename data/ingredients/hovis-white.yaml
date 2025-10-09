@@ -2,8 +2,11 @@ object: ingredient
 data:
   name: Hovis Thick White Bread
   category: bread
-  purchaseUnit: 1loaf
-  purchaseCost: 1.39
-  includesVat: true
-  conversionRate: 1 loaf = 16 slices
-  supplierId: asda
+  purchase:
+    unit: 1 loaf
+    cost: 1.39
+    vat: true
+  conversionRate: |
+    1 loaf = 16 slices
+  supplier:
+    uses: ../suppliers/asda.yaml # Or `@/suppliers/asda.yaml`

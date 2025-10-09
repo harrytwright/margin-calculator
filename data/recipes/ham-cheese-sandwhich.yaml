@@ -1,18 +1,20 @@
 object: recipe
 
 data:
+  # Allow for inheritance of a base item
+  extends: ./cheese-sandwich.yaml
+
   slug: ham-cheese-sandwich
-  name: Ham And Cheese Sandwich (white
+  name: Ham And Cheese Sandwich (white)
   class: menu_item
   stage: active
-  sellPrice: 400 # £4 in pence
-  targetMargin: 25
-  includesVat: true
+
+  costing:
+    price: 400 # £4 in pence
+    margin: 25
+    var: true
 
   ingredients:
-    - ingredient: ham
-      unit: 20g
-    - ingredient: cheese-slice
-      unit: 25g
-    - ingredient: hovis-thick-white-bread
-      unit: 2slices
+    - uses: '@/ingredients/ham.yaml'
+      with:
+        unit: 25g
