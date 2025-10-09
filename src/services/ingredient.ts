@@ -20,6 +20,7 @@ export class IngredientService {
   async exists(slug: string) {
     return !!(await this.database
       .selectFrom('Ingredient')
+      .select('id')
       .where('slug', '=', slug)
       .executeTakeFirst())
   }
@@ -77,6 +78,15 @@ export class IngredientService {
         })
       )
       .executeTakeFirst()
+  }
+
+  async delete(slug: string) {
+    const result = await this.database
+      .deleteFrom('Ingredient')
+      .where('slug', '=', slug)
+      .executeTakeFirst()
+
+    return result.numDeletedRows > 0n
   }
 
   async processor(

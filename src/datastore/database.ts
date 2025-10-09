@@ -59,6 +59,7 @@ export async function migrate(
   const { error, results } = await spin(migrator.migrateToLatest(), {
     text: '✨Migrating database',
     successText: 'Completed migration',
+    isSilent: typeof jest !== 'undefined',
   })
 
   if (results?.length === 0) {

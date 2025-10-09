@@ -39,6 +39,15 @@ export class SupplierService {
       .executeTakeFirst()
   }
 
+  async delete(slug: string) {
+    const result = await this.database
+      .deleteFrom('Supplier')
+      .where('slug', '=', slug)
+      .executeTakeFirst()
+
+    return result.numDeletedRows > 0n
+  }
+
   async processor(
     importer: Importer,
     data: SupplierResolvedImportData,

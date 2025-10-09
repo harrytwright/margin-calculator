@@ -147,6 +147,15 @@ export class RecipeService {
     }
   }
 
+  async delete(slug: string) {
+    const result = await this.database
+      .deleteFrom('Recipe')
+      .where('slug', '=', slug)
+      .executeTakeFirst()
+
+    return result.numDeletedRows > 0n
+  }
+
   async processor(
     importer: Importer,
     data: RecipeResolvedImportData,
@@ -173,19 +182,27 @@ export class RecipeService {
       )
     }
 
+    // Normalize ingredients for comparison
+    const prevIngredients =
+      typeof prev?.ingredients === 'string'
+        ? prev.ingredients
+        : JSON.stringify(prev?.ingredients || [])
+    const newIngredients = JSON.stringify(data.ingredients)
+
     // Check if any mutable fields have changed
-    const hasChanged = hasChanges(prev, data, {
-      name: 'name',
-      stage: 'stage',
-      class: 'class',
-      category: 'category',
-      sellPrice: (data) => data.costing?.price,
-      includesVat: (data) => (data.costing?.price ? 1 : 0),
-      targetMargin: (data) => data.costing?.margin,
-      yieldAmount: 'yieldAmount',
-      yieldUnit: 'yieldUnit',
-      ingredients: 'ingredients',
-    })
+    const hasChanged =
+      prevIngredients !== newIngredients ||
+      hasChanges(prev, data, {
+        name: 'name',
+        stage: 'stage',
+        class: 'class',
+        category: 'category',
+        sellPrice: (data) => data.costing?.price,
+        includesVat: (data) => (data.costing?.vat ? 1 : 0),
+        targetMargin: (data) => data.costing?.margin,
+        yieldAmount: 'yieldAmount',
+        yieldUnit: 'yieldUnit',
+      })
 
     if (prev && !hasChanged) {
       return 'ignored'
