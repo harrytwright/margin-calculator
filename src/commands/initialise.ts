@@ -1,6 +1,5 @@
 import type { PathLike } from 'fs'
 import fs from 'fs/promises'
-import os from 'os'
 import path from 'path'
 
 import log from '@harrytwright/logger'
@@ -12,22 +11,15 @@ import { database, migrate } from '../datastore/database'
 import { spin } from '../utils/spinner'
 import { tomlWriter } from '../utils/toml-writer'
 
-// Used to initialise the system.
-
-export const defaultWorkingDir = path.join(os.homedir(), './margin')
-
 export const initialise = new Command()
   .name('initialise')
   .description('Initialise the cli')
-  .option('--working [file]', 'Change the working directory', defaultWorkingDir)
-  .option(
-    '-d, --database [name]',
-    'Set the default database name. Stored within the `<working>/data`',
-    'margin.sqlite3'
-  )
   .option('--force', 'Force the recreation', false)
-  .action(async ({ working, database: dbPath, force }) => {
+  .action(async function (opts, cmd) {
+    log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
     log.info('initialise', 'Initialising the cli')
+
+    const { working, database: dbPath, force } = cmd.optsWithGlobals()
 
     // Create a working dir
     const { conf, base, data } = await spin(createWorkingDirectory(working), {

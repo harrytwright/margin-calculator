@@ -1,0 +1,20 @@
+object: recipe
+
+data:
+  slug: cheese-sandwich
+  name: Cheese Sandwich (white)
+  class: menu_item
+  stage: active
+
+  costing:
+    price: 350 # £4 in pence
+    margin: 25
+    var: true
+
+  ingredients:
+    - uses: ../ingredients/cheese-slice.yaml
+      with:
+        unit: 25g
+    - uses: slug:hovis-thick-white-bread
+      with:
+        unit: 2 slices

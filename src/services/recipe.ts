@@ -1,120 +1,202 @@
-import { Kysely } from 'kysely'
+import { ExpressionBuilder, Kysely } from 'kysely'
 import { jsonArrayFrom } from 'kysely/helpers/sqlite'
 
-import { DB } from '../datastore/types'
-import { RecipeImportData } from '../schema'
+import log from '@harrytwright/logger'
+import type { DB } from '../datastore/types'
+import { Importer, type ImportResult } from '../lib/importer'
+import type { RecipeResolvedImportData } from '../schema'
+import { hasChanges } from '../utils/has-changes'
+import { IngredientService } from './ingredient'
 
-export function findById(this: Kysely<DB>, slug: string) {
-  return this.selectFrom('Recipe')
-    .leftJoin('Recipe as ParentRecipe', 'Recipe.parentId', 'ParentRecipe.id')
-    .select((eb) => [
-      'Recipe.id',
-      'Recipe.name',
-      'Recipe.stage',
-      'Recipe.class',
-      'Recipe.category',
-      'Recipe.sellPrice',
-      'Recipe.includesVat',
-      'Recipe.targetMargin',
-      'Recipe.yieldAmount',
-      'Recipe.yieldUnit',
-      'ParentRecipe.slug as parentSlug',
-      jsonArrayFrom(
-        eb
-          .selectFrom('RecipeIngredients')
-          .innerJoin(
-            'Ingredient',
-            'RecipeIngredients.ingredientId',
-            'Ingredient.id'
-          )
-          .select(['Ingredient.slug', 'RecipeIngredients.unit'])
-      ).as('ingredients'),
-    ])
-    .where('Recipe.slug', '=', slug)
-    .executeTakeFirst()
-}
+export class RecipeService {
+  constructor(
+    private database: Kysely<DB>,
+    private readonly ingredient: IngredientService
+  ) {}
 
-export async function upsert(
-  this: Kysely<DB>,
-  slug: string,
-  data: RecipeImportData
-) {
-  const result = await this.insertInto('Recipe')
-    .values((eb) => ({
-      slug,
-      name: data.name,
-      stage: data.stage,
-      class: data.class,
-      category: data.category,
-      sellPrice: data.sellPrice,
-      includesVat: data.includesVat ? 1 : 0,
-      targetMargin: data.targetMargin,
-      yieldAmount: data.yieldAmount,
-      yieldUnit: data.yieldUnit,
-      parentId: data.parent
-        ? eb
-            .selectFrom('Recipe')
-            .select('Recipe.id')
-            .where('Recipe.slug', '=', data.parent)
-        : undefined,
-    }))
-    .onConflict((oc) =>
-      oc.column('slug').doUpdateSet({
-        // Note: parentId is NOT in this update - immutable after creation
+  async exists(slug: string) {
+    return !!(await this.database
+      .selectFrom('Recipe')
+      .select('id')
+      .where('slug', '=', slug)
+      .executeTakeFirst())
+  }
+
+  findById(slug: string) {
+    return this.database
+      .selectFrom('Recipe')
+      .leftJoin('Recipe as ParentRecipe', 'Recipe.parentId', 'ParentRecipe.id')
+      .select((eb) => [
+        'Recipe.id',
+        'Recipe.slug',
+        'Recipe.name',
+        'Recipe.stage',
+        'Recipe.class',
+        'Recipe.category',
+        'Recipe.sellPrice',
+        'Recipe.includesVat',
+        'Recipe.targetMargin',
+        'Recipe.yieldAmount',
+        'Recipe.yieldUnit',
+        'ParentRecipe.slug as parentSlug',
+        jsonArrayFrom(
+          eb
+            .selectFrom('RecipeIngredients')
+            .innerJoin(
+              'Ingredient',
+              'RecipeIngredients.ingredientId',
+              'Ingredient.id'
+            )
+            .select(['Ingredient.slug', 'RecipeIngredients.unit'])
+        ).as('ingredients'),
+      ])
+      .where('Recipe.slug', '=', slug)
+      .executeTakeFirst()
+  }
+
+  async upsert(slug: string, data: RecipeResolvedImportData) {
+    const shouldUseParentData =
+      data.parentSlug && data.costing?.price === undefined
+
+    // In theory, we should not get here, but a last resort
+    if (!shouldUseParentData && data.costing?.price === undefined) {
+      throw new Error(
+        `Cannot create a recipe '${data.slug}' with missing 'costing.price'. ` +
+          `If you forgot to add a parent value, use 'extends' to inherit from a parent recipe instead.`
+      )
+    }
+
+    const result = await this.database
+      .insertInto('Recipe')
+      .values((eb) => ({
+        slug,
         name: data.name,
         stage: data.stage,
         class: data.class,
         category: data.category,
-        sellPrice: data.sellPrice,
-        includesVat: data.includesVat ? 1 : 0,
-        targetMargin: data.targetMargin,
+        sellPrice: shouldUseParentData
+          ? eb
+              .selectFrom('Recipe')
+              .select('Recipe.sellPrice')
+              .where('Recipe.slug', '=', data.parentSlug!)
+          : data.costing!.price!,
+        includesVat: data.costing?.vat ? 1 : 0,
+        targetMargin: data.costing?.margin,
         yieldAmount: data.yieldAmount,
         yieldUnit: data.yieldUnit,
-      })
-    )
-    .returning('id')
-    .executeTakeFirst()
-
-  return result?.id
-}
-
-export async function upsertIngredients(
-  this: Kysely<DB>,
-  recipeId: number,
-  data: RecipeImportData
-) {
-  // Delete existing ingredients
-  await this.deleteFrom('RecipeIngredients')
-    .where('recipeId', '=', recipeId)
-    .execute()
-
-  // Insert recipe ingredients
-  for (const ing of data.ingredients) {
-    await this.insertInto('RecipeIngredients')
-      .values((eb) => ({
-        recipeId,
-        ingredientId: ing.ingredient
-          ? eb
-              .selectFrom('Ingredient')
-              .select('Ingredient.id')
-              .where('Ingredient.slug', '=', ing.ingredient)
-          : undefined,
-        subRecipeId: ing.recipe
+        parentId: data.parentSlug
           ? eb
               .selectFrom('Recipe')
               .select('Recipe.id')
-              .where('Recipe.slug', '=', ing.recipe)
+              .where('Recipe.slug', '=', data.parentSlug)
           : undefined,
-        unit: ing.unit,
-        notes: ing.notes,
       }))
-      .execute()
-  }
-}
+      .onConflict((oc) =>
+        oc.column('slug').doUpdateSet((eb) => ({
+          // Note: parentId is NOT in this update - immutable after creation
+          name: data.name,
+          stage: data.stage,
+          class: data.class,
+          category: data.category,
+          sellPrice: shouldUseParentData
+            ? eb
+                .selectFrom('Recipe')
+                .select('Recipe.sellPrice')
+                .where('Recipe.slug', '=', data.parentSlug!)
+            : data.costing!.price!,
+          includesVat: data.costing?.vat ? 1 : 0,
+          targetMargin: data.costing?.margin,
+          yieldAmount: data.yieldAmount,
+          yieldUnit: data.yieldUnit,
+        }))
+      )
+      .returning('id')
+      .executeTakeFirst()
 
-export async function exists(this: Kysely<DB>, slug: string) {
-  return !!(await this.selectFrom('Recipe')
-    .select('id')
-    .where('slug', '=', slug)
-    .executeTakeFirst())
+    return result?.id
+  }
+
+  async upsertIngredients(recipeId: number, data: RecipeResolvedImportData) {
+    // Delete existing ingredients
+    await this.database
+      .deleteFrom('RecipeIngredients')
+      .where('recipeId', '=', recipeId)
+      .execute()
+
+    // Insert recipe ingredients
+    for (const ing of data.ingredients) {
+      const query = (eb: ExpressionBuilder<DB, 'RecipeIngredients'>) => {
+        const database: keyof DB =
+          ing.type === 'ingredient' ? 'Ingredient' : 'Recipe'
+        return eb
+          .selectFrom(database)
+          .select(`${database}.id`)
+          .where(`${database}.slug`, '=', ing.slug)
+      }
+
+      await this.database
+        .insertInto('RecipeIngredients')
+        .values((eb) => ({
+          recipeId,
+          ingredientId: ing.type === 'ingredient' ? query(eb) : undefined,
+          subRecipeId: ing.type === 'recipe' ? query(eb) : undefined,
+          unit: ing.with.unit,
+          notes: ing.with.notes,
+        }))
+        .execute()
+    }
+  }
+
+  async processor(
+    importer: Importer,
+    data: RecipeResolvedImportData,
+    filePath: string | undefined
+  ): Promise<ImportResult> {
+    log.verbose('recipe.processor', 'Processing %o', data)
+
+    if (data.parentSlug && !(await this.exists(data.parentSlug))) {
+      throw new Error(
+        `Cannot create recipe '${data.slug}' with missing parent '${data.parentSlug}'. ` +
+          `Parent recipe should be imported prior to child recipes.`
+      )
+    }
+
+    const prev = await this.findById(data.slug)
+
+    log.verbose('recipe.processor', 'Found %o', prev)
+
+    // Use != since one side will be null and the other verbose
+    if (prev != null && prev.parentSlug != data.parentSlug) {
+      throw new Error(
+        `Cannot change parent for recipe '${data.slug}' from '${prev.parentSlug}' to '${data.parentSlug}'. ` +
+          `Parent is immutable after creation. Create a new recipe with a different slug instead.`
+      )
+    }
+
+    // Check if any mutable fields have changed
+    const hasChanged = hasChanges(prev, data, {
+      name: 'name',
+      stage: 'stage',
+      class: 'class',
+      category: 'category',
+      sellPrice: (data) => data.costing?.price,
+      includesVat: (data) => (data.costing?.price ? 1 : 0),
+      targetMargin: (data) => data.costing?.margin,
+      yieldAmount: 'yieldAmount',
+      yieldUnit: 'yieldUnit',
+      ingredients: 'ingredients',
+    })
+
+    if (prev && !hasChanged) {
+      return 'ignored'
+    }
+
+    const recipeId = await this.upsert(data.slug, data)
+
+    if (!recipeId) throw new Error('Failed to get recipe ID after upsert')
+
+    await this.upsertIngredients(recipeId, data)
+
+    return prev ? 'upserted' : 'created'
+  }
 }

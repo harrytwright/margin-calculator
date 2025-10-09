@@ -2,7 +2,9 @@ object: ingredient
 data:
   name: Ham
   category: raw-meat
-  purchaseUnit: 120g
-  purchaseCost: 2.14
-  includesVat: true
-  supplierId: asda
+  purchase:
+    unit: 120g
+    cost: 2.14
+    vat: true
+  supplier:
+    uses: ../suppliers/asda.yaml # Or `@/suppliers/asda.yaml`

@@ -4,10 +4,12 @@ import './utils/setup-log'
 
 import { Command } from 'commander'
 
+import log from '@harrytwright/logger'
 import { ingredient } from './commands/ingredient'
 import { initialise } from './commands/initialise'
 import { recipe } from './commands/recipe'
 import { supplier } from './commands/supplier'
+import { DEFAULT_WORKING_DIR } from './utils/constants'
 import { getPackageInfo } from './utils/package-info'
 
 process.on('SIGINT', () => process.exit(0))
@@ -20,11 +22,31 @@ async function main() {
   const program = new Command()
     .name('margin')
     .description('A CLI understanding your menu margins')
+    .option('--verbose', 'Set the log level to verbose')
+    .option('--quiet', 'Set the log level to display only warnings')
+    .option(
+      '--working [working]',
+      'Set the working directory',
+      DEFAULT_WORKING_DIR
+    )
+    .option(
+      '-d, --database [name]',
+      'Set the default database name. Memory can be used but should only be used for testing',
+      'margin.sqlite3'
+    )
     .version(
       packageInfo.version || '1.0.0',
       '-v, --version',
       'display the version number'
     )
+
+  program.on('verbose', () => {
+    log.set('level', 'verbose')
+  })
+
+  program.on('quiet', () => {
+    log.set('level', 'warn')
+  })
 
   program
     .addCommand(initialise)
