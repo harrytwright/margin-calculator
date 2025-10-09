@@ -27,6 +27,11 @@ const importer = new Command()
   .option('--root [dir]', 'Set the root directory')
   .option('--fail-fast', 'Stop on first error instead of continuing', false)
   .action(async (files, opts, cmd) => {
+    log.warn(
+      'supplier.import',
+      '⚠️  Warning: `margin supplier import` is deprecated. Use `margin import` instead.'
+    )
+
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
 
     const { working, database: dbName, failFast, root } = cmd.optsWithGlobals()
