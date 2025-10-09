@@ -5,6 +5,7 @@ import './utils/setup-log'
 import { Command } from 'commander'
 
 import log from '@harrytwright/logger'
+import { importCommand } from './commands/import'
 import { ingredient } from './commands/ingredient'
 import { initialise } from './commands/initialise'
 import { recipe } from './commands/recipe'
@@ -50,6 +51,7 @@ async function main() {
 
   program
     .addCommand(initialise)
+    .addCommand(importCommand)
     .addCommand(supplier)
     .addCommand(ingredient)
     .addCommand(recipe)
