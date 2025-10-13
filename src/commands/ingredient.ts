@@ -5,10 +5,6 @@ import { Command } from 'commander'
 
 import ora from 'ora'
 import { database } from '../datastore/database'
-import {
-  IngredientResolvedImportData,
-  SupplierResolvedImportData,
-} from '../schema'
 import { isInitialised } from '../utils/is-initialised'
 
 import { Importer } from '../lib/importer'
@@ -51,30 +47,18 @@ const importer = new Command()
 
     const db = database(path.join(working, './data', dbName))
 
-    const importer = new Importer(db, {
-      failFast,
-      projectRoot: path.join(process.cwd(), root || ''),
-    })
-
-    // This is why I have started to love DI, but will work fow now
+    // Initialize services
     const supplier = new SupplierService(db)
     const ingredient = new IngredientService(db, supplier)
 
-    // Could change this to be handled within the importer itself, maybe via the constructor, or an array?
-
-    importer.addProcessor<SupplierResolvedImportData>(
-      'supplier',
-      function (data, filePath) {
-        return supplier.processor(this, data, filePath)
-      }
-    )
-
-    importer.addProcessor<IngredientResolvedImportData>(
-      'ingredient',
-      function (data, filePath) {
-        return ingredient.processor(this, data, filePath)
-      }
-    )
+    const importer = new Importer(db, {
+      failFast,
+      projectRoot: path.join(process.cwd(), root || ''),
+      processors: [
+        ['supplier', supplier],
+        ['ingredient', ingredient],
+      ],
+    })
 
     // Could add this to importer and allow the importer to log when it needs via this
     let spinner = ora('✨Loading ingredients')

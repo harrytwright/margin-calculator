@@ -42,10 +42,12 @@ async function main() {
     )
 
   program.on('verbose', () => {
+    console.log('Verbose mode enabled')
     log.set('level', 'verbose')
   })
 
   program.on('quiet', () => {
+    console.log('Quiet mode enabled')
     log.set('level', 'warn')
   })
 

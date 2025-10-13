@@ -12,7 +12,7 @@ data:
   costing:
     price: 400 # £4 in pence
     margin: 25
-    var: true
+    vat: false
 
   ingredients:
     - uses: '@/ingredients/ham.yaml'

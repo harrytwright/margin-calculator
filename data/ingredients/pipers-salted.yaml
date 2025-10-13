@@ -1,0 +1,12 @@
+object: ingredient
+data:
+  name: Pipers Salted
+  category: crips
+  purchase:
+    unit: 1 Box
+    cost: 15.45
+    vat: true
+  conversionRate: |
+    1 box = 24 Packets
+  supplier:
+    uses: ../suppliers/asda.yaml # Or `@/suppliers/asda.yaml`

@@ -5,11 +5,10 @@ import path from 'path'
 import log from '@harrytwright/logger'
 import { Command } from 'commander'
 import prompt from 'prompts'
-import toml from 'toml'
 
 import { database, migrate } from '../datastore/database'
+import { ConfigService } from '../services/config'
 import { spin } from '../utils/spinner'
-import { tomlWriter } from '../utils/toml-writer'
 
 export const initialise = new Command()
   .name('initialise')
@@ -22,13 +21,13 @@ export const initialise = new Command()
     const { working, database: dbPath, force } = cmd.optsWithGlobals()
 
     // Create a working dir
-    const { conf, base, data } = await spin(createWorkingDirectory(working), {
+    const { base, data } = await spin(createWorkingDirectory(working), {
       text: '⚙ Creating working directory',
       successText: 'Created working directory',
     })
 
     // Create the config file within the above folder
-    await writeDefaultConfiguration(path.join(conf, './margin.toml'), force)
+    await writeDefaultConfiguration(base, force)
 
     // Delete the old database first,
     if (force) {
@@ -89,37 +88,39 @@ async function createWorkingDirectory(dir: PathLike) {
 }
 
 // Use `force` for overwriting the previous configuration. Clean the slate as you will.
-function writeDefaultConfiguration(path: PathLike, force: boolean) {
+function writeDefaultConfiguration(dir: string, force: boolean) {
   return spin(
     async () => {
-      // If the file exists and we have force enabled just return early.
-      let prev: {} = {}
-      try {
-        prev = toml.parse(await fs.readFile(path, { encoding: 'utf8' }))
-      } catch (err) {
-        log.error('initialise', err)
-      }
-
-      if (force) {
-        prev = {
-          vat: 0.2,
-          marginTarget: 20,
-        }
-      } else {
-        prev = Object.assign(
-          {
-            vat: 0.2,
-            marginTarget: 20,
-          },
-          prev
-        )
-      }
-
-      return fs.writeFile(
-        path,
-        tomlWriter(prev, { newlineAfterSection: true }),
-        'utf8'
-      )
+      const conf = new ConfigService(dir)
+      return conf.initialise(force)
+      // // If the file exists and we have force enabled just return early.
+      // let prev: {} = {}
+      // try {
+      //   prev = toml.parse(await fs.readFile(path, { encoding: 'utf8' }))
+      // } catch (err) {
+      //   log.error('initialise', err)
+      // }
+      //
+      // if (force) {
+      //   prev = {
+      //     vat: 0.2,
+      //     marginTarget: 20,
+      //   }
+      // } else {
+      //   prev = Object.assign(
+      //     {
+      //       vat: 0.2,
+      //       marginTarget: 20,
+      //     },
+      //     prev
+      //   )
+      // }
+      //
+      // return fs.writeFile(
+      //   path,
+      //   tomlWriter(prev, { newlineAfterSection: true }),
+      //   'utf8'
+      // )
     },
     {
       text: '⚙ Initialising configuration',

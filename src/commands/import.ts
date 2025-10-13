@@ -6,11 +6,6 @@ import ora from 'ora'
 
 import { database } from '../datastore/database'
 import { Importer } from '../lib/importer'
-import {
-  IngredientResolvedImportData,
-  RecipeResolvedImportData,
-  SupplierResolvedImportData,
-} from '../schema'
 import { IngredientService } from '../services/ingredient'
 import { RecipeService } from '../services/recipe'
 import { SupplierService } from '../services/supplier'
@@ -52,37 +47,20 @@ export const importCommand = new Command()
 
     const db = database(path.join(working, './data', dbName))
 
-    const importer = new Importer(db, {
-      failFast,
-      projectRoot: path.join(process.cwd(), root || ''),
-    })
-
     // Initialize services
     const supplier = new SupplierService(db)
     const ingredient = new IngredientService(db, supplier)
     const recipe = new RecipeService(db, ingredient)
 
-    // Register all processors (files will be auto-detected by type)
-    importer.addProcessor<SupplierResolvedImportData>(
-      'supplier',
-      function (data, filePath) {
-        return supplier.processor(this, data, filePath)
-      }
-    )
-
-    importer.addProcessor<IngredientResolvedImportData>(
-      'ingredient',
-      function (data, filePath) {
-        return ingredient.processor(this, data, filePath)
-      }
-    )
-
-    importer.addProcessor<RecipeResolvedImportData>(
-      'recipe',
-      function (data, filePath) {
-        return recipe.processor(this, data, filePath)
-      }
-    )
+    const importer = new Importer(db, {
+      failFast,
+      projectRoot: path.join(process.cwd(), root || ''),
+      processors: [
+        ['supplier', supplier],
+        ['ingredient', ingredient],
+        ['recipe', recipe],
+      ],
+    })
 
     // Import files
     let spinner = ora('Importing files')

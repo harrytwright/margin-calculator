@@ -24,6 +24,7 @@ export type Ingredient = {
   category: string
   purchaseUnit: string
   purchaseCost: number
+  includesVat: number
   conversionRule: string | null
   supplierId: number | null
   notes: string | null
