@@ -10,6 +10,7 @@ import { ingredient } from './commands/ingredient'
 import { initialise } from './commands/initialise'
 import { recipe } from './commands/recipe'
 import { supplier } from './commands/supplier'
+import { ui } from './commands/ui'
 import { DEFAULT_WORKING_DIR } from './utils/constants'
 import { getPackageInfo } from './utils/package-info'
 
@@ -57,6 +58,7 @@ async function main() {
     .addCommand(supplier)
     .addCommand(ingredient)
     .addCommand(recipe)
+    .addCommand(ui)
 
   program.parse()
 }
