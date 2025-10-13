@@ -9,12 +9,15 @@ data:
   costing:
     price: 350 # £4 in pence
     margin: 25
-    var: true
+    vat: false
+
+  yieldAmount: 1
+  yieldUnit: Sandwich
 
   ingredients:
     - uses: ../ingredients/cheese-slice.yaml
       with:
         unit: 25g
-    - uses: slug:hovis-thick-white-bread
+    - uses: ../ingredients/hovis-white.yaml
       with:
         unit: 2 slices

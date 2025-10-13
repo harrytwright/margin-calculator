@@ -66,6 +66,7 @@ describe('IngredientService', () => {
           category: 'meat',
           purchaseUnit: '1kg',
           purchaseCost: 5.99,
+          includesVat: 0,
           supplierId,
         })
         .execute()
@@ -90,6 +91,7 @@ describe('IngredientService', () => {
           category: 'meat',
           purchaseUnit: '1kg',
           purchaseCost: 5.99,
+          includesVat: 0,
           supplierId,
           notes: 'Premium quality',
         })
@@ -102,6 +104,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchaseUnit: '1kg',
         purchaseCost: 5.99,
+          includesVat: 0,
         supplierSlug: 'asda',
         notes: 'Premium quality',
       })
@@ -116,6 +119,7 @@ describe('IngredientService', () => {
           category: 'dairy',
           purchaseUnit: '200g',
           purchaseCost: 2.5,
+          includesVat: 0,
           supplierId,
         })
         .execute()
@@ -152,6 +156,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchaseUnit: '1kg',
         purchaseCost: 5.99,
+          includesVat: 0,
         supplierId,
       })
     })
@@ -165,6 +170,7 @@ describe('IngredientService', () => {
           category: 'meat',
           purchaseUnit: '500g',
           purchaseCost: 3.0,
+          includesVat: 0,
           supplierId,
         })
         .execute()
@@ -192,6 +198,7 @@ describe('IngredientService', () => {
         name: 'New Ham',
         purchaseUnit: '1kg',
         purchaseCost: 5.99,
+          includesVat: 0,
       })
     })
 
@@ -210,6 +217,7 @@ describe('IngredientService', () => {
           category: 'dairy',
           purchaseUnit: '200g',
           purchaseCost: 2.5,
+          includesVat: 0,
           supplierId: anotherSupplier!.id,
         })
         .execute()
@@ -274,6 +282,7 @@ describe('IngredientService', () => {
           category: 'meat',
           purchaseUnit: '1kg',
           purchaseCost: 5.99,
+          includesVat: 0,
           supplierId,
         })
         .execute()
@@ -322,6 +331,7 @@ describe('IngredientService', () => {
           category: 'meat',
           purchaseUnit: '500g',
           purchaseCost: 3.0,
+          includesVat: 0,
           supplierId,
         })
         .execute()
@@ -351,6 +361,7 @@ describe('IngredientService', () => {
           category: 'meat',
           purchaseUnit: '1kg',
           purchaseCost: 5.99,
+          includesVat: 0,
           supplierId,
         })
         .execute()
@@ -428,6 +439,7 @@ describe('IngredientService', () => {
           category: 'meat',
           purchaseUnit: '1kg',
           purchaseCost: 5.99,
+          includesVat: 0,
           supplierId,
         })
         .execute()
@@ -458,6 +470,7 @@ describe('IngredientService', () => {
           category: 'dairy',
           purchaseUnit: '200g',
           purchaseCost: 2.5,
+          includesVat: 0,
           supplierId,
         })
         .execute()

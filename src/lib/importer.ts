@@ -41,6 +41,19 @@ export interface ImportError {
 export interface ImportOptions {
   failFast?: boolean
   projectRoot?: string // Root directory for @/ references (defaults to cwd)
+  processors?: [
+    string,
+    (
+      | ImporterFunction<any>
+      | {
+          processor: (
+            importer: Importer,
+            data: any,
+            filePath: string | undefined
+          ) => Promise<ImportResult>
+        }
+    ),
+  ][]
 }
 
 const defaultProjectRoot = process.cwd()
@@ -92,9 +105,19 @@ export class Importer {
     private options: ImportOptions = {
       failFast: false,
       projectRoot: defaultProjectRoot,
+      processors: [],
     }
-  ) {}
-
+  ) {
+    // Register processors at construction
+    options?.processors?.forEach(([object, processor]) => {
+      this.addProcessor(
+        object,
+        typeof processor === 'function'
+          ? processor
+          : (data, filePath) => processor.processor(this, data, filePath)
+      )
+    })
+  }
   /**
    * Register a processor for an entity type
    */

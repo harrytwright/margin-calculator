@@ -90,6 +90,52 @@ describe('Importer', () => {
       const slug = await importer.slugify('Test Supplier Name')
       expect(slug).toBe('test-supplier-name')
     })
+
+    test('should preload processors via constructor', () => {
+      const mockProcessor1 = jest.fn()
+      const mockProcessor2 = jest.fn()
+
+      const importer = new Importer(db, {
+        processors: [
+          ['supplier', mockProcessor1],
+          ['ingredient', mockProcessor2],
+        ],
+      })
+
+      expect(importer.hasProcessor('supplier')).toBe(true)
+      expect(importer.hasProcessor('ingredient')).toBe(true)
+      expect(importer.getProcessor('supplier')).toBe(mockProcessor1)
+      expect(importer.getProcessor('ingredient')).toBe(mockProcessor2)
+    })
+
+    test('should preload processors via constructor with service objects', async () => {
+      const mockService = {
+        processor: jest.fn().mockResolvedValue('created'),
+      }
+
+      const importer = new Importer(db, {
+        processors: [['supplier', mockService]],
+      })
+
+      expect(importer.hasProcessor('supplier')).toBe(true)
+
+      // Verify the wrapper function works correctly
+      const processor = importer.getProcessor('supplier')
+      expect(processor).toBeDefined()
+
+      // Call the processor and verify it delegates to the service's processor method
+      const result = await processor!.call(
+        importer,
+        { slug: 'test', name: 'Test' },
+        undefined
+      )
+      expect(result).toBe('created')
+      expect(mockService.processor).toHaveBeenCalledWith(
+        importer,
+        { slug: 'test', name: 'Test' },
+        undefined
+      )
+    })
   })
 
   describe('File Import', () => {

@@ -6,7 +6,6 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { database } from '../datastore/database'
 import { Importer } from '../lib/importer'
-import { SupplierResolvedImportData } from '../schema'
 import { SupplierService } from '../services/supplier'
 import { isInitialised } from '../utils/is-initialised'
 
@@ -46,20 +45,14 @@ const importer = new Command()
 
     const db = database(path.join(working, './data', dbName))
 
+    // Initialize service
+    const supplier = new SupplierService(db)
+
     const importer = new Importer(db, {
       failFast,
       projectRoot: path.join(process.cwd(), root || ''),
+      processors: [['supplier', supplier]],
     })
-
-    // This is why I have started to love DI, but will work fow now
-    const supplier = new SupplierService(db)
-
-    importer.addProcessor<SupplierResolvedImportData>(
-      'supplier',
-      function (data, filePath) {
-        return supplier.processor(this, data, filePath)
-      }
-    )
 
     // Could add this to importer and allow the importer to log when it needs via this
     let spinner = ora('✨Loading suppliers')

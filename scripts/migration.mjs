@@ -10,7 +10,7 @@ const migrationsDirectoryPath = path.join(
 )
 
 let migrationName = undefined
-const getMigrationNameResult = await getMigrationName()
+const getMigrationNameResult = await getMigrationName(argv._[0])
 if (getMigrationNameResult.userCancelled) {
   process.stdout.write(getMigrationNameResult.userCancelled + '\n')
   // Return SIGINT exit code to signal that the process was cancelled.

@@ -1,0 +1,20 @@
+object: recipe
+
+data:
+  slug: ham-cheese-sandwich-crips
+  name: Ham And Cheese Sandwich w/ Crisps (white)
+  class: menu_item
+  stage: active
+
+  costing:
+    price: 400 # £4 in pence
+    margin: 25
+    vat: false
+
+  ingredients:
+    - uses: '@/recipes/ham-cheese-sandwich.yaml'
+      with:
+        unit: 1 Sandwich
+    - uses: '@/ingredients/pringles-salted.yaml'
+      with:
+        unit: 8 Crisps

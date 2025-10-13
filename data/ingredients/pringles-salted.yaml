@@ -1,0 +1,12 @@
+object: ingredient
+data:
+  name: Pringles (Salted)
+  category: crips
+  purchase:
+    unit: 1 Tub
+    cost: 1.95
+    vat: true
+  conversionRate: |
+    1 Tub = 84 Crisps
+  supplier:
+    uses: ../suppliers/asda.yaml # Or `@/suppliers/asda.yaml`

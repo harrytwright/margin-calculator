@@ -53,6 +53,7 @@ describe('RecipeService', () => {
         category: 'meat',
         purchaseUnit: '1kg',
         purchaseCost: 5.99,
+          includesVat: 0,
         supplierId,
       })
       .returning('id')
@@ -67,6 +68,7 @@ describe('RecipeService', () => {
         category: 'dairy',
         purchaseUnit: '200g',
         purchaseCost: 2.5,
+          includesVat: 0,
         supplierId,
       })
       .returning('id')
@@ -187,7 +189,207 @@ describe('RecipeService', () => {
         .execute()
 
       const result = await service.findById('margherita')
-      expect(result?.parentSlug).toBe('base-pizza')
+      expect(result?.parent).toBe('base-pizza')
+    })
+
+    test('should correctly identify ingredient types', async () => {
+      const recipe = await db
+        .insertInto('Recipe')
+        .values({
+          slug: 'ham-sandwich',
+          name: 'Ham Sandwich',
+          sellPrice: 400,
+        })
+        .returning('id')
+        .executeTakeFirst()
+
+      await db
+        .insertInto('RecipeIngredients')
+        .values([
+          {
+            recipeId: recipe!.id,
+            ingredientId: hamId,
+            unit: '25g',
+            notes: 'Thinly sliced',
+          },
+          {
+            recipeId: recipe!.id,
+            ingredientId: cheeseId,
+            unit: '15g',
+            notes: null,
+          },
+        ])
+        .execute()
+
+      const result = await service.findById('ham-sandwich')
+
+      const ingredients =
+        typeof result?.ingredients === 'string'
+          ? JSON.parse(result.ingredients)
+          : result?.ingredients
+
+      expect(ingredients).toHaveLength(2)
+      expect(ingredients).toEqual(
+        expect.arrayContaining([
+          {
+            slug: 'ham',
+            unit: '25g',
+            notes: 'Thinly sliced',
+            type: 'ingredient',
+          },
+          { slug: 'cheese', unit: '15g', notes: null, type: 'ingredient' },
+        ])
+      )
+    })
+
+    test('should correctly identify sub-recipe types', async () => {
+      const subRecipe = await db
+        .insertInto('Recipe')
+        .values({
+          slug: 'pizza-sauce',
+          name: 'Pizza Sauce',
+          sellPrice: 0,
+        })
+        .returning('id')
+        .executeTakeFirst()
+
+      const recipe = await db
+        .insertInto('Recipe')
+        .values({
+          slug: 'margherita',
+          name: 'Margherita Pizza',
+          sellPrice: 800,
+        })
+        .returning('id')
+        .executeTakeFirst()
+
+      await db
+        .insertInto('RecipeIngredients')
+        .values({
+          recipeId: recipe!.id,
+          subRecipeId: subRecipe!.id,
+          unit: '100ml',
+          notes: 'Spread evenly',
+        })
+        .execute()
+
+      const result = await service.findById('margherita')
+
+      const ingredients =
+        typeof result?.ingredients === 'string'
+          ? JSON.parse(result.ingredients)
+          : result?.ingredients
+
+      expect(ingredients).toHaveLength(1)
+      expect(ingredients[0]).toEqual({
+        slug: 'pizza-sauce',
+        unit: '100ml',
+        notes: 'Spread evenly',
+        type: 'recipe',
+      })
+    })
+
+    test('should handle mixed ingredient and sub-recipe types', async () => {
+      const subRecipe = await db
+        .insertInto('Recipe')
+        .values({
+          slug: 'pizza-sauce',
+          name: 'Pizza Sauce',
+          sellPrice: 0,
+        })
+        .returning('id')
+        .executeTakeFirst()
+
+      const recipe = await db
+        .insertInto('Recipe')
+        .values({
+          slug: 'margherita',
+          name: 'Margherita Pizza',
+          sellPrice: 800,
+        })
+        .returning('id')
+        .executeTakeFirst()
+
+      await db
+        .insertInto('RecipeIngredients')
+        .values([
+          {
+            recipeId: recipe!.id,
+            subRecipeId: subRecipe!.id,
+            unit: '100ml',
+            notes: null,
+          },
+          {
+            recipeId: recipe!.id,
+            ingredientId: cheeseId,
+            unit: '50g',
+            notes: 'Grated',
+          },
+          {
+            recipeId: recipe!.id,
+            ingredientId: hamId,
+            unit: '25g',
+            notes: null,
+          },
+        ])
+        .execute()
+
+      const result = await service.findById('margherita')
+
+      const ingredients =
+        typeof result?.ingredients === 'string'
+          ? JSON.parse(result.ingredients)
+          : result?.ingredients
+
+      expect(ingredients).toHaveLength(3)
+
+      // Filter by type
+      const regularIngredients = ingredients.filter(
+        (i: any) => i.type === 'ingredient'
+      )
+      const subRecipes = ingredients.filter((i: any) => i.type === 'recipe')
+
+      expect(regularIngredients).toHaveLength(2)
+      expect(subRecipes).toHaveLength(1)
+
+      expect(regularIngredients).toEqual(
+        expect.arrayContaining([
+          { slug: 'cheese', unit: '50g', notes: 'Grated', type: 'ingredient' },
+          { slug: 'ham', unit: '25g', notes: null, type: 'ingredient' },
+        ])
+      )
+
+      expect(subRecipes[0]).toEqual({
+        slug: 'pizza-sauce',
+        unit: '100ml',
+        notes: null,
+        type: 'recipe',
+      })
+    })
+
+    test('should return empty ingredients array when withIngredients is false', async () => {
+      const recipe = await db
+        .insertInto('Recipe')
+        .values({
+          slug: 'ham-sandwich',
+          name: 'Ham Sandwich',
+          sellPrice: 400,
+        })
+        .returning('id')
+        .executeTakeFirst()
+
+      await db
+        .insertInto('RecipeIngredients')
+        .values({
+          recipeId: recipe!.id,
+          ingredientId: hamId,
+          unit: '25g',
+        })
+        .execute()
+
+      const result = await service.findById('ham-sandwich', false)
+
+      expect(result?.ingredients).toBeUndefined()
     })
   })
 

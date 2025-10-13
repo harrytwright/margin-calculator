@@ -4,16 +4,20 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "generate:database": "npx prisma generate && node ./scripts/generate.js"
   },
   "dependencies": {
     "@harrytwright/logger": "^3.2.0-beta.2",
+    "@isaacs/ttlcache": "^1.4.1",
     "@sindresorhus/slugify": "^2.2.1",
     "@types/lodash.get": "^4.4.9",
     "better-sqlite3": "^12.4.1",
+    "chalk": "4.1.2",
+    "ci-info": "^4.3.1",
     "commander": "^14.0.1",
     "convert-units": "^3.0.0-beta.8",
     "ejs": "^3.1.10",
@@ -24,6 +28,7 @@
     "lodash.isempty": "^4.4.0",
     "lodash.isplainobject": "^4.0.6",
     "ora": "^5.4.1",
+    "pluralize": "^8.0.0",
     "prompts": "^2.4.2",
     "strftime": "^0.10.3",
     "toml": "^3.0.0",
@@ -39,6 +44,7 @@
     "@types/lodash.isempty": "^4.4.9",
     "@types/lodash.isplainobject": "^4.0.9",
     "@types/node": "^24.7.0",
+    "@types/pluralize": "^0.0.33",
     "@types/prompts": "^2.4.9",
     "@types/strftime": "^0.9.8",
     "jest": "^30.2.0",
@@ -46,7 +52,7 @@
     "prisma": "^6.16.3",
     "prisma-kysely": "^2.2.0",
     "ts-jest": "^29.4.4",
-    "typescript": "^5.5.3"
+    "typescript": "^5.9.3"
   },
   "private": true
 }

@@ -35,6 +35,7 @@ export class IngredientService {
         'Ingredient.category',
         'Ingredient.purchaseUnit',
         'Ingredient.purchaseCost',
+        'Ingredient.includesVat',
         'Ingredient.conversionRule',
         'Ingredient.notes',
         'Ingredient.lastPurchased',
@@ -57,7 +58,8 @@ export class IngredientService {
         category: data.category,
         purchaseUnit: data.purchase.unit,
         purchaseCost: data.purchase.cost,
-        conversionRule: data.conversionRate || null,
+        includesVat: data.purchase.vat ? 1 : 0,
+        conversionRule: data.conversionRate?.trimEnd() || null,
         supplierId: eb
           .selectFrom('Supplier')
           .select('Supplier.id')
@@ -72,7 +74,8 @@ export class IngredientService {
           category: data.category,
           purchaseUnit: data.purchase.unit,
           purchaseCost: data.purchase.cost,
-          conversionRule: data.conversionRate || null,
+          includesVat: data.purchase.vat ? 1 : 0,
+          conversionRule: data.conversionRate?.trimEnd() || null,
           notes: data.notes,
           lastPurchased: data.lastPurchased,
         })
