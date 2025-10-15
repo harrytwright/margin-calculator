@@ -98,6 +98,7 @@ export class Importer {
 
   private importedFiles = new Set<string>() // Track already imported files
   private slugMap = new Map<string, string>() // absolutePath -> slug
+  private slugToPath = new Map<string, string>() // slug -> absolutePath
   private resolvedDataCache = new Map<string, ResolvedImportData>() // Cache for faster lookup
 
   constructor(
@@ -395,7 +396,12 @@ export class Importer {
 
         // Generate slug immediately and store in map
         const slug = await this.ensureSlug(data)
+        const previousSlug = this.slugMap.get(absolutePath)
+        if (previousSlug && previousSlug !== slug) {
+          this.slugToPath.delete(previousSlug)
+        }
         this.slugMap.set(absolutePath, slug)
+        this.slugToPath.set(slug, absolutePath)
 
         // Add node to graph with full data
         graph.addNode(absolutePath, data)
@@ -566,6 +572,20 @@ export class Importer {
   }
 
   /**
+   * Get the file path for a given slug
+   */
+  getPathForSlug(slug: string): string | undefined {
+    return this.slugToPath.get(slug)
+  }
+
+  /**
+   * Get all slug to path mappings
+   */
+  getAllMappings(): Map<string, string> {
+    return new Map(this.slugToPath)
+  }
+
+  /**
    * Reset statistics (called before each import run)
    */
   private resetStats(): void {
@@ -577,5 +597,6 @@ export class Importer {
     }
     this.errors = []
     this.importedFiles.clear()
+    this.slugToPath.clear()
   }
 }
