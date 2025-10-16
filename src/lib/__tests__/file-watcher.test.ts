@@ -62,7 +62,14 @@ data:
     )
 
     const importer = {
-      import: jest.fn(async () => ({
+      import: jest.fn(),
+    }
+
+    importer.import
+      .mockRejectedValueOnce(
+        new Error('Invalid input: expected object, received string')
+      )
+      .mockResolvedValueOnce({
         stats: { created: 0, ignored: 0, upserted: 0, failed: 0 },
         resolved: new Map([
           [
@@ -75,8 +82,21 @@ data:
             },
           ],
         ]),
-      })),
-    }
+      })
+      .mockResolvedValueOnce({
+        stats: { created: 0, ignored: 0, upserted: 0, failed: 0 },
+        resolved: new Map([
+          [
+            'asda',
+            {
+              slug: 'asda',
+              type: 'supplier',
+              path: supplierFile,
+              data: { slug: 'asda', name: 'Asda Updated' },
+            },
+          ],
+        ]),
+      })
 
     const watcher = new FileWatcher({
       roots: [tempDir],
@@ -93,6 +113,10 @@ data:
     const created = waitForEntity(watcher)
     fakeWatcher.emit('add', supplierFile)
     await jest.advanceTimersByTimeAsync(20)
+    await jest.runOnlyPendingTimersAsync()
+    await jest.advanceTimersByTimeAsync(60)
+    await jest.runOnlyPendingTimersAsync()
+    await Promise.resolve()
     const createdEvent = await created
 
     expect(createdEvent).toMatchObject<Partial<WatcherEntityEvent>>({
@@ -101,6 +125,7 @@ data:
       type: 'supplier',
     })
     expect(importer.import).toHaveBeenCalledWith([supplierFile])
+    expect(importer.import).toHaveBeenCalledTimes(2)
 
     await fs.writeFile(
       supplierFile,
@@ -110,24 +135,11 @@ data:
 `
     )
 
-    importer.import.mockResolvedValueOnce({
-      stats: { created: 0, ignored: 0, upserted: 0, failed: 0 },
-      resolved: new Map([
-        [
-          'asda',
-          {
-            slug: 'asda',
-            type: 'supplier',
-            path: supplierFile,
-            data: { slug: 'asda', name: 'Asda Updated' },
-          },
-        ],
-      ]),
-    })
-
     const updated = waitForEntity(watcher)
     fakeWatcher.emit('change', supplierFile)
     await jest.advanceTimersByTimeAsync(20)
+    await jest.runOnlyPendingTimersAsync()
+    await Promise.resolve()
     const updatedEvent = await updated
 
     expect(updatedEvent).toMatchObject<Partial<WatcherEntityEvent>>({
@@ -145,6 +157,8 @@ data:
       slug: 'asda',
       type: 'supplier',
     })
+
+    expect(importer.import).toHaveBeenCalledTimes(3)
 
     await watcher.stop()
     expect(fakeWatcher.close).toHaveBeenCalled()

@@ -2,6 +2,8 @@ import { promises as fs } from 'fs'
 import type { Dirent } from 'fs'
 import path from 'path'
 
+import log from '@harrytwright/logger'
+
 import { FileWriter, type WriteObjectType } from '../../lib/file-writer'
 import { Importer } from '../../lib/importer'
 import type {
@@ -122,7 +124,11 @@ export class EntityPersistence {
 
     const existingPath = await this.resolveExistingPath('supplier', slug)
     if (!existingPath) {
-      throw new HttpError(404, `Source file for supplier '${slug}' not found`)
+      log.warn(
+        'persistence',
+        `No source file found for supplier '%s'; a new file will be created`,
+        slug
+      )
     }
 
     const dataWithSlug: SupplierImportData = { ...data, slug }
@@ -131,7 +137,7 @@ export class EntityPersistence {
       slug,
       dataWithSlug,
       this.dataRoot,
-      existingPath
+      existingPath || undefined
     )
 
     await this.importFiles([filePath])
@@ -158,7 +164,11 @@ export class EntityPersistence {
 
     const existingPath = await this.resolveExistingPath('ingredient', slug)
     if (!existingPath) {
-      throw new HttpError(404, `Source file for ingredient '${slug}' not found`)
+      log.warn(
+        'persistence',
+        `No source file found for ingredient '%s'; a new file will be created`,
+        slug
+      )
     }
 
     const dataWithSlug: IngredientImportData = { ...data, slug }
@@ -167,7 +177,7 @@ export class EntityPersistence {
       slug,
       dataWithSlug,
       this.dataRoot,
-      existingPath
+      existingPath || undefined
     )
 
     await this.importFiles([filePath])
@@ -194,7 +204,11 @@ export class EntityPersistence {
 
     const existingPath = await this.resolveExistingPath('recipe', slug)
     if (!existingPath) {
-      throw new HttpError(404, `Source file for recipe '${slug}' not found`)
+      log.warn(
+        'persistence',
+        `No source file found for recipe '%s'; a new file will be created`,
+        slug
+      )
     }
 
     const dataWithSlug: RecipeImportData = { ...data, slug }
@@ -203,7 +217,7 @@ export class EntityPersistence {
       slug,
       dataWithSlug,
       this.dataRoot,
-      existingPath
+      existingPath || undefined
     )
 
     await this.importFiles([filePath])
@@ -222,11 +236,19 @@ export class EntityPersistence {
     }
 
     const existingPath = await this.resolveExistingPath('supplier', slug)
-    if (!existingPath) {
-      throw new HttpError(404, `Source file for supplier '${slug}' not found`)
+    if (existingPath) {
+      try {
+        await this.fileWriter.deleteFile(existingPath)
+      } catch (error) {
+        log.warn('persistence', error as Error, 'Failed to delete supplier file')
+      }
+    } else {
+      log.warn(
+        'persistence',
+        `No source file found for supplier '%s'; removed from database only`,
+        slug
+      )
     }
-
-    await this.fileWriter.deleteFile(existingPath)
     const deleted = await this.services.supplier.delete(slug)
 
     if (!deleted) {
@@ -240,11 +262,19 @@ export class EntityPersistence {
     }
 
     const existingPath = await this.resolveExistingPath('ingredient', slug)
-    if (!existingPath) {
-      throw new HttpError(404, `Source file for ingredient '${slug}' not found`)
+    if (existingPath) {
+      try {
+        await this.fileWriter.deleteFile(existingPath)
+      } catch (error) {
+        log.warn('persistence', error as Error, 'Failed to delete ingredient file')
+      }
+    } else {
+      log.warn(
+        'persistence',
+        `No source file found for ingredient '%s'; removed from database only`,
+        slug
+      )
     }
-
-    await this.fileWriter.deleteFile(existingPath)
     const deleted = await this.services.ingredient.delete(slug)
 
     if (!deleted) {
@@ -258,11 +288,19 @@ export class EntityPersistence {
     }
 
     const existingPath = await this.resolveExistingPath('recipe', slug)
-    if (!existingPath) {
-      throw new HttpError(404, `Source file for recipe '${slug}' not found`)
+    if (existingPath) {
+      try {
+        await this.fileWriter.deleteFile(existingPath)
+      } catch (error) {
+        log.warn('persistence', error as Error, 'Failed to delete recipe file')
+      }
+    } else {
+      log.warn(
+        'persistence',
+        `No source file found for recipe '%s'; removed from database only`,
+        slug
+      )
     }
-
-    await this.fileWriter.deleteFile(existingPath)
     const deleted = await this.services.recipe.delete(slug)
 
     if (!deleted) {
@@ -332,7 +370,7 @@ export class EntityPersistence {
     }
 
     const result = await this.runImport(files, true)
-    const entry = result.resolved?.get(slug)
+    const entry = result?.resolved?.get(slug)
 
     if (entry && entry.type === type) {
       return entry.path
