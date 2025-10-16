@@ -30,6 +30,40 @@ export function createApiRouter(config: ServerConfig): Router {
     recipe: recipeService,
   })
 
+  router.get('/suppliers', async (_req, res) => {
+    try {
+      const suppliers = await config.database
+        .selectFrom('Supplier')
+        .select(['slug', 'name'])
+        .orderBy('name')
+        .execute()
+
+      res.json(suppliers)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.get('/ingredients', async (_req, res) => {
+    try {
+      const ingredients = await config.database
+        .selectFrom('Ingredient')
+        .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
+        .select((eb) => [
+          eb.ref('Ingredient.slug').as('slug'),
+          eb.ref('Ingredient.name').as('name'),
+          eb.ref('Ingredient.category').as('category'),
+          eb.ref('Supplier.slug').as('supplierSlug'),
+        ])
+        .orderBy('Ingredient.name')
+        .execute()
+
+      res.json(ingredients)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
   router.post('/suppliers', async (req, res) => {
     try {
       const parsed = supplierImportDataSchema.parse(req.body)
