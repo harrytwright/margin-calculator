@@ -1,7 +1,7 @@
 import { Kysely } from 'kysely'
 
 import type { DB } from '../datastore/types'
-import type { ImportResult } from '../lib/importer'
+import type { ImportOutcome } from '../lib/importer'
 import type {
   IngredientImportData,
   IngredientResolvedImportData,
@@ -96,7 +96,7 @@ export class IngredientService {
     importer: Importer,
     data: IngredientResolvedImportData,
     filePath: string | undefined
-  ): Promise<ImportResult> {
+  ): Promise<ImportOutcome> {
     // Check if the data has a supplier, if it has been passed it must have imported first. Otherwise SQL will throw...
     if (data.supplier && !(await this.supplier.exists(data.supplier.slug))) {
       throw new Error(

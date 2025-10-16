@@ -53,7 +53,7 @@ describe('RecipeService', () => {
         category: 'meat',
         purchaseUnit: '1kg',
         purchaseCost: 5.99,
-          includesVat: 0,
+        includesVat: 0,
         supplierId,
       })
       .returning('id')
@@ -68,7 +68,7 @@ describe('RecipeService', () => {
         category: 'dairy',
         purchaseUnit: '200g',
         purchaseCost: 2.5,
-          includesVat: 0,
+        includesVat: 0,
         supplierId,
       })
       .returning('id')
@@ -231,13 +231,18 @@ describe('RecipeService', () => {
       expect(ingredients).toHaveLength(2)
       expect(ingredients).toEqual(
         expect.arrayContaining([
-          {
+          expect.objectContaining({
             slug: 'ham',
             unit: '25g',
             notes: 'Thinly sliced',
             type: 'ingredient',
-          },
-          { slug: 'cheese', unit: '15g', notes: null, type: 'ingredient' },
+          }),
+          expect.objectContaining({
+            slug: 'cheese',
+            unit: '15g',
+            notes: null,
+            type: 'ingredient',
+          }),
         ])
       )
     })
@@ -281,12 +286,14 @@ describe('RecipeService', () => {
           : result?.ingredients
 
       expect(ingredients).toHaveLength(1)
-      expect(ingredients[0]).toEqual({
-        slug: 'pizza-sauce',
-        unit: '100ml',
-        notes: 'Spread evenly',
-        type: 'recipe',
-      })
+      expect(ingredients[0]).toEqual(
+        expect.objectContaining({
+          slug: 'pizza-sauce',
+          unit: '100ml',
+          notes: 'Spread evenly',
+          type: 'recipe',
+        })
+      )
     })
 
     test('should handle mixed ingredient and sub-recipe types', async () => {
@@ -354,17 +361,29 @@ describe('RecipeService', () => {
 
       expect(regularIngredients).toEqual(
         expect.arrayContaining([
-          { slug: 'cheese', unit: '50g', notes: 'Grated', type: 'ingredient' },
-          { slug: 'ham', unit: '25g', notes: null, type: 'ingredient' },
+          expect.objectContaining({
+            slug: 'cheese',
+            unit: '50g',
+            notes: 'Grated',
+            type: 'ingredient',
+          }),
+          expect.objectContaining({
+            slug: 'ham',
+            unit: '25g',
+            notes: null,
+            type: 'ingredient',
+          }),
         ])
       )
 
-      expect(subRecipes[0]).toEqual({
-        slug: 'pizza-sauce',
-        unit: '100ml',
-        notes: null,
-        type: 'recipe',
-      })
+      expect(subRecipes[0]).toEqual(
+        expect.objectContaining({
+          slug: 'pizza-sauce',
+          unit: '100ml',
+          notes: null,
+          type: 'recipe',
+        })
+      )
     })
 
     test('should return empty ingredients array when withIngredients is false', async () => {

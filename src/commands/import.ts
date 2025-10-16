@@ -64,7 +64,7 @@ export const importCommand = new Command()
 
     // Import files
     let spinner = ora('Importing files')
-    const stats = await importer.import(files)
+    const { stats } = await importer.import(files)
     spinner.succeed('Saved to database')
 
     // Print summary

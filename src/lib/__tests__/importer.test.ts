@@ -163,7 +163,7 @@ data:
       )
 
       // Import
-      const stats = await importer.import([supplierFile])
+      const { stats } = await importer.import([supplierFile])
 
       expect(stats.created).toBe(1)
       expect(stats.failed).toBe(0)
@@ -207,7 +207,7 @@ data:
 `
       )
 
-      const stats = await importer.import([supplierFile])
+      const { stats } = await importer.import([supplierFile])
 
       expect(stats.upserted).toBe(1)
       expect(stats.created).toBe(0)
@@ -259,7 +259,7 @@ data:
 `
       )
 
-      const stats = await importer.import([supplierFile])
+      const { stats } = await importer.import([supplierFile])
 
       expect(stats.ignored).toBe(1)
       expect(stats.created).toBe(0)
@@ -286,7 +286,7 @@ data:
 `
       )
 
-      const stats = await importer.import([supplierFile])
+      const { stats } = await importer.import([supplierFile])
 
       expect(stats.failed).toBe(1)
       expect(importer.hasErrors()).toBe(true)
@@ -577,7 +577,7 @@ data:
       )
 
       // Import only the ingredient - supplier should be auto-imported
-      const stats = await importer.import([
+      const { stats } = await importer.import([
         path.join(ingredientsDir, 'ham.yaml'),
       ])
 
@@ -700,7 +700,7 @@ data:
       )
 
       // Import only recipe - should auto-import all dependencies
-      const stats = await importer.import([
+      const { stats } = await importer.import([
         path.join(recipesDir, 'ham-sandwich.yaml'),
       ])
 
@@ -795,7 +795,7 @@ data:
         filePaths.push(filePath)
       }
 
-      const stats = await importer.import(filePaths)
+      const { stats } = await importer.import(filePaths)
 
       expect(stats.created).toBe(3)
       expect(stats.failed).toBe(0)

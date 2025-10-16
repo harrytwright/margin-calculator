@@ -1,6 +1,6 @@
 // import { MarginResult, RecipeResult } from '../../../../example'
 import { RecipeWithIngredients } from '../../../services/recipe'
-import {RecipeResult, MarginResult} from "../types";
+import { MarginResult, RecipeResult } from '../types'
 
 export interface CalculationSuccess {
   cost: RecipeResult

@@ -2,11 +2,10 @@ import path from 'path'
 
 import log from '@harrytwright/logger'
 
-import { RecipeResult } from './types'
 import { ConfigService } from '../../services/config'
 import { IngredientService } from '../../services/ingredient'
 import { RecipeIngredientsLookup, RecipeService } from '../../services/recipe'
-import { RecipeCostNode } from './types'
+import { RecipeCostNode, RecipeResult } from './types'
 import { convertUnits, parseConversionRule, parseUnit } from './units'
 
 export class Calculator {

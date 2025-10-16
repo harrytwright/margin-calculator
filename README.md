@@ -39,6 +39,7 @@ node dist/index.js initialise --working ./my-restaurant
 ```
 
 This creates:
+
 - `./my-restaurant/data/` - Database and data files
 - `./my-restaurant/conf/` - Configuration files
 
@@ -91,7 +92,7 @@ data:
   name: ASDA
   contact:
     email: orders@asda.com
-    phone: "0800 123 4567"
+    phone: '0800 123 4567'
 ```
 
 ### Ingredient (YAML)
@@ -106,7 +107,7 @@ data:
   purchase:
     unit: 1kg
     cost: 5.99
-    vat: false  # true if purchase price includes VAT
+    vat: false # true if purchase price includes VAT
 ```
 
 ### Recipe (YAML)
@@ -115,12 +116,12 @@ data:
 object: recipe
 data:
   name: Cheese Sandwich
-  class: menu_item  # or base_template, sub_recipe
+  class: menu_item # or base_template, sub_recipe
   stage: active
   costing:
-    price: 350  # £3.50 in pence
-    margin: 25  # Target 25% margin
-    vat: false  # true if VAT-eligible (e.g., hot food)
+    price: 350 # £3.50 in pence
+    margin: 25 # Target 25% margin
+    vat: false # true if VAT-eligible (e.g., hot food)
   ingredients:
     - uses: '@/ingredients/cheddar-cheese.yaml'
       with:
@@ -153,12 +154,12 @@ data:
   name: Margherita Pizza
   class: menu_item
   costing:
-    price: 1200  # £12.00
+    price: 1200 # £12.00
     margin: 30
   ingredients:
     - uses: '@/recipes/pizza-sauce.yaml'
       with:
-        unit: 50ml  # Automatically scales from 1L yield
+        unit: 50ml # Automatically scales from 1L yield
 ```
 
 ## CLI Commands
@@ -175,6 +176,7 @@ data:
 ### Available Commands
 
 #### `initialise`
+
 Initialize a new margin project
 
 ```bash
@@ -182,6 +184,7 @@ margin initialise [--force]
 ```
 
 #### `import <files...>`
+
 Import suppliers, ingredients, or recipes from YAML files
 
 ```bash
@@ -189,6 +192,7 @@ margin import data/**/*.yaml [--root <dir>] [--fail-fast]
 ```
 
 #### `recipe calculate <slugs...>`
+
 Calculate cost and margin for specific recipes
 
 ```bash
@@ -196,6 +200,7 @@ margin recipe calculate cheese-sandwich ham-sandwich [--json]
 ```
 
 #### `recipe report`
+
 Generate a summary report for all recipes
 
 ```bash
@@ -203,6 +208,7 @@ margin recipe report [--json]
 ```
 
 #### `ui`
+
 Launch the web UI
 
 ```bash

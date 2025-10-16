@@ -1,7 +1,7 @@
 import { Kysely } from 'kysely'
 
 import type { DB } from '../datastore/types'
-import { Importer, type ImportResult } from '../lib/importer'
+import { Importer, type ImportOutcome } from '../lib/importer'
 import type { SupplierImportData, SupplierResolvedImportData } from '../schema'
 import { hasChanges } from '../utils/has-changes'
 
@@ -52,7 +52,7 @@ export class SupplierService {
     importer: Importer,
     data: SupplierResolvedImportData,
     filePath: string | undefined
-  ): Promise<ImportResult> {
+  ): Promise<ImportOutcome> {
     // Load up the previous data if it exists
     const prev = await this.findById(data.slug)
 

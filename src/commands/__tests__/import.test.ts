@@ -111,7 +111,8 @@ data:
         }
       )
 
-      const stats = await importer.import([supplierFile])
+      const result = await importer.import([supplierFile])
+      const { stats } = result
 
       // Verify stats
       expect(stats.created).toBe(1)
@@ -162,7 +163,8 @@ data:
         }
       )
 
-      const stats = await importer.import([ingredientFile])
+      const result = await importer.import([ingredientFile])
+      const { stats } = result
 
       expect(stats.created).toBe(1)
       expect(stats.failed).toBe(0)
@@ -225,7 +227,8 @@ data:
         }
       )
 
-      const stats = await importer.import([supplierFile, ingredientFile])
+      const result = await importer.import([supplierFile, ingredientFile])
+      const { stats } = result
 
       expect(stats.created).toBe(2)
       expect(stats.failed).toBe(0)
@@ -293,7 +296,8 @@ data:
       )
 
       // Import only the ingredient - supplier should be auto-imported
-      const stats = await importer.import([ingredientFile])
+      const result = await importer.import([ingredientFile])
+      const { stats } = result
 
       expect(stats.created).toBe(2) // Supplier + Ingredient
       expect(stats.failed).toBe(0)
@@ -389,10 +393,61 @@ data:
       )
 
       // Import only recipe - ingredients should be auto-imported
-      const stats = await importer.import([recipeFile])
+      const result = await importer.import([recipeFile])
+      const { stats } = result
 
       expect(stats.created).toBe(3) // 2 ingredients + 1 recipe
       expect(stats.failed).toBe(0)
+    })
+  })
+
+  describe('Import-only mode', () => {
+    test('should resolve data without writing to the database', async () => {
+      const supplierFile = path.join(tmpDir, 'supplier.yaml')
+      await fs.writeFile(
+        supplierFile,
+        `object: supplier
+data:
+  name: Test Supplier
+`
+      )
+
+      const importer = new Importer(db, { failFast: false, importOnly: true })
+      const supplier = new SupplierService(db)
+      const ingredient = new IngredientService(db, supplier)
+      const recipe = new RecipeService(db, ingredient)
+
+      importer.addProcessor<SupplierResolvedImportData>(
+        'supplier',
+        function (data) {
+          return supplier.processor(this, data, undefined)
+        }
+      )
+      importer.addProcessor<IngredientResolvedImportData>(
+        'ingredient',
+        function (data) {
+          return ingredient.processor(this, data, undefined)
+        }
+      )
+      importer.addProcessor<RecipeResolvedImportData>(
+        'recipe',
+        function (data) {
+          return recipe.processor(this, data, undefined)
+        }
+      )
+
+      const { stats, resolved } = await importer.import([supplierFile])
+
+      expect(stats.created).toBe(0)
+      expect(stats.failed).toBe(0)
+
+      const suppliers = await db.selectFrom('Supplier').selectAll().execute()
+      expect(suppliers).toHaveLength(1)
+
+      const entry = resolved.get('test-supplier')
+      expect(entry).toBeDefined()
+      expect(entry?.type).toBe('supplier')
+      expect(entry?.data.name).toBe('Test Supplier')
     })
   })
 
@@ -433,7 +488,8 @@ data:
         }
       )
 
-      const stats = await importer.import([supplierFile])
+      const result = await importer.import([supplierFile])
+      const { stats } = result
 
       expect(stats.failed).toBeGreaterThan(0)
       expect(importer.hasErrors()).toBe(true)
@@ -511,12 +567,12 @@ data:
       )
 
       // First import - should create
-      const stats1 = await importer.import([supplierFile])
+      const { stats: stats1 } = await importer.import([supplierFile])
       expect(stats1.created).toBe(1)
       expect(stats1.ignored).toBe(0)
 
       // Second import - should ignore (no changes)
-      const stats2 = await importer.import([supplierFile])
+      const { stats: stats2 } = await importer.import([supplierFile])
       expect(stats2.created).toBe(0)
       expect(stats2.ignored).toBe(1)
     })

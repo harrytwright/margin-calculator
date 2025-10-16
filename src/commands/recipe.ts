@@ -64,7 +64,7 @@ const importer = new Command()
 
     // Could add this to importer and allow the importer to log when it needs via this
     let spinner = ora('✨Loading ingredients')
-    const stats = await importer.import(files)
+    const { stats } = await importer.import(files)
     spinner.succeed('Saved to database')
 
     // Print summary

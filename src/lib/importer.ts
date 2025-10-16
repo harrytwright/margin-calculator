@@ -19,18 +19,31 @@ import {
 import { slugify as slugifyUtil } from '../utils/slugify'
 import { DependencyGraph } from './graph/dependency'
 
-export type ImportResult = 'ignored' | 'upserted' | 'created'
+export type ImportOutcome = 'ignored' | 'upserted' | 'created'
 export type ImporterFunction<T> = (
   this: Importer,
   data: T,
   filePath?: string
-) => Promise<ImportResult>
+) => Promise<ImportOutcome>
+
+export type ImportObjectType = ImportData['object']
+
+export interface ResolvedData<T> {
+  type: ImportObjectType
+  filePath: string
+  data: T
+}
 
 export interface ImportStats {
   created: number
   upserted: number
   ignored: number
   failed: number
+}
+
+export interface ImportResult {
+  stats: ImportStats
+  resolved: Map<string, ResolvedData<ResolvedImportData>>
 }
 
 export interface ImportError {
@@ -41,6 +54,7 @@ export interface ImportError {
 export interface ImportOptions {
   failFast?: boolean
   projectRoot?: string // Root directory for @/ references (defaults to cwd)
+  importOnly?: boolean
   processors?: [
     string,
     (
@@ -50,7 +64,7 @@ export interface ImportOptions {
             importer: Importer,
             data: any,
             filePath: string | undefined
-          ) => Promise<ImportResult>
+          ) => Promise<ImportOutcome>
         }
     ),
   ][]
@@ -79,7 +93,7 @@ const defaultProjectRoot = process.cwd()
  * })
  *
  * // Import files
- * const stats = await importer.import(['file1.yaml', 'file2.yaml'])
+ * const { stats } = await importer.import(['file1.yaml', 'file2.yaml'])
  * ```
  */
 export class Importer {
@@ -440,9 +454,11 @@ export class Importer {
    * 2. Resolve all references to slugs
    * 3. Save to database in dependency order
    */
-  async import(files: string[]): Promise<ImportStats> {
+  async import(files: string[]): Promise<ImportResult> {
     // Reset stats for this import run
     this.resetStats()
+    const resolved = new Map<string, ResolvedData<ResolvedImportData>>()
+    const importOnly = this.options.importOnly ?? false
 
     // Phase 1: Build dependency graph + generate slugs
     log.verbose('importer', 'Building dependency graph...')
@@ -454,7 +470,33 @@ export class Importer {
     // Phase 2: Save to the database in dependency order
     log.verbose('importer', 'Saving to database...')
 
-    const saved = new Set<string>()
+    const processed = new Set<string>()
+
+    const processFile = async (filePath: string) => {
+      if (processed.has(filePath)) {
+        return
+      }
+      processed.add(filePath)
+
+      const fileData = this.graph.get(filePath) as ImportData
+      const resolvedData = await this.resolveReferences(fileData, filePath)
+      const absolutePath = path.isAbsolute(filePath)
+        ? filePath
+        : path.resolve(process.cwd(), filePath)
+
+      resolved.set(resolvedData.slug, {
+        type: fileData.object,
+        filePath: absolutePath,
+        data: resolvedData,
+      })
+
+      if (importOnly) {
+        this.importedFiles.add(absolutePath)
+        return
+      }
+
+      await this.save(filePath, resolvedData, fileData.object)
+    }
 
     for (const filePath of Array.from(this.graph['nodes'].keys())) {
       // Get dependencies in DFS order (as file paths)
@@ -462,31 +504,17 @@ export class Importer {
 
       // Save dependencies first
       for (const depPath of deps) {
-        if (!saved.has(depPath)) {
-          const depData = this.graph.get(depPath) as ImportData
-          await this.save(
-            depPath,
-            await this.resolveReferences(depData, depPath),
-            depData.object
-          )
-          saved.add(depPath)
-        }
+        await processFile(depPath)
       }
-
-      const fileData = this.graph.get(filePath) as ImportData
 
       // Save the file itself
-      if (!saved.has(filePath)) {
-        await this.save(
-          filePath,
-          await this.resolveReferences(fileData, filePath),
-          fileData.object
-        )
-        saved.add(filePath)
-      }
+      await processFile(filePath)
     }
 
-    return this.getStats()
+    return {
+      stats: this.getStats(),
+      resolved,
+    }
   }
 
   /**
@@ -497,7 +525,7 @@ export class Importer {
     filePath: string,
     data: ResolvedImportData,
     type: 'ingredient' | 'recipe' | 'supplier'
-  ): Promise<ImportResult | null> {
+  ): Promise<ImportOutcome | null> {
     const absolutePath = path.isAbsolute(filePath)
       ? filePath
       : path.resolve(process.cwd(), filePath)

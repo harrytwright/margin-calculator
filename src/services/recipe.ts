@@ -3,7 +3,7 @@ import { jsonArrayFrom } from 'kysely/helpers/sqlite'
 
 import type { DB } from '../datastore/types'
 import { Recipe, RecipeIngredients } from '../interfaces/database'
-import { Importer, type ImportResult } from '../lib/importer'
+import { Importer, type ImportOutcome } from '../lib/importer'
 import type { RecipeResolvedImportData } from '../schema'
 import { hasChanges } from '../utils/has-changes'
 import { IngredientService } from './ingredient'
@@ -244,7 +244,7 @@ export class RecipeService {
     importer: Importer,
     data: RecipeResolvedImportData,
     filePath: string | undefined
-  ): Promise<ImportResult> {
+  ): Promise<ImportOutcome> {
     // log.verbose('recipe.processor', 'Processing %o', data)
 
     if (data.parentSlug && !(await this.exists(data.parentSlug))) {

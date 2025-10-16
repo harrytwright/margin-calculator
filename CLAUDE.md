@@ -154,7 +154,7 @@ importer.addProcessor<SupplierImportData>('supplier', async function (data) {
   return existing ? 'upserted' : 'created'
 })
 
-const stats = await importer.import(['file1.yaml', 'file2.yaml'])
+const { stats } = await importer.import(['file1.yaml', 'file2.yaml'])
 ```
 
 **Processors must return:** `'created' | 'upserted' | 'ignored'`
