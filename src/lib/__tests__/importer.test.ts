@@ -321,6 +321,88 @@ data:
     })
   })
 
+  describe('Slug mapping & import-only mode', () => {
+    test('should expose slug to path mapping after import', async () => {
+      const importer = new Importer(db)
+      importer.addProcessor<SupplierResolvedImportData>(
+        'supplier',
+        async function () {
+          return 'created'
+        }
+      )
+
+      const suppliersDir = path.join(tmpDir, 'suppliers')
+      await fs.mkdir(suppliersDir)
+      const supplierFile = path.join(suppliersDir, 'asda.yaml')
+      await fs.writeFile(
+        supplierFile,
+        `object: supplier
+data:
+  name: Asda
+`
+      )
+
+      await importer.import([supplierFile])
+
+      expect(importer.getPathForSlug('asda')).toBe(supplierFile)
+      expect(importer.getAllMappings()).toEqual({ asda: supplierFile })
+    })
+
+    test('should resolve data without touching database in import-only mode', async () => {
+      const processor = jest.fn()
+      const importer = new Importer(db, { importOnly: true })
+      importer.addProcessor<SupplierResolvedImportData>('supplier', processor)
+
+      const supplierFile = path.join(tmpDir, 'supplier.yaml')
+      await fs.writeFile(
+        supplierFile,
+        `object: supplier
+data:
+  name: Test Supplier
+`
+      )
+
+      const { stats, resolved } = await importer.import([supplierFile])
+
+      expect(stats.created).toBe(0)
+      expect(stats.upserted).toBe(0)
+      expect(stats.failed).toBe(0)
+      expect(processor).not.toHaveBeenCalled()
+      expect(resolved).toBeDefined()
+
+      const entry = resolved?.get('test-supplier')
+      expect(entry).toBeDefined()
+      expect(entry?.type).toBe('supplier')
+      expect(entry?.path).toBe(supplierFile)
+      expect(entry?.data.slug).toBe('test-supplier')
+
+      const suppliers = await db.selectFrom('Supplier').selectAll().execute()
+      expect(suppliers).toHaveLength(0)
+    })
+
+    test('should not return resolved map when not in import-only mode', async () => {
+      const importer = new Importer(db)
+      importer.addProcessor<SupplierResolvedImportData>(
+        'supplier',
+        async function () {
+          return 'created'
+        }
+      )
+
+      const supplierFile = path.join(tmpDir, 'supplier.yaml')
+      await fs.writeFile(
+        supplierFile,
+        `object: supplier
+data:
+  name: Another Supplier
+`
+      )
+
+      const { resolved } = await importer.import([supplierFile])
+      expect(resolved).toBeUndefined()
+    })
+  })
+
   describe('Dependency Resolution', () => {
     test('should prevent duplicate imports', async () => {
       const importer = new Importer(db)

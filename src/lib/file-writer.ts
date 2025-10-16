@@ -1,0 +1,55 @@
+import * as fs from 'fs/promises'
+import * as path from 'path'
+
+import pluralize from 'pluralize'
+import YAML from 'yaml'
+
+import type {
+  IngredientImportData,
+  RecipeImportData,
+  SupplierImportData,
+} from '../schema'
+
+export type WriteObjectType = 'ingredient' | 'recipe' | 'supplier'
+
+type WriteDataMap = {
+  ingredient: IngredientImportData
+  recipe: RecipeImportData
+  supplier: SupplierImportData
+}
+
+export type WriteData<T extends WriteObjectType> = WriteDataMap[T]
+
+export class FileWriter {
+  async write<T extends WriteObjectType>(
+    type: T,
+    slug: string,
+    data: WriteData<T>,
+    workingDir: string,
+    existingPath?: string
+  ): Promise<string> {
+    const filePath =
+      existingPath || path.join(workingDir, pluralize(type), `${slug}.yaml`)
+
+    await this.ensureDirectory(path.dirname(filePath))
+
+    await fs.writeFile(
+      filePath,
+      YAML.stringify({
+        object: type,
+        data,
+      }),
+      'utf-8'
+    )
+
+    return filePath
+  }
+
+  async deleteFile(filePath: string): Promise<void> {
+    await fs.unlink(filePath)
+  }
+
+  private async ensureDirectory(dirPath: string): Promise<void> {
+    await fs.mkdir(dirPath, { recursive: true })
+  }
+}
