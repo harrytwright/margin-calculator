@@ -60,6 +60,36 @@ export function createApiRouter(config: ServerConfig): Router {
     }
   })
 
+  router.put('/suppliers/:slug', async (req, res) => {
+    try {
+      const parsed = supplierImportDataSchema.parse(req.body)
+      const record = await persistence.updateSupplier(req.params.slug, parsed)
+      res.json(record)
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.put('/ingredients/:slug', async (req, res) => {
+    try {
+      const parsed = ingredientImportDataSchema.parse(req.body)
+      const record = await persistence.updateIngredient(req.params.slug, parsed)
+      res.json(record)
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.put('/recipes/:slug', async (req, res) => {
+    try {
+      const parsed = recipeImportDataSchema.parse(req.body)
+      const record = await persistence.updateRecipe(req.params.slug, parsed)
+      res.json(record)
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
   // GET /api/recipes - List all recipes
   router.get('/recipes', async (req, res) => {
     try {

@@ -1,6 +1,7 @@
+import { promises as fs } from 'fs'
 import path from 'path'
 
-import { FileWriter } from '../../lib/file-writer'
+import { FileWriter, type WriteObjectType } from '../../lib/file-writer'
 import { Importer } from '../../lib/importer'
 import type {
   IngredientImportData,
@@ -106,6 +107,114 @@ export class EntityPersistence {
     return record
   }
 
+  async updateSupplier(slug: string, data: SupplierImportData) {
+    if (data.slug && data.slug !== slug) {
+      throw new HttpError(
+        400,
+        `Slug mismatch: expected '${slug}' but received '${data.slug}'`
+      )
+    }
+
+    if (!(await this.services.supplier.exists(slug))) {
+      throw new HttpError(404, `Supplier '${slug}' not found`)
+    }
+
+    const existingPath = await this.resolveExistingPath('supplier', slug)
+    if (!existingPath) {
+      throw new HttpError(404, `Source file for supplier '${slug}' not found`)
+    }
+
+    const dataWithSlug: SupplierImportData = { ...data, slug }
+    const filePath = await this.fileWriter.write(
+      'supplier',
+      slug,
+      dataWithSlug,
+      this.dataRoot,
+      existingPath
+    )
+
+    await this.importFiles([filePath])
+
+    const record = await this.services.supplier.findById(slug)
+    if (!record) {
+      throw new HttpError(500, 'Failed to retrieve updated supplier')
+    }
+
+    return { slug, ...record }
+  }
+
+  async updateIngredient(slug: string, data: IngredientImportData) {
+    if (data.slug && data.slug !== slug) {
+      throw new HttpError(
+        400,
+        `Slug mismatch: expected '${slug}' but received '${data.slug}'`
+      )
+    }
+
+    if (!(await this.services.ingredient.exists(slug))) {
+      throw new HttpError(404, `Ingredient '${slug}' not found`)
+    }
+
+    const existingPath = await this.resolveExistingPath('ingredient', slug)
+    if (!existingPath) {
+      throw new HttpError(404, `Source file for ingredient '${slug}' not found`)
+    }
+
+    const dataWithSlug: IngredientImportData = { ...data, slug }
+    const filePath = await this.fileWriter.write(
+      'ingredient',
+      slug,
+      dataWithSlug,
+      this.dataRoot,
+      existingPath
+    )
+
+    await this.importFiles([filePath])
+
+    const record = await this.services.ingredient.findById(slug)
+    if (!record) {
+      throw new HttpError(500, 'Failed to retrieve updated ingredient')
+    }
+
+    return { slug, ...record }
+  }
+
+  async updateRecipe(slug: string, data: RecipeImportData) {
+    if (data.slug && data.slug !== slug) {
+      throw new HttpError(
+        400,
+        `Slug mismatch: expected '${slug}' but received '${data.slug}'`
+      )
+    }
+
+    if (!(await this.services.recipe.exists(slug))) {
+      throw new HttpError(404, `Recipe '${slug}' not found`)
+    }
+
+    const existingPath = await this.resolveExistingPath('recipe', slug)
+    if (!existingPath) {
+      throw new HttpError(404, `Source file for recipe '${slug}' not found`)
+    }
+
+    const dataWithSlug: RecipeImportData = { ...data, slug }
+    const filePath = await this.fileWriter.write(
+      'recipe',
+      slug,
+      dataWithSlug,
+      this.dataRoot,
+      existingPath
+    )
+
+    await this.importFiles([filePath])
+
+    const record = await this.services.recipe.findById(slug, true)
+    if (!record) {
+      throw new HttpError(500, 'Failed to retrieve updated recipe')
+    }
+
+    return record
+  }
+
   private async ensureSlug(
     provided: string | undefined,
     fallbackName: string
@@ -131,5 +240,80 @@ export class EntityPersistence {
   private async importFiles(files: string[]) {
     const importer = this.createImporter(false)
     await importer.import(files)
+  }
+
+  private async resolveExistingPath(
+    type: WriteObjectType,
+    slug: string
+  ): Promise<string | undefined> {
+    const defaultPath = path.join(
+      this.dataRoot,
+      this.folderFor(type),
+      `${slug}.yaml`
+    )
+
+    if (await this.pathExists(defaultPath)) {
+      return defaultPath
+    }
+
+    const files = await this.collectYamlFiles(this.dataRoot)
+    if (files.length === 0) {
+      return undefined
+    }
+
+    const importer = this.createImporter(true)
+    const result = await importer.import(files)
+    const entry = result.resolved?.get(slug)
+
+    if (entry && entry.type === type) {
+      return entry.path
+    }
+
+    return undefined
+  }
+
+  private folderFor(type: WriteObjectType) {
+    switch (type) {
+      case 'supplier':
+        return 'suppliers'
+      case 'ingredient':
+        return 'ingredients'
+      case 'recipe':
+        return 'recipes'
+      default:
+        return ''
+    }
+  }
+
+  private async pathExists(filePath: string) {
+    try {
+      await fs.access(filePath)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  private async collectYamlFiles(dir: string): Promise<string[]> {
+    let entries: Awaited<ReturnType<typeof fs.readdir>>
+
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true })
+    } catch {
+      return []
+    }
+
+    const files: string[] = []
+
+    for (const entry of entries) {
+      const target = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        files.push(...(await this.collectYamlFiles(target)))
+      } else if (entry.isFile() && entry.name.endsWith('.yaml')) {
+        files.push(target)
+      }
+    }
+
+    return files
   }
 }

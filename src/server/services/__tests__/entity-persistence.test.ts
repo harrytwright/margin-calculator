@@ -140,4 +140,96 @@ describe('EntityPersistence create flow', () => {
       },
     })
   })
+
+  test('updates existing entities without changing file path', async () => {
+    await persistence.createSupplier({ name: 'Atlantic Foods' })
+    await persistence.createIngredient({
+      name: 'Ham',
+      category: 'meat',
+      purchase: {
+        unit: '1kg',
+        cost: 5.99,
+        vat: false,
+      },
+      supplier: { uses: 'slug:atlantic-foods' },
+    })
+    await persistence.createRecipe({
+      name: 'Ham Sandwich',
+      class: 'menu_item',
+      stage: 'active',
+      costing: {
+        price: 450,
+        margin: 30,
+        vat: false,
+      },
+      ingredients: [
+        {
+          uses: 'slug:ham',
+          with: { unit: '50g' },
+        },
+      ],
+    })
+
+    const supplierPath = path.join(
+      tempDir,
+      'data',
+      'suppliers',
+      'atlantic-foods.yaml'
+    )
+    const ingredientPath = path.join(
+      tempDir,
+      'data',
+      'ingredients',
+      'ham.yaml'
+    )
+    const recipePath = path.join(
+      tempDir,
+      'data',
+      'recipes',
+      'ham-sandwich.yaml'
+    )
+
+    const supplier = await persistence.updateSupplier('atlantic-foods', {
+      name: 'Atlantic Foods Intl',
+    })
+    const ingredient = await persistence.updateIngredient('ham', {
+      name: 'Smoked Ham',
+      category: 'meat',
+      purchase: {
+        unit: '1kg',
+        cost: 6.5,
+        vat: false,
+      },
+      supplier: { uses: 'slug:atlantic-foods' },
+    })
+    const recipe = await persistence.updateRecipe('ham-sandwich', {
+      name: 'Ham Sandwich Deluxe',
+      class: 'menu_item',
+      stage: 'active',
+      costing: {
+        price: 500,
+        margin: 32,
+        vat: false,
+      },
+      ingredients: [
+        {
+          uses: 'slug:ham',
+          with: { unit: '60g' },
+        },
+      ],
+    })
+
+    expect(supplier?.name).toBe('Atlantic Foods Intl')
+    expect(ingredient?.name).toBe('Smoked Ham')
+    expect(recipe?.name).toBe('Ham Sandwich Deluxe')
+
+    const supplierYaml = YAML.parse(await fs.readFile(supplierPath, 'utf-8'))
+    expect(supplierYaml.data.name).toBe('Atlantic Foods Intl')
+
+    const ingredientYaml = YAML.parse(await fs.readFile(ingredientPath, 'utf-8'))
+    expect(ingredientYaml.data.name).toBe('Smoked Ham')
+
+    const recipeYaml = YAML.parse(await fs.readFile(recipePath, 'utf-8'))
+    expect(recipeYaml.data.name).toBe('Ham Sandwich Deluxe')
+  })
 })
