@@ -215,6 +215,60 @@ export class EntityPersistence {
     return record
   }
 
+  async deleteSupplier(slug: string) {
+    if (!(await this.services.supplier.exists(slug))) {
+      throw new HttpError(404, `Supplier '${slug}' not found`)
+    }
+
+    const existingPath = await this.resolveExistingPath('supplier', slug)
+    if (!existingPath) {
+      throw new HttpError(404, `Source file for supplier '${slug}' not found`)
+    }
+
+    await this.fileWriter.deleteFile(existingPath)
+    const deleted = await this.services.supplier.delete(slug)
+
+    if (!deleted) {
+      throw new HttpError(500, `Failed to delete supplier '${slug}'`)
+    }
+  }
+
+  async deleteIngredient(slug: string) {
+    if (!(await this.services.ingredient.exists(slug))) {
+      throw new HttpError(404, `Ingredient '${slug}' not found`)
+    }
+
+    const existingPath = await this.resolveExistingPath('ingredient', slug)
+    if (!existingPath) {
+      throw new HttpError(404, `Source file for ingredient '${slug}' not found`)
+    }
+
+    await this.fileWriter.deleteFile(existingPath)
+    const deleted = await this.services.ingredient.delete(slug)
+
+    if (!deleted) {
+      throw new HttpError(500, `Failed to delete ingredient '${slug}'`)
+    }
+  }
+
+  async deleteRecipe(slug: string) {
+    if (!(await this.services.recipe.exists(slug))) {
+      throw new HttpError(404, `Recipe '${slug}' not found`)
+    }
+
+    const existingPath = await this.resolveExistingPath('recipe', slug)
+    if (!existingPath) {
+      throw new HttpError(404, `Source file for recipe '${slug}' not found`)
+    }
+
+    await this.fileWriter.deleteFile(existingPath)
+    const deleted = await this.services.recipe.delete(slug)
+
+    if (!deleted) {
+      throw new HttpError(500, `Failed to delete recipe '${slug}'`)
+    }
+  }
+
   private async ensureSlug(
     provided: string | undefined,
     fallbackName: string

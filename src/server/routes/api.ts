@@ -90,6 +90,33 @@ export function createApiRouter(config: ServerConfig): Router {
     }
   })
 
+  router.delete('/suppliers/:slug', async (req, res) => {
+    try {
+      await persistence.deleteSupplier(req.params.slug)
+      res.status(204).send()
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.delete('/ingredients/:slug', async (req, res) => {
+    try {
+      await persistence.deleteIngredient(req.params.slug)
+      res.status(204).send()
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.delete('/recipes/:slug', async (req, res) => {
+    try {
+      await persistence.deleteRecipe(req.params.slug)
+      res.status(204).send()
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
   // GET /api/recipes - List all recipes
   router.get('/recipes', async (req, res) => {
     try {

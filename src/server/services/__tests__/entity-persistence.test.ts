@@ -232,4 +232,61 @@ describe('EntityPersistence create flow', () => {
     const recipeYaml = YAML.parse(await fs.readFile(recipePath, 'utf-8'))
     expect(recipeYaml.data.name).toBe('Ham Sandwich Deluxe')
   })
+
+  test('deletes entities and removes files', async () => {
+    await persistence.createSupplier({ name: 'Atlantic Foods' })
+    await persistence.createIngredient({
+      name: 'Ham',
+      category: 'meat',
+      purchase: {
+        unit: '1kg',
+        cost: 5.99,
+        vat: false,
+      },
+      supplier: { uses: 'slug:atlantic-foods' },
+    })
+    await persistence.createRecipe({
+      name: 'Ham Sandwich',
+      class: 'menu_item',
+      stage: 'active',
+      costing: {
+        price: 450,
+        margin: 30,
+        vat: false,
+      },
+      ingredients: [
+        {
+          uses: 'slug:ham',
+          with: { unit: '50g' },
+        },
+      ],
+    })
+
+    const supplierPath = path.join(
+      tempDir,
+      'data',
+      'suppliers',
+      'atlantic-foods.yaml'
+    )
+    const ingredientPath = path.join(
+      tempDir,
+      'data',
+      'ingredients',
+      'ham.yaml'
+    )
+    const recipePath = path.join(
+      tempDir,
+      'data',
+      'recipes',
+      'ham-sandwich.yaml'
+    )
+
+    await persistence.deleteRecipe('ham-sandwich')
+    await persistence.deleteIngredient('ham')
+    await persistence.deleteSupplier('atlantic-foods')
+
+    await expect(fs.access(recipePath)).rejects.toThrow()
+    await expect(fs.access(ingredientPath)).rejects.toThrow()
+    await expect(fs.access(supplierPath)).rejects.toThrow()
+  })
 })
