@@ -3,6 +3,7 @@ import fs from 'fs/promises'
 import { Server } from 'http'
 import { Kysely } from 'kysely'
 import path from 'path'
+import { EventEmitter } from 'events'
 
 import log from '@harrytwright/logger'
 
@@ -10,6 +11,9 @@ import type { DB } from '../datastore/types'
 import { FileWatcher } from '../lib/file-watcher'
 import { HashService } from '../lib/hash-service'
 import { Importer } from '../lib/importer'
+import { IngredientService } from '../services/ingredient'
+import { RecipeService } from '../services/recipe'
+import { SupplierService } from '../services/supplier'
 import { createApiRouter } from './routes/api'
 
 export interface ServerConfig {
@@ -18,6 +22,7 @@ export interface ServerConfig {
   workingDir: string
   openBrowser?: boolean
   watchFiles?: boolean
+  events?: EventEmitter
 }
 
 export function createServer(config: ServerConfig): Express {
@@ -41,7 +46,10 @@ export function createServer(config: ServerConfig): Express {
 export async function startServer(
   config: ServerConfig
 ): Promise<{ close: () => Promise<void> }> {
-  const app = createServer(config)
+  const events = config.events ?? new EventEmitter()
+  const runtimeConfig: ServerConfig = { ...config, events }
+
+  const app = createServer(runtimeConfig)
   const url = `http://localhost:${config.port}`
 
   const server = await listen(app, config.port)
@@ -58,7 +66,9 @@ export async function startServer(
     }
   }
 
-  const watcher = config.watchFiles ? await startFileWatcher(config) : undefined
+  const watcher = config.watchFiles
+    ? await startFileWatcher(runtimeConfig)
+    : undefined
 
   return {
     close: async () => {
@@ -79,6 +89,13 @@ async function startFileWatcher(config: ServerConfig): Promise<FileWatcher> {
     path.join(dataRoot, 'recipes'),
   ])
 
+  const supplierService = new SupplierService(config.database)
+  const ingredientService = new IngredientService(
+    config.database,
+    supplierService
+  )
+  const recipeService = new RecipeService(config.database, ingredientService)
+
   const watcher = new FileWatcher({
     roots: [dataRoot],
     hashService: new HashService(),
@@ -88,8 +105,13 @@ async function startFileWatcher(config: ServerConfig): Promise<FileWatcher> {
     },
     importerFactory: () =>
       new Importer(config.database, {
-        importOnly: true,
+        failFast: true,
         projectRoot: dataRoot,
+        processors: [
+          ['supplier', supplierService],
+          ['ingredient', ingredientService],
+          ['recipe', recipeService],
+        ],
       }),
     ignored: ['**/*.sqlite*'],
   })
@@ -102,10 +124,12 @@ async function startFileWatcher(config: ServerConfig): Promise<FileWatcher> {
         event.path
       )}`
     )
+    config.events?.emit('entity', event)
   })
 
   watcher.on('error', (error) => {
     log.error('watcher', error, 'File watcher error')
+    config.events?.emit('error', error)
   })
 
   await watcher.start()

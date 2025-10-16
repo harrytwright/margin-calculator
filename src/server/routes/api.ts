@@ -44,6 +44,33 @@ export function createApiRouter(config: ServerConfig): Router {
     }
   })
 
+  router.get('/events', (req, res) => {
+    if (!config.events) {
+      return res.status(503).json({ error: 'Event stream not available' })
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders?.()
+    res.write(': connected\n\n')
+
+    const sendEvent = (payload: unknown) => {
+      res.write(`event: entity\ndata: ${JSON.stringify(payload)}\n\n`)
+    }
+
+    const keepAlive = setInterval(() => {
+      res.write(': keep-alive\n\n')
+    }, 30000)
+
+    config.events.on('entity', sendEvent)
+
+    req.on('close', () => {
+      clearInterval(keepAlive)
+      config.events?.off('entity', sendEvent)
+    })
+  })
+
   router.get('/suppliers/:slug', async (req, res) => {
     try {
       const record = await supplier.findById(req.params.slug)

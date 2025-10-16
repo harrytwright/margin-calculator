@@ -484,6 +484,7 @@
         bindForms()
         loadManagementData()
         loadRecipeReport()
+        startEventStream()
       })
 
       async function fetchJSON(pathname, options) {
@@ -1244,6 +1245,30 @@
             state.recipes.map((recipe) => `<option value="${recipe.slug}">${recipe.name}</option>`).join('')
           parentSelect.value = preserve
         }
+      }
+
+      function startEventStream() {
+        if (!window.EventSource) {
+          console.warn('EventSource not supported in this browser')
+          return
+        }
+
+        const source = new EventSource(`${API_BASE}/events`)
+
+        source.addEventListener('entity', (event) => {
+          try {
+            JSON.parse(event.data)
+            loadManagementData()
+            loadRecipeReport()
+          } catch (error) {
+            console.error('Failed to parse event payload', error)
+          }
+        })
+
+        source.addEventListener('error', () => {
+          source.close()
+          setTimeout(startEventStream, 5000)
+        })
       }
 
       async function loadRecipeReport() {
