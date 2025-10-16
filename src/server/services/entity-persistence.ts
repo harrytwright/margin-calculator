@@ -292,9 +292,24 @@ export class EntityPersistence {
     })
   }
 
+  private async runImport(files: string[], importOnly: boolean) {
+    const importer = this.createImporter(importOnly)
+    const maxAttempts = 3
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        return await importer.import(files)
+      } catch (error) {
+        if (attempt === maxAttempts - 1 || !this.isRecoverableImportError(error)) {
+          throw error
+        }
+        await this.delay(50 * (attempt + 1))
+      }
+    }
+  }
+
   private async importFiles(files: string[]) {
-    const importer = this.createImporter(false)
-    await importer.import(files)
+    await this.runImport(files, false)
   }
 
   private async resolveExistingPath(
@@ -316,8 +331,7 @@ export class EntityPersistence {
       return undefined
     }
 
-    const importer = this.createImporter(true)
-    const result = await importer.import(files)
+    const result = await this.runImport(files, true)
     const entry = result.resolved?.get(slug)
 
     if (entry && entry.type === type) {
@@ -373,5 +387,14 @@ export class EntityPersistence {
     }
 
     return files
+  }
+
+  private isRecoverableImportError(error: unknown) {
+    if (!(error instanceof Error)) return false
+    return /Invalid input: expected object, received/.test(error.message)
+  }
+
+  private async delay(ms: number) {
+    await new Promise((resolve) => setTimeout(resolve, ms))
   }
 }
