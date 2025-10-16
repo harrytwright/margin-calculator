@@ -444,7 +444,7 @@ data:
       const suppliers = await db.selectFrom('Supplier').selectAll().execute()
       expect(suppliers).toHaveLength(1)
 
-      const entry = resolved.get('test-supplier')
+      const entry = resolved?.get('test-supplier')
       expect(entry).toBeDefined()
       expect(entry?.type).toBe('supplier')
       expect(entry?.data.name).toBe('Test Supplier')

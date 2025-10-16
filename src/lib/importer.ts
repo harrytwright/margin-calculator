@@ -29,8 +29,9 @@ export type ImporterFunction<T> = (
 export type ImportObjectType = ImportData['object']
 
 export interface ResolvedData<T> {
+  slug: string
   type: ImportObjectType
-  filePath: string
+  path: string
   data: T
 }
 
@@ -43,7 +44,7 @@ export interface ImportStats {
 
 export interface ImportResult {
   stats: ImportStats
-  resolved: Map<string, ResolvedData<ResolvedImportData>>
+  resolved?: Map<string, ResolvedData<ResolvedImportData>>
 }
 
 export interface ImportError {
@@ -51,10 +52,9 @@ export interface ImportError {
   error: string
 }
 
-export interface ImportOptions {
+export interface BaseImportOptions {
   failFast?: boolean
   projectRoot?: string // Root directory for @/ references (defaults to cwd)
-  importOnly?: boolean
   processors?: [
     string,
     (
@@ -68,6 +68,10 @@ export interface ImportOptions {
         }
     ),
   ][]
+}
+
+export interface ImportOptions extends BaseImportOptions {
+  importOnly?: boolean
 }
 
 const defaultProjectRoot = process.cwd()
@@ -106,6 +110,8 @@ export class Importer {
     failed: 0,
   }
 
+  private readonly options: ImportOptions
+
   private errors: ImportError[] = []
 
   private graph: DependencyGraph<ImportData> = new DependencyGraph()
@@ -117,14 +123,17 @@ export class Importer {
 
   constructor(
     public database: Kysely<DB>,
-    private options: ImportOptions = {
+    options: ImportOptions = {}
+  ) {
+    this.options = {
       failFast: false,
+      importOnly: false,
       projectRoot: defaultProjectRoot,
       processors: [],
+      ...options,
     }
-  ) {
-    // Register processors at construction
-    options?.processors?.forEach(([object, processor]) => {
+
+    this.options.processors?.forEach(([object, processor]) => {
       this.addProcessor(
         object,
         typeof processor === 'function'
@@ -463,6 +472,7 @@ export class Importer {
     // Phase 1: Build dependency graph + generate slugs
     log.verbose('importer', 'Building dependency graph...')
 
+    this.graph = new DependencyGraph<ImportData>()
     await this.buildDependencyGraph(files, this.graph)
 
     log.verbose('importer', `Found ${this.graph.size} files to import`)
@@ -485,8 +495,9 @@ export class Importer {
         : path.resolve(process.cwd(), filePath)
 
       resolved.set(resolvedData.slug, {
+        slug: resolvedData.slug,
         type: fileData.object,
-        filePath: absolutePath,
+        path: absolutePath,
         data: resolvedData,
       })
 
@@ -513,7 +524,7 @@ export class Importer {
 
     return {
       stats: this.getStats(),
-      resolved,
+      resolved: importOnly ? resolved : undefined,
     }
   }
 
@@ -609,8 +620,8 @@ export class Importer {
   /**
    * Get all slug to path mappings
    */
-  getAllMappings(): Map<string, string> {
-    return new Map(this.slugToPath)
+  getAllMappings(): Record<string, string> {
+    return Object.fromEntries(this.slugToPath)
   }
 
   /**
@@ -626,5 +637,7 @@ export class Importer {
     this.errors = []
     this.importedFiles.clear()
     this.slugToPath.clear()
+    this.slugMap.clear()
+    this.resolvedDataCache.clear()
   }
 }
