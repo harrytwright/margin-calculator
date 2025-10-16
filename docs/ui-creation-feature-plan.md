@@ -157,6 +157,10 @@ CREATE TABLE FileHash (
 
 ### 5.1 Create Endpoints
 
+> ✅ Implemented in `src/server/routes/api.ts` with reusable logic housed in
+> `src/server/services/entity-persistence.ts`, alongside unit coverage in
+> `src/server/services/__tests__/entity-persistence.test.ts`.
+
 **Location:** `src/server/routes/api.ts`
 
 **Suppliers:**
@@ -226,6 +230,10 @@ router.post('/recipes', async (req, res) => {
 
 ## Phase 6: Frontend UI Forms
 
+> ✅ Management forms and lists are implemented in
+> `src/server/public/index.html`, supporting create, edit, and delete flows via
+> the API.
+
 ### 6.1 Create Entity Forms
 
 **Location:** `src/server/public/forms.html` or inline modals in `index.html`
@@ -260,6 +268,10 @@ router.post('/recipes', async (req, res) => {
 ---
 
 ## Phase 7: Real-time Updates (Optional)
+
+> ✅ `/api/events` streams watcher activity to the browser (see
+> `src/server/routes/api.ts` and `src/server/index.ts`). The UI listens with an
+> `EventSource`, refreshing data automatically.
 
 ### 7.1 Server-Sent Events (SSE)
 
