@@ -659,7 +659,7 @@
           .querySelectorAll('[data-action="edit-supplier"]')
           .forEach((button) =>
             button.addEventListener('click', () =>
-              alert('Editing will be available soon')
+              startEditSupplier(button.dataset.slug)
             )
           )
 
@@ -720,10 +720,18 @@
           .join('')
 
         container
-          .querySelectorAll('[data-action^="edit-ingredient"],[data-action^="delete-ingredient"]')
+          .querySelectorAll('[data-action="edit-ingredient"]')
           .forEach((button) =>
             button.addEventListener('click', () =>
-              alert('Editing will be available soon')
+              startEditIngredient(button.dataset.slug)
+            )
+          )
+
+        container
+          .querySelectorAll('[data-action="delete-ingredient"]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              alert('Deletion will be available soon')
             )
           )
       }
@@ -771,24 +779,131 @@
           .join('')
 
         container
-          .querySelectorAll('[data-action^="edit-recipe"],[data-action^="delete-recipe"]')
+          .querySelectorAll('[data-action="edit-recipe"]')
           .forEach((button) =>
             button.addEventListener('click', () =>
-              alert('Editing will be available soon')
+              startEditRecipe(button.dataset.slug)
             )
           )
+
+        container
+          .querySelectorAll('[data-action="delete-recipe"]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              alert('Deletion will be available soon')
+            )
+          )
+      }
+
+      function startEditSupplier(slug) {
+        const supplier = state.suppliers.find((item) => item.slug === slug)
+        if (!supplier) return
+
+        setActiveManager('suppliers')
+
+        document.getElementById('supplier-name').value = supplier.name
+        document.querySelector('#supplier-form button[type="submit"]').textContent =
+          'Update Supplier'
+        document.getElementById('supplier-feedback').textContent = `Editing ${slug}`
+        state.editing.supplier = slug
+      }
+
+      async function startEditIngredient(slug) {
+        setActiveManager('ingredients')
+        try {
+          const ingredient = await fetchJSON(`/ingredients/${slug}`)
+          if (!ingredient) return
+
+          document.getElementById('ingredient-name').value = ingredient.name
+          document.getElementById('ingredient-category').value = ingredient.category || ''
+          document.getElementById('ingredient-unit').value = ingredient.purchase.unit || ''
+          document.getElementById('ingredient-cost').value = ingredient.purchase.cost || 0
+          document.getElementById('ingredient-vat').checked = !!ingredient.purchase.vat
+          populateIngredientSelectors()
+          document.getElementById('ingredient-supplier').value =
+            ingredient.supplierSlug || ''
+          document.getElementById('ingredient-conversion').value =
+            ingredient.conversionRate || ''
+          document.getElementById('ingredient-notes').value = ingredient.notes || ''
+
+          document.querySelector('#ingredient-form button[type="submit"]').textContent =
+            'Update Ingredient'
+          document.getElementById('ingredient-feedback').textContent = `Editing ${slug}`
+          state.editing.ingredient = slug
+        } catch (error) {
+          alert(`Unable to load ingredient: ${error.message}`)
+        }
+      }
+
+      async function startEditRecipe(slug) {
+        setActiveManager('recipes')
+        try {
+          const recipe = await fetchJSON(`/recipes/${slug}`)
+          if (!recipe) return
+
+          document.getElementById('recipe-name').value = recipe.name
+          document.getElementById('recipe-category').value = recipe.category || ''
+          document.getElementById('recipe-stage').value = recipe.stage || 'development'
+          document.getElementById('recipe-class').value = recipe.class || 'menu_item'
+          document.getElementById('recipe-parent').value = recipe.parent || ''
+          document.getElementById('recipe-price').value = recipe.sellPrice || 0
+          document.getElementById('recipe-margin').value = recipe.targetMargin || ''
+          document.getElementById('recipe-vat').checked = !!recipe.includesVat
+          document.getElementById('recipe-yield-amount').value = recipe.yieldAmount || ''
+          document.getElementById('recipe-yield-unit').value = recipe.yieldUnit || ''
+
+          const ingredients = Array.isArray(recipe.ingredients)
+            ? recipe.ingredients
+            : JSON.parse(recipe.ingredients || '[]')
+
+          const container = document.getElementById('recipe-ingredients-rows')
+          container.innerHTML = ''
+          if (ingredients.length > 0) {
+            ingredients.forEach((item) =>
+              addIngredientRow(container, {
+                type: item.type || 'ingredient',
+                slug: item.slug,
+                unit: item.unit || item.with?.unit || '',
+              })
+            )
+          } else {
+            addIngredientRow(container)
+          }
+
+          populateIngredientSelectors()
+
+          container
+            .querySelectorAll('.ingredient-slug')
+            .forEach((select, index) => {
+              const item = ingredients[index]
+              if (item && item.slug) {
+                select.value = item.slug
+              }
+            })
+
+          document.querySelector('#recipe-form button[type="submit"]').textContent =
+            'Update Recipe'
+          document.getElementById('recipe-feedback').textContent = `Editing ${slug}`
+          state.editing.recipe = slug
+        } catch (error) {
+          alert(`Unable to load recipe: ${error.message}`)
+        }
       }
 
       function clearSupplierForm() {
         document.getElementById('supplier-form').reset()
         document.getElementById('supplier-feedback').textContent = ''
         state.editing.supplier = null
+        document.querySelector('#supplier-form button[type="submit"]').textContent =
+          'Save Supplier'
       }
 
       function clearIngredientForm() {
         document.getElementById('ingredient-form').reset()
         document.getElementById('ingredient-feedback').textContent = ''
         state.editing.ingredient = null
+        document.querySelector('#ingredient-form button[type="submit"]').textContent =
+          'Save Ingredient'
       }
 
       function clearRecipeForm() {
@@ -799,6 +914,8 @@
         rows.innerHTML = ''
         addIngredientRow(rows)
         populateIngredientSelectors()
+        document.querySelector('#recipe-form button[type="submit"]').textContent =
+          'Save Recipe'
       }
 
       function addIngredientRow(container, initial) {
@@ -829,6 +946,9 @@
 
         container.appendChild(row)
 
+        const typeSelect = row.querySelector('.ingredient-type')
+        typeSelect.addEventListener('change', () => populateIngredientSelectors())
+
         row.querySelector('.remove-ingredient-row').addEventListener('click', () => {
           if (container.children.length > 1) {
             row.remove()
@@ -836,7 +956,7 @@
         })
 
         if (initial) {
-          row.querySelector('.ingredient-type').value = initial.type || 'ingredient'
+          typeSelect.value = initial.type || 'ingredient'
           row.querySelector('.ingredient-unit').value = initial.unit || ''
         }
 
@@ -873,13 +993,12 @@
             const slugSelect = row.querySelector('.ingredient-slug')
             const current = slugSelect.value
             if (typeSelect.value === 'recipe') {
-              slugSelect.innerHTML = `<option value="">-- Select --</option>${recipeOptions}`
-            } else {
-              slugSelect.innerHTML = `<option value="">-- Select --</option>${ingredientOptions}`
-            }
-            slugSelect.value = current
-            typeSelect.addEventListener('change', () => populateIngredientSelectors())
-          })
+            slugSelect.innerHTML = `<option value="">-- Select --</option>${recipeOptions}`
+          } else {
+            slugSelect.innerHTML = `<option value="">-- Select --</option>${ingredientOptions}`
+          }
+          slugSelect.value = current
+        })
 
         const supplierSelect = document.getElementById('ingredient-supplier')
         if (supplierSelect) {

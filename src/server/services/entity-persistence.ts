@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs'
+import type { Dirent } from 'fs'
 import path from 'path'
 
 import { FileWriter, type WriteObjectType } from '../../lib/file-writer'
@@ -349,10 +350,13 @@ export class EntityPersistence {
   }
 
   private async collectYamlFiles(dir: string): Promise<string[]> {
-    let entries: Awaited<ReturnType<typeof fs.readdir>>
+    let entries: Dirent[]
 
     try {
-      entries = await fs.readdir(dir, { withFileTypes: true })
+      entries = (await fs.readdir(dir, {
+        withFileTypes: true,
+        encoding: 'utf8',
+      })) as Dirent[]
     } catch {
       return []
     }

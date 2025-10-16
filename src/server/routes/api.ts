@@ -44,6 +44,19 @@ export function createApiRouter(config: ServerConfig): Router {
     }
   })
 
+  router.get('/suppliers/:slug', async (req, res) => {
+    try {
+      const record = await supplier.findById(req.params.slug)
+      if (!record) {
+        return res.status(404).json({ error: 'Supplier not found' })
+      }
+
+      res.json({ slug: req.params.slug, ...record })
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
   router.get('/ingredients', async (_req, res) => {
     try {
       const ingredients = await config.database
@@ -59,6 +72,32 @@ export function createApiRouter(config: ServerConfig): Router {
         .execute()
 
       res.json(ingredients)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.get('/ingredients/:slug', async (req, res) => {
+    try {
+      const record = await ingredient.findById(req.params.slug)
+      if (!record) {
+        return res.status(404).json({ error: 'Ingredient not found' })
+      }
+
+      res.json({
+        slug: req.params.slug,
+        name: record.name,
+        category: record.category,
+        purchase: {
+          unit: record.purchaseUnit,
+          cost: record.purchaseCost,
+          vat: record.includesVat === 1,
+        },
+        supplierSlug: record.supplierSlug,
+        conversionRate: record.conversionRule || '',
+        notes: record.notes || '',
+        lastPurchased: record.lastPurchased,
+      })
     } catch (error: any) {
       res.status(500).json({ error: error.message })
     }
@@ -272,7 +311,7 @@ function handleError(res: Response, error: unknown) {
   if (error instanceof ZodError) {
     return res.status(400).json({
       error: 'Validation failed',
-      details: error.errors,
+      details: error.issues,
     })
   }
 
