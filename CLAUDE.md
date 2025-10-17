@@ -74,6 +74,73 @@ git commit -m "chore(release): v0.1.0"
 - This automatically updates package.json and creates a tag
 - Use `git push --tags` to publish tags to remote
 
+## Directory Structure
+
+The margin calculator separates **system data** from **user data** using two distinct directories:
+
+```
+~/.margin/                   # Location directory (--location, default: ~/.margin)
+├── conf/                    # System configuration
+│   └── margin.toml         # VAT rate, default margin, etc.
+└── margin.sqlite3          # SQLite database
+
+<cwd>/data/                  # Workspace directory (--workspace, default: <cwd>/data)
+├── suppliers/              # Supplier YAML files
+├── ingredients/            # Ingredient YAML files
+└── recipes/                # Recipe YAML files
+```
+
+**Key Concepts:**
+
+- **Location Directory** (`--location`): System data location (default: `~/.margin`)
+  - Contains configuration files (`conf/margin.toml`)
+  - Contains SQLite database (`margin.sqlite3`)
+  - Set via `--location /path/to/location` to use a different location
+
+- **Workspace Directory** (`--workspace`): User data location (default: `<cwd>/data`)
+  - Contains YAML files (suppliers, ingredients, recipes)
+  - Can be version-controlled with git without exposing system data
+  - Used for `@/` reference resolution in YAML imports
+  - Set via `--workspace /path/to/workspace` to use a different location
+
+- **Legacy `--working` flag**: Deprecated, use `--location` instead
+  - Still supported for backward compatibility
+  - Defaults to `~/.margin`
+
+**Example:**
+
+```bash
+# Initialize creates both directory structures
+margin initialise
+
+# Results in:
+~/.margin/conf/margin.toml
+~/.margin/margin.sqlite3
+./data/suppliers/
+./data/ingredients/
+./data/recipes/
+
+# Custom locations
+margin initialise --location ./system --workspace ./recipes
+
+# Results in:
+./system/conf/margin.toml
+./system/margin.sqlite3
+./recipes/suppliers/
+./recipes/ingredients/
+./recipes/recipes/
+
+# When importing, @/ingredients/ham.yaml resolves to:
+<workspace>/ingredients/ham.yaml
+```
+
+**Benefits of Separation:**
+
+1. **Git-friendly**: Version control YAML files without exposing database or secrets
+2. **Redundancy**: Database can be regenerated from YAML files
+3. **Safety**: `rm -rf data/` won't delete your database
+4. **Collaboration**: Share recipe repositories without sharing system configuration
+
 ## Architecture
 
 ### Database Stack
@@ -448,15 +515,18 @@ margin [global-options] <command>
 Global Options:
   --verbose                 Set log level to verbose
   --quiet                   Set log level to warnings only
-  --working [dir]           Set working directory (default: ./data)
+  --location [dir]          System data location (default: ~/.margin)
+  --workspace [dir]         Workspace location for recipe files (default: <cwd>/data)
+  --working [dir]           [DEPRECATED] Use --location instead
   -d, --database [name]     Set database name (default: margin.sqlite3)
   -v, --version             Display version number
 
 Commands:
-  initialise                Initialize working directory structure
+  initialise                Initialize location and workspace directories
   import <files...>         Import any entity type (auto-detects from YAML/JSON)
-    --root [dir]              Custom root for @/ references
+    --root [dir]              [DEPRECATED] Use --workspace instead
     --fail-fast               Stop on first error
+    --watch                   Stay running and watch for file changes
 
   recipe
     calculate <slugs...>      Calculate cost and margin for recipes
@@ -475,6 +545,7 @@ Commands:
   ui                        Launch web UI
     -p, --port <port>         Port to run on (default: 3000)
     --no-open                 Don't auto-open browser
+    --no-watch                Disable live file watching
 
   config
     set                       Update configuration (VAT rate, margins)
@@ -663,44 +734,50 @@ This section contains ideas for future development beyond v0.1.0:
 
 ### High Priority
 
-1. **Batch Import Performance**
+1. **Remote Storage Support** ✅ ~~Separate Storage Locations~~ (Completed in v0.1.0)
+   - ✅ Separated system data (`--location`) from user data (`--workspace`)
+   - ✅ Git-friendly workspace for version-controlled recipes
+   - Future: Support remote storage backends (S3, cloud storage)
+   - Future: Enable team collaboration via shared recipe repositories
+
+2. **Batch Import Performance**
    - Add progress bars for large imports
    - Parallelize independent imports
    - Transaction batching for better performance
 
-2. **Recipe Inheritance**
+3. **Recipe Inheritance**
    - Implement `parentId` inheritance logic
    - Allow recipes to inherit ingredients from base templates
    - Support overriding specific ingredients in child recipes
 
-3. **Cost Analysis Features**
+4. **Cost Analysis Features**
    - Historical cost tracking (price changes over time)
    - Cost trend analysis
    - Supplier comparison reports
 
-4. **Export Functionality**
+5. **Export Functionality**
    - Export recipes/ingredients back to YAML/JSON
    - CSV export for spreadsheet analysis
    - PDF report generation
 
 ### Medium Priority
 
-5. **Interactive Recipe Builder**
+6. **Interactive Recipe Builder**
    - CLI prompts for creating recipes without YAML
    - Ingredient picker with autocomplete
    - Yield calculator helper
 
-6. **Validation & Warnings**
+7. **Validation & Warnings**
    - Warn about recipes with missing ingredients
    - Flag ingredients with stale pricing
    - Suggest margin improvements
 
-7. **Multi-Currency Support**
+8. **Multi-Currency Support**
    - Support multiple currencies
    - Currency conversion rates
    - Currency-specific formatting
 
-8. **Web UI Enhancements**
+9. **Web UI Enhancements**
    - Edit recipes in browser
    - Inline cost calculations
    - Filtering and sorting
@@ -708,22 +785,22 @@ This section contains ideas for future development beyond v0.1.0:
 
 ### Low Priority
 
-9. **API Mode**
-   - Standalone API server
-   - Authentication/authorization
-   - Rate limiting
+10. **API Mode**
+    - Standalone API server
+    - Authentication/authorization
+    - Rate limiting
 
-10. **Reporting Dashboard**
+11. **Reporting Dashboard**
     - Charts and graphs
     - Margin distribution visualization
     - Cost breakdown pie charts
 
-11. **Multi-tenant Support**
+12. **Multi-tenant Support**
     - Multiple databases
     - User management
     - Role-based access control
 
-12. **Integration Plugins**
+13. **Integration Plugins**
     - Import from POS systems
     - Export to accounting software
     - Supplier API integration
