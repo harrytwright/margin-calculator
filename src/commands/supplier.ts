@@ -33,9 +33,21 @@ const importer = new Command()
 
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
 
-    const { working, database: dbName, failFast, root } = cmd.optsWithGlobals()
+    const {
+      location,
+      working,
+      workspace,
+      database: dbName,
+      failFast,
+      root,
+    } = cmd.optsWithGlobals()
 
-    if (!(await isInitialised(path.join(working)))) {
+    // Use location if provided, otherwise fall back to working (deprecated)
+    const locationDir = location || working
+    // Use workspace if provided, otherwise fall back to root (deprecated) or working/data
+    const workspaceDir = workspace || root || path.join(working, 'data')
+
+    if (!(await isInitialised(locationDir))) {
       log.error(
         'ingredients.supplier',
         'margin is not yet initialised. Call `$ margin initialise` first'
@@ -43,14 +55,14 @@ const importer = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(working, './data', dbName))
+    const db = database(path.join(locationDir, dbName))
 
     // Initialize service
     const supplier = new SupplierService(db)
 
     const importer = new Importer(db, {
       failFast,
-      projectRoot: path.join(process.cwd(), root || ''),
+      dataDir: path.resolve(process.cwd(), workspaceDir),
       processors: [['supplier', supplier]],
     })
 

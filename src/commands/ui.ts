@@ -16,12 +16,24 @@ export const ui = new Command()
   .action(async (opts, cmd) => {
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
 
-    const { working, database: dbName, port, open, watch: watchFlag } =
-      cmd.optsWithGlobals()
+    const {
+      location,
+      working,
+      workspace,
+      database: dbName,
+      port,
+      open,
+      watch: watchFlag,
+    } = cmd.optsWithGlobals()
+
+    // Use location if provided, otherwise fall back to working (deprecated)
+    const locationDir = location || working
+    // Use workspace if provided, otherwise fall back to working/data
+    const workspaceDir = workspace || path.join(working, 'data')
 
     const watch = watchFlag !== false
 
-    if (!(await isInitialised(path.join(working)))) {
+    if (!(await isInitialised(locationDir))) {
       log.error(
         'ui',
         'margin is not yet initialised. Call `$ margin initialise` first'
@@ -29,13 +41,14 @@ export const ui = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(working, './data', dbName))
+    const db = database(path.join(locationDir, dbName))
 
     try {
       const server = await startServer({
         port: parseInt(port, 10),
         database: db,
-        workingDir: working,
+        locationDir,
+        workspaceDir,
         openBrowser: open,
         watchFiles: watch,
       })

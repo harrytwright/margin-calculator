@@ -36,3 +36,4 @@
 
 - Treat anything in `data/` as sample fixtures; never commit secrets to `.env`.
 - When modifying configuration defaults, document the new behavior in `docs/` and update the README command examples if needed.
+- The UI consumes `/api/events` (SSE) to refresh automatically—leave file watching enabled unless running in a constrained environment.

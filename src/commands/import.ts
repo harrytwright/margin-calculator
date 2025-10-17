@@ -8,8 +8,8 @@ import ora from 'ora'
 import { database } from '../datastore/database'
 import { FileWatcher } from '../lib/file-watcher'
 import { HashService } from '../lib/hash-service'
-import { Importer } from '../lib/importer'
 import type { ImportStats } from '../lib/importer'
+import { Importer } from '../lib/importer'
 import { IngredientService } from '../services/ingredient'
 import { RecipeService } from '../services/recipe'
 import { SupplierService } from '../services/supplier'
@@ -41,10 +41,22 @@ export const importCommand = new Command()
   .action(async (files, opts, cmd) => {
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
 
-    const { working, database: dbName, failFast, root, watch } =
-      cmd.optsWithGlobals()
+    const {
+      location,
+      working,
+      workspace,
+      database: dbName,
+      failFast,
+      root,
+      watch,
+    } = cmd.optsWithGlobals()
 
-    if (!(await isInitialised(path.join(working)))) {
+    // Use location if provided, otherwise fall back to working (deprecated)
+    const locationDir = location || working
+    // Use workspace if provided, otherwise fall back to root (deprecated) or working/data
+    const workspaceDir = workspace || root || path.join(working, 'data')
+
+    if (!(await isInitialised(locationDir))) {
       log.error(
         'import',
         'margin is not yet initialised. Call `$ margin initialise` first'
@@ -52,21 +64,19 @@ export const importCommand = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(working, './data', dbName))
+    const db = database(path.join(locationDir, dbName))
 
     // Initialize services
     const supplier = new SupplierService(db)
     const ingredient = new IngredientService(db, supplier)
     const recipe = new RecipeService(db, ingredient)
 
-    const projectRoot = root
-      ? path.resolve(process.cwd(), root)
-      : path.join(working, 'data')
+    const dataDir = path.resolve(process.cwd(), workspaceDir)
 
     const createImporter = () =>
       new Importer(db, {
         failFast,
-        projectRoot,
+        dataDir,
         processors: [
           ['supplier', supplier],
           ['ingredient', ingredient],
@@ -80,7 +90,8 @@ export const importCommand = new Command()
       await runWatchMode({
         files: fileList,
         importerFactory: createImporter,
-        workingDir: working,
+        locationDir,
+        workspaceDir: dataDir,
         failFast,
       })
       return
@@ -103,7 +114,8 @@ export const importCommand = new Command()
 interface WatchModeConfig {
   files: string[]
   importerFactory: () => Importer
-  workingDir: string
+  locationDir: string
+  workspaceDir: string
   failFast: boolean
 }
 
@@ -115,7 +127,7 @@ async function runWatchMode(config: WatchModeConfig): Promise<void> {
     logSummary(importer, stats, config.failFast)
   }
 
-  const dataRoot = path.join(config.workingDir, 'data')
+  const dataRoot = config.workspaceDir
   await ensureDirectories([
     dataRoot,
     path.join(dataRoot, 'suppliers'),
