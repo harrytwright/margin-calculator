@@ -54,6 +54,12 @@
       </div>
     </div>
 
+    <!-- Toast Notification Container -->
+    <div
+      id="toast-container"
+      class="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-none"
+    ></div>
+
     <div id="app" class="min-h-screen">
       <!-- Header -->
       <header class="bg-white shadow-sm">
@@ -201,10 +207,6 @@
                   >
                     Clear
                   </button>
-                  <span
-                    id="supplier-feedback"
-                    class="text-sm text-gray-500"
-                  ></span>
                 </div>
               </form>
             </div>
@@ -503,10 +505,6 @@
                   >
                     Clear
                   </button>
-                  <span
-                    id="ingredient-feedback"
-                    class="text-sm text-gray-500"
-                  ></span>
                 </div>
               </form>
             </div>
@@ -773,10 +771,6 @@
                   >
                     Clear
                   </button>
-                  <span
-                    id="recipe-feedback"
-                    class="text-sm text-gray-500"
-                  ></span>
                 </div>
               </form>
             </div>
@@ -1244,16 +1238,115 @@
         }
       }
 
-      function setFeedback(elementId, message, tone = 'info') {
-        const el = document.getElementById(elementId)
-        el.textContent = message
-        el.classList.remove('text-green-600', 'text-red-600', 'text-gray-500')
-        if (tone === 'success') {
-          el.classList.add('text-green-600')
-        } else if (tone === 'error') {
-          el.classList.add('text-red-600')
+      /**
+       * Show a toast notification
+       * @param {string} message - The message to display
+       * @param {'success'|'error'|'info'} type - The type of toast
+       * @param {number} duration - Auto-dismiss duration in ms (0 = no auto-dismiss)
+       */
+      function showToast(message, type = 'info', duration = 4000) {
+        const container = document.getElementById('toast-container')
+        const toast = document.createElement('div')
+        toast.className =
+          'pointer-events-auto flex items-start gap-3 max-w-sm w-full bg-white rounded-lg shadow-lg border px-4 py-3 transform transition-all duration-300 translate-x-full opacity-0'
+
+        // Icon based on type
+        let icon = ''
+        let borderColor = 'border-gray-200'
+        let iconColor = 'text-gray-500'
+
+        if (type === 'success') {
+          borderColor = 'border-green-400'
+          iconColor = 'text-green-500'
+          icon = `
+            <svg class="w-5 h-5 flex-shrink-0 ${iconColor}" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+          `
+        } else if (type === 'error') {
+          borderColor = 'border-red-400'
+          iconColor = 'text-red-500'
+          icon = `
+            <svg class="w-5 h-5 flex-shrink-0 ${iconColor}" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+          `
         } else {
-          el.classList.add('text-gray-500')
+          borderColor = 'border-blue-400'
+          iconColor = 'text-blue-500'
+          icon = `
+            <svg class="w-5 h-5 flex-shrink-0 ${iconColor}" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+          `
+        }
+
+        toast.classList.add(borderColor)
+
+        toast.innerHTML = `
+          ${icon}
+          <p class="flex-1 text-sm text-gray-900">${message}</p>
+          <button class="toast-close flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        `
+
+        container.appendChild(toast)
+
+        // Animate in
+        setTimeout(() => {
+          toast.classList.remove('translate-x-full', 'opacity-0')
+          toast.classList.add('translate-x-0', 'opacity-100')
+        }, 10)
+
+        // Remove toast function
+        const removeToast = () => {
+          toast.classList.add('translate-x-full', 'opacity-0')
+          setTimeout(() => {
+            toast.remove()
+          }, 300)
+        }
+
+        // Close button handler
+        toast
+          .querySelector('.toast-close')
+          .addEventListener('click', removeToast)
+
+        // Auto-dismiss
+        if (duration > 0) {
+          setTimeout(removeToast, duration)
+        }
+      }
+
+      // Keep old function for backward compatibility during migration
+      function setFeedback(elementId, message, tone = 'info') {
+        showToast(message, tone)
+      }
+
+      /**
+       * Set loading state on a button
+       * @param {HTMLButtonElement} button - The button element
+       * @param {boolean} loading - Whether to show loading state
+       */
+      function setButtonLoading(button, loading) {
+        if (loading) {
+          button.disabled = true
+          button.dataset.originalText = button.innerHTML
+          button.innerHTML = `
+            <svg class="animate-spin h-4 w-4 text-white inline-block" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="ml-2">Saving...</span>
+          `
+        } else {
+          button.disabled = false
+          if (button.dataset.originalText) {
+            button.innerHTML = button.dataset.originalText
+            delete button.dataset.originalText
+          }
         }
       }
 
@@ -1576,33 +1669,24 @@
         }
       }
 
-      function clearSupplierForm(resetFeedback = true) {
+      function clearSupplierForm() {
         document.getElementById('supplier-form').reset()
-        if (resetFeedback) {
-          document.getElementById('supplier-feedback').textContent = ''
-        }
         state.editing.supplier = null
         document.querySelector(
           '#supplier-form button[type="submit"]'
         ).textContent = 'Save Supplier'
       }
 
-      function clearIngredientForm(resetFeedback = true) {
+      function clearIngredientForm() {
         document.getElementById('ingredient-form').reset()
-        if (resetFeedback) {
-          document.getElementById('ingredient-feedback').textContent = ''
-        }
         state.editing.ingredient = null
         document.querySelector(
           '#ingredient-form button[type="submit"]'
         ).textContent = 'Save Ingredient'
       }
 
-      function clearRecipeForm(resetFeedback = true) {
+      function clearRecipeForm() {
         document.getElementById('recipe-form').reset()
-        if (resetFeedback) {
-          document.getElementById('recipe-feedback').textContent = ''
-        }
         state.editing.recipe = null
         const rows = document.getElementById('recipe-ingredients-rows')
         rows.innerHTML = ''
@@ -1620,38 +1704,34 @@
         const name = form.name.value.trim()
 
         if (!name) {
-          setFeedback('supplier-feedback', 'Name is required', 'error')
+          showToast('Supplier name is required', 'error')
           return false
         }
 
         const slug = state.editing.supplier
         const payload = { name }
 
-        submitButton.disabled = true
-        setFeedback(
-          'supplier-feedback',
-          slug ? 'Updating supplier...' : 'Creating supplier...'
-        )
+        setButtonLoading(submitButton, true)
 
         try {
           if (slug) {
             await sendJSON(`/suppliers/${slug}`, 'PUT', payload)
-            clearSupplierForm(false)
-            setFeedback('supplier-feedback', 'Supplier updated', 'success')
+            clearSupplierForm()
+            showToast(`Supplier "${name}" updated successfully`, 'success')
           } else {
             await sendJSON('/suppliers', 'POST', payload)
-            clearSupplierForm(false)
-            setFeedback('supplier-feedback', 'Supplier created', 'success')
+            clearSupplierForm()
+            showToast(`Supplier "${name}" created successfully`, 'success')
           }
 
           await loadManagementData()
           await loadRecipeReport()
           return true
         } catch (error) {
-          setFeedback('supplier-feedback', error.message, 'error')
+          showToast(error.message, 'error')
           return false
         } finally {
-          submitButton.disabled = false
+          setButtonLoading(submitButton, false)
         }
       }
 
@@ -1671,11 +1751,7 @@
 
         const cost = parseFloat(costValue)
         if (!name || !category || !unit || Number.isNaN(cost)) {
-          setFeedback(
-            'ingredient-feedback',
-            'Please complete required fields',
-            'error'
-          )
+          showToast('Please complete all required fields', 'error')
           return false
         }
 
@@ -1693,31 +1769,27 @@
         }
 
         const slug = state.editing.ingredient
-        submitButton.disabled = true
-        setFeedback(
-          'ingredient-feedback',
-          slug ? 'Updating ingredient...' : 'Creating ingredient...'
-        )
+        setButtonLoading(submitButton, true)
 
         try {
           if (slug) {
             await sendJSON(`/ingredients/${slug}`, 'PUT', payload)
-            clearIngredientForm(false)
-            setFeedback('ingredient-feedback', 'Ingredient updated', 'success')
+            clearIngredientForm()
+            showToast(`Ingredient "${name}" updated successfully`, 'success')
           } else {
             await sendJSON('/ingredients', 'POST', payload)
-            clearIngredientForm(false)
-            setFeedback('ingredient-feedback', 'Ingredient created', 'success')
+            clearIngredientForm()
+            showToast(`Ingredient "${name}" created successfully`, 'success')
           }
 
           await loadManagementData()
           await loadRecipeReport()
           return true
         } catch (error) {
-          setFeedback('ingredient-feedback', error.message, 'error')
+          showToast(error.message, 'error')
           return false
         } finally {
-          submitButton.disabled = false
+          setButtonLoading(submitButton, false)
         }
       }
 
@@ -1739,7 +1811,7 @@
 
         const price = Number(priceValue)
         if (!name || Number.isNaN(price)) {
-          setFeedback('recipe-feedback', 'Name and price are required', 'error')
+          showToast('Recipe name and price are required', 'error')
           return false
         }
 
@@ -1771,31 +1843,27 @@
         }
 
         const slug = state.editing.recipe
-        submitButton.disabled = true
-        setFeedback(
-          'recipe-feedback',
-          slug ? 'Updating recipe...' : 'Creating recipe...'
-        )
+        setButtonLoading(submitButton, true)
 
         try {
           if (slug) {
             await sendJSON(`/recipes/${slug}`, 'PUT', payload)
-            clearRecipeForm(false)
-            setFeedback('recipe-feedback', 'Recipe updated', 'success')
+            clearRecipeForm()
+            showToast(`Recipe "${name}" updated successfully`, 'success')
           } else {
             await sendJSON('/recipes', 'POST', payload)
-            clearRecipeForm(false)
-            setFeedback('recipe-feedback', 'Recipe created', 'success')
+            clearRecipeForm()
+            showToast(`Recipe "${name}" created successfully`, 'success')
           }
 
           await loadManagementData()
           await loadRecipeReport()
           return true
         } catch (error) {
-          setFeedback('recipe-feedback', error.message, 'error')
+          showToast(error.message, 'error')
           return false
         } finally {
-          submitButton.disabled = false
+          setButtonLoading(submitButton, false)
         }
       }
 
@@ -1804,13 +1872,13 @@
         try {
           await fetchJSON(`/suppliers/${slug}`, { method: 'DELETE' })
           if (state.editing.supplier === slug) {
-            clearSupplierForm(false)
+            clearSupplierForm()
           }
-          setFeedback('supplier-feedback', 'Supplier deleted', 'success')
+          showToast(`Supplier "${slug}" deleted successfully`, 'success')
           await loadManagementData()
           await loadRecipeReport()
         } catch (error) {
-          setFeedback('supplier-feedback', error.message, 'error')
+          showToast(error.message, 'error')
         }
       }
 
@@ -1819,13 +1887,13 @@
         try {
           await fetchJSON(`/ingredients/${slug}`, { method: 'DELETE' })
           if (state.editing.ingredient === slug) {
-            clearIngredientForm(false)
+            clearIngredientForm()
           }
-          setFeedback('ingredient-feedback', 'Ingredient deleted', 'success')
+          showToast(`Ingredient "${slug}" deleted successfully`, 'success')
           await loadManagementData()
           await loadRecipeReport()
         } catch (error) {
-          setFeedback('ingredient-feedback', error.message, 'error')
+          showToast(error.message, 'error')
         }
       }
 
@@ -1834,13 +1902,13 @@
         try {
           await fetchJSON(`/recipes/${slug}`, { method: 'DELETE' })
           if (state.editing.recipe === slug) {
-            clearRecipeForm(false)
+            clearRecipeForm()
           }
-          setFeedback('recipe-feedback', 'Recipe deleted', 'success')
+          showToast(`Recipe "${slug}" deleted successfully`, 'success')
           await loadManagementData()
           await loadRecipeReport()
         } catch (error) {
-          setFeedback('recipe-feedback', error.message, 'error')
+          showToast(error.message, 'error')
         }
       }
 
