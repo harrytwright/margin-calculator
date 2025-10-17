@@ -1,10 +1,19 @@
-import { Router } from 'express'
+import { Router, type Response } from 'express'
+import { ZodError } from 'zod'
+
 import { Calculator } from '../../lib/calculation/calculator'
+import {
+  ingredientImportDataSchema,
+  recipeImportDataSchema,
+  supplierImportDataSchema,
+} from '../../schema'
 import { ConfigService } from '../../services/config'
 import { IngredientService } from '../../services/ingredient'
 import { RecipeService } from '../../services/recipe'
 import { SupplierService } from '../../services/supplier'
 import type { ServerConfig } from '../index'
+import { EntityPersistence } from '../services/entity-persistence'
+import { HttpError } from '../utils/http-error'
 
 export function createApiRouter(config: ServerConfig): Router {
   const router = Router()
@@ -13,8 +22,200 @@ export function createApiRouter(config: ServerConfig): Router {
   const supplier = new SupplierService(config.database)
   const ingredient = new IngredientService(config.database, supplier)
   const recipeService = new RecipeService(config.database, ingredient)
-  const configService = new ConfigService(config.workingDir)
+  const configService = new ConfigService(config.locationDir)
   const calculator = new Calculator(recipeService, ingredient, configService)
+  const persistence = new EntityPersistence(config, {
+    supplier,
+    ingredient,
+    recipe: recipeService,
+  })
+
+  router.get('/suppliers', async (_req, res) => {
+    try {
+      const suppliers = await config.database
+        .selectFrom('Supplier')
+        .select(['slug', 'name'])
+        .orderBy('name')
+        .execute()
+
+      res.json(suppliers)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.get('/events', (req, res) => {
+    if (!config.events) {
+      return res.status(503).json({ error: 'Event stream not available' })
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.setHeader('Connection', 'keep-alive')
+    res.flushHeaders?.()
+    res.write(': connected\n\n')
+
+    const sendEvent = (payload: unknown) => {
+      res.write(`event: entity\ndata: ${JSON.stringify(payload)}\n\n`)
+    }
+
+    const keepAlive = setInterval(() => {
+      res.write(': keep-alive\n\n')
+    }, 30000)
+
+    config.events.on('entity', sendEvent)
+
+    req.on('close', () => {
+      clearInterval(keepAlive)
+      config.events?.off('entity', sendEvent)
+    })
+  })
+
+  router.get('/suppliers/:slug', async (req, res) => {
+    try {
+      const record = await supplier.findById(req.params.slug)
+      if (!record) {
+        return res.status(404).json({ error: 'Supplier not found' })
+      }
+
+      res.json({ slug: req.params.slug, ...record })
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.get('/ingredients', async (_req, res) => {
+    try {
+      const ingredients = await config.database
+        .selectFrom('Ingredient')
+        .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
+        .select((eb) => [
+          eb.ref('Ingredient.slug').as('slug'),
+          eb.ref('Ingredient.name').as('name'),
+          eb.ref('Ingredient.category').as('category'),
+          eb.ref('Supplier.slug').as('supplierSlug'),
+        ])
+        .orderBy('Ingredient.name')
+        .execute()
+
+      res.json(ingredients)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.get('/ingredients/:slug', async (req, res) => {
+    try {
+      const record = await ingredient.findById(req.params.slug)
+      if (!record) {
+        return res.status(404).json({ error: 'Ingredient not found' })
+      }
+
+      res.json({
+        slug: req.params.slug,
+        name: record.name,
+        category: record.category,
+        purchase: {
+          unit: record.purchaseUnit,
+          cost: record.purchaseCost,
+          vat: record.includesVat === 1,
+        },
+        supplierSlug: record.supplierSlug,
+        conversionRate: record.conversionRule || '',
+        notes: record.notes || '',
+        lastPurchased: record.lastPurchased,
+      })
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.post('/suppliers', async (req, res) => {
+    try {
+      const parsed = supplierImportDataSchema.parse(req.body)
+      const record = await persistence.createSupplier(parsed)
+      res.status(201).json(record)
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.post('/ingredients', async (req, res) => {
+    try {
+      const parsed = ingredientImportDataSchema.parse(req.body)
+      const record = await persistence.createIngredient(parsed)
+      res.status(201).json(record)
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.post('/recipes', async (req, res) => {
+    try {
+      const parsed = recipeImportDataSchema.parse(req.body)
+      const record = await persistence.createRecipe(parsed)
+      res.status(201).json(record)
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.put('/suppliers/:slug', async (req, res) => {
+    try {
+      const parsed = supplierImportDataSchema.parse(req.body)
+      const record = await persistence.updateSupplier(req.params.slug, parsed)
+      res.json(record)
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.put('/ingredients/:slug', async (req, res) => {
+    try {
+      const parsed = ingredientImportDataSchema.parse(req.body)
+      const record = await persistence.updateIngredient(req.params.slug, parsed)
+      res.json(record)
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.put('/recipes/:slug', async (req, res) => {
+    try {
+      const parsed = recipeImportDataSchema.parse(req.body)
+      const record = await persistence.updateRecipe(req.params.slug, parsed)
+      res.json(record)
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.delete('/suppliers/:slug', async (req, res) => {
+    try {
+      await persistence.deleteSupplier(req.params.slug)
+      res.status(204).send()
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.delete('/ingredients/:slug', async (req, res) => {
+    try {
+      await persistence.deleteIngredient(req.params.slug)
+      res.status(204).send()
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
+
+  router.delete('/recipes/:slug', async (req, res) => {
+    try {
+      await persistence.deleteRecipe(req.params.slug)
+      res.status(204).send()
+    } catch (error) {
+      handleError(res, error)
+    }
+  })
 
   // GET /api/recipes - List all recipes
   router.get('/recipes', async (req, res) => {
@@ -124,4 +325,26 @@ export function createApiRouter(config: ServerConfig): Router {
   })
 
   return router
+}
+
+function handleError(res: Response, error: unknown) {
+  if (error instanceof HttpError) {
+    return res.status(error.status).json({
+      error: error.message,
+      details: error.details,
+    })
+  }
+
+  if (error instanceof ZodError) {
+    return res.status(400).json({
+      error: 'Validation failed',
+      details: error.issues,
+    })
+  }
+
+  if (error instanceof Error) {
+    return res.status(500).json({ error: error.message })
+  }
+
+  return res.status(500).json({ error: 'Unknown error' })
 }

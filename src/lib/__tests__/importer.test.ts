@@ -439,7 +439,7 @@ data:
   describe('Reference Resolution', () => {
     describe('resolveReferenceToPath', () => {
       test('should resolve absolute (@/) references', () => {
-        const importer = new Importer(db, { projectRoot: '/project' })
+        const importer = new Importer(db, { dataDir: '/project' })
 
         const resolved = importer.resolveReferenceToPath(
           '/project/recipes/pizza.yaml',
@@ -497,7 +497,7 @@ data:
     describe('extractFileDependencies', () => {
       test('should extract recipe extends dependencies', () => {
         const importer = new Importer(db, {
-          projectRoot: tmpDir,
+          dataDir: tmpDir,
           failFast: true,
         })
 
@@ -522,7 +522,7 @@ data:
 
       test('should extract recipe ingredient path dependencies', () => {
         const importer = new Importer(db, {
-          projectRoot: tmpDir,
+          dataDir: tmpDir,
           failFast: true,
         })
 
@@ -550,7 +550,7 @@ data:
 
       test('should extract ingredient supplier path dependencies', () => {
         const importer = new Importer(db, {
-          projectRoot: tmpDir,
+          dataDir: tmpDir,
           failFast: true,
         })
 
@@ -600,7 +600,7 @@ data:
 
   describe('Dependency Graph Import', () => {
     test('should auto-import dependencies in correct order', async () => {
-      const importer = new Importer(db, { projectRoot: tmpDir, failFast: true })
+      const importer = new Importer(db, { dataDir: tmpDir, failFast: true })
       const supplierService = new SupplierService(db)
       const ingredientService = new IngredientService(db, supplierService)
 
@@ -682,7 +682,7 @@ data:
     })
 
     test('should handle complex dependency trees', async () => {
-      const importer = new Importer(db, { projectRoot: tmpDir, failFast: true })
+      const importer = new Importer(db, { dataDir: tmpDir, failFast: true })
       const supplierService = new SupplierService(db)
       const ingredientService = new IngredientService(db, supplierService)
 
@@ -799,7 +799,7 @@ data:
     })
 
     test('should detect circular dependencies', async () => {
-      const importer = new Importer(db, { projectRoot: tmpDir, failFast: true })
+      const importer = new Importer(db, { dataDir: tmpDir, failFast: true })
 
       importer.addProcessor<RecipeResolvedImportData>(
         'recipe',

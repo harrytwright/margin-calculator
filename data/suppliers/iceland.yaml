@@ -1,0 +1,4 @@
+object: supplier
+data:
+  name: Iceland
+  slug: iceland

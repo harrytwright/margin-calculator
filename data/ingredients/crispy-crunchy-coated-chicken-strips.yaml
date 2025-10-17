@@ -1,0 +1,11 @@
+object: ingredient
+data:
+  name: Crispy Crunchy Coated Chicken Strips
+  category: Frozen
+  purchase:
+    cost: 4
+    unit: 500g
+    vat: true
+  supplier:
+    uses: slug:iceland
+  slug: crispy-crunchy-coated-chicken-strips

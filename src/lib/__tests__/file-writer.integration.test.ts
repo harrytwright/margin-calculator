@@ -49,7 +49,7 @@ describe('FileWriter integration', () => {
 
     const importer = new Importer(db, {
       importOnly: true,
-      projectRoot: tempDir,
+      dataDir: tempDir,
     })
 
     let result = await importer.import([filePath])

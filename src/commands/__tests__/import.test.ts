@@ -270,7 +270,7 @@ data:
 
       const importer = new Importer(db, {
         failFast: false,
-        projectRoot: tmpDir,
+        dataDir: tmpDir,
       })
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
@@ -367,7 +367,7 @@ data:
 
       const importer = new Importer(db, {
         failFast: false,
-        projectRoot: tmpDir,
+        dataDir: tmpDir,
       })
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)

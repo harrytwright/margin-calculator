@@ -60,6 +60,7 @@ export class FileWatcher extends EventEmitter {
   private watcher?: FSWatcher
   private timers = new Map<string, NodeJS.Timeout>()
   private pathIndex = new Map<string, PathMetadata>()
+  private retryCounts = new Map<string, number>()
 
   constructor(private options: FileWatcherOptions) {
     super()
@@ -104,9 +105,14 @@ export class FileWatcher extends EventEmitter {
     }
   }
 
-  private scheduleProcess(filePath: string, reason: 'add' | 'change'): void {
+  private scheduleProcess(
+    filePath: string,
+    reason: 'add' | 'change',
+    attempt = 0,
+    delay?: number
+  ): void {
     const absolute = path.resolve(filePath)
-    const debounce = this.options.debounceMs ?? DEFAULT_DEBOUNCE_MS
+    const debounce = delay ?? this.options.debounceMs ?? DEFAULT_DEBOUNCE_MS
     const existing = this.timers.get(absolute)
     if (existing) {
       clearTimeout(existing)
@@ -114,7 +120,7 @@ export class FileWatcher extends EventEmitter {
 
     const timer = setTimeout(() => {
       this.timers.delete(absolute)
-      this.handleAddOrChange(absolute, reason).catch((error) =>
+      this.handleAddOrChange(absolute, reason, attempt).catch((error) =>
         this.emitError(error)
       )
     }, debounce)
@@ -133,43 +139,57 @@ export class FileWatcher extends EventEmitter {
 
   private async handleAddOrChange(
     filePath: string,
-    reason: 'add' | 'change'
+    reason: 'add' | 'change',
+    attempt = 0
   ): Promise<void> {
     const previousHash = this.options.hashService.get(filePath)
     const { changed, hash } =
       await this.options.hashService.hasChanged(filePath)
 
     if (!changed && reason === 'change') {
+      this.retryCounts.delete(filePath)
       return
     }
-
-    this.options.hashService.set(filePath, hash)
 
     const importer = await Promise.resolve(this.options.importerFactory())
-    const result = await importer.import([filePath])
+    try {
+      const result = await importer.import([filePath])
 
-    if (!result.resolved) {
-      return
-    }
+      this.options.hashService.set(filePath, hash)
+      this.retryCounts.delete(filePath)
 
-    for (const value of result.resolved.values()) {
-      const metaBefore = this.pathIndex.get(value.path)
+      if (!result.resolved) {
+        return
+      }
 
-      this.pathIndex.set(value.path, {
-        slug: value.slug,
-        type: value.type,
-      })
+      for (const value of result.resolved.values()) {
+        const metaBefore = this.pathIndex.get(value.path)
 
-      const action: WatcherEntityAction =
-        metaBefore || previousHash ? 'updated' : 'created'
+        this.pathIndex.set(value.path, {
+          slug: value.slug,
+          type: value.type,
+        })
 
-      this.emit('entity', {
-        action,
-        type: value.type,
-        slug: value.slug,
-        path: value.path,
-        data: value.data,
-      })
+        const action: WatcherEntityAction =
+          metaBefore || previousHash ? 'updated' : 'created'
+
+        this.emit('entity', {
+          action,
+          type: value.type,
+          slug: value.slug,
+          path: value.path,
+          data: value.data,
+        })
+      }
+    } catch (error) {
+      if (this.isRecoverableImportError(error) && attempt < 3) {
+        const nextAttempt = attempt + 1
+        this.retryCounts.set(filePath, nextAttempt)
+        this.scheduleProcess(filePath, reason, nextAttempt, 50 * nextAttempt)
+        return
+      }
+      this.retryCounts.delete(filePath)
+      throw error
     }
   }
 
@@ -210,5 +230,12 @@ export class FileWatcher extends EventEmitter {
       ...provided,
       ignored: provided.ignored ?? baseIgnored,
     }
+  }
+
+  private isRecoverableImportError(error: unknown): boolean {
+    if (!(error instanceof Error)) {
+      return false
+    }
+    return /Invalid input: expected object, received/.test(error.message)
   }
 }

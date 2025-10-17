@@ -1,0 +1,16 @@
+object: recipe
+data:
+  name: Chicken Strips
+  stage: active
+  class: menu_item
+  category: Sides
+  costing:
+    price: 400
+    margin: 75
+    vat: true
+  ingredients:
+    - uses: slug:crispy-crunchy-coated-chicken-strips
+      type: ingredient
+      with:
+        unit: 100g
+  slug: chicken-strips

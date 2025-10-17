@@ -11,7 +11,11 @@ import { initialise } from './commands/initialise'
 import { recipe } from './commands/recipe'
 import { supplier } from './commands/supplier'
 import { ui } from './commands/ui'
-import { DEFAULT_WORKING_DIR } from './utils/constants'
+import {
+  DEFAULT_LOCATION_DIR,
+  DEFAULT_WORKING_DIR,
+  DEFAULT_WORKSPACE_DIR,
+} from './utils/constants'
 import { getPackageInfo } from './utils/package-info'
 
 process.on('SIGINT', () => process.exit(0))
@@ -27,8 +31,18 @@ async function main() {
     .option('--verbose', 'Set the log level to verbose')
     .option('--quiet', 'Set the log level to display only warnings')
     .option(
-      '--working [working]',
-      'Set the working directory',
+      '--location [dir]',
+      'System data location (config + database)',
+      DEFAULT_LOCATION_DIR
+    )
+    .option(
+      '--workspace [dir]',
+      'Workspace location for recipe files',
+      DEFAULT_WORKSPACE_DIR
+    )
+    .option(
+      '--working [dir]',
+      '[DEPRECATED] Use --location instead',
       DEFAULT_WORKING_DIR
     )
     .option(

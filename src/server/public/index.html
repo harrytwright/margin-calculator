@@ -7,6 +7,115 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-50">
+    <!-- Modal Overlay -->
+    <div
+      id="modal-overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity duration-200"
+    ></div>
+
+    <!-- Modal Container -->
+    <div
+      id="modal"
+      class="fixed inset-0 flex items-center justify-center hidden z-50 pointer-events-none"
+    >
+      <div
+        class="modal-content bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col pointer-events-auto transform transition-all duration-200 scale-95 opacity-0"
+      >
+        <div
+          class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-lg z-10"
+        >
+          <h2 id="modal-title" class="text-xl font-semibold text-gray-900"></h2>
+          <button
+            id="modal-close"
+            class="text-gray-400 hover:text-gray-600 focus:outline-none"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          id="modal-body"
+          class="px-6 py-6 overflow-y-auto flex-1"
+          style="scrollbar-gutter: stable"
+        >
+          <!-- Form content will be injected here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div
+      id="toast-container"
+      class="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-none"
+    ></div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      id="delete-modal-overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity duration-200"
+    ></div>
+    <div
+      id="delete-modal"
+      class="fixed inset-0 flex items-center justify-center hidden z-50 pointer-events-none"
+    >
+      <div
+        class="delete-modal-content bg-white rounded-lg shadow-xl max-w-md w-full mx-4 pointer-events-auto transform transition-all duration-200 scale-95 opacity-0"
+      >
+        <div class="px-6 py-5">
+          <div class="flex items-start gap-4">
+            <div
+              class="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                Delete <span id="delete-entity-type"></span>?
+              </h3>
+              <p id="delete-message" class="text-sm text-gray-600 mb-4"></p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-lg">
+          <button
+            id="delete-cancel-btn"
+            class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-150"
+          >
+            Cancel
+          </button>
+          <button
+            id="delete-confirm-btn"
+            class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div id="app" class="min-h-screen">
       <!-- Header -->
       <header class="bg-white shadow-sm">
@@ -16,31 +125,750 @@
       </header>
 
       <!-- Main Content -->
-      <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Loading State -->
-        <div id="loading" class="text-center py-12">
-          <div
-            class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"
-          ></div>
-          <p class="mt-4 text-gray-600">Loading recipes...</p>
-        </div>
+      <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <!-- Management Section -->
+        <section class="bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div class="border-b border-gray-200 px-6 py-4 flex flex-wrap gap-2">
+            <span class="text-sm text-gray-500 mr-4">Manage data:</span>
+            <button
+              class="manager-tab px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none"
+              data-manager="suppliers"
+              aria-selected="true"
+            >
+              Suppliers
+            </button>
+            <button
+              class="manager-tab px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded hover:bg-blue-50 focus:outline-none"
+              data-manager="ingredients"
+              aria-selected="false"
+            >
+              Ingredients
+            </button>
+            <button
+              class="manager-tab px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded hover:bg-blue-50 focus:outline-none"
+              data-manager="recipes"
+              aria-selected="false"
+            >
+              Recipes
+            </button>
+          </div>
+
+          <div class="p-6 space-y-8">
+            <!-- Suppliers Manager -->
+            <div id="manager-suppliers" class="manager-panel space-y-6">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Suppliers</h3>
+                <button
+                  id="new-supplier-btn"
+                  type="button"
+                  class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  <svg
+                    class="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  New Supplier
+                </button>
+              </div>
+
+              <div>
+                <div
+                  id="supplier-list"
+                  class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                ></div>
+              </div>
+
+              <!-- Hidden form template -->
+              <form id="supplier-form" class="hidden space-y-5">
+                <!-- Supplier Name Field -->
+                <div>
+                  <label
+                    for="supplier-name"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Supplier Name <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <input
+                      id="supplier-name"
+                      name="name"
+                      type="text"
+                      required
+                      placeholder="e.g., Tesco, ASDA, Sysco"
+                      class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                    />
+                    <div
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                    >
+                      <svg
+                        id="supplier-name-valid"
+                        class="w-5 h-5 text-green-500 hidden"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <svg
+                        id="supplier-name-error"
+                        class="w-5 h-5 text-red-500 hidden"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  <p
+                    id="supplier-name-hint"
+                    class="mt-1.5 text-xs text-gray-500 hidden"
+                  >
+                    Name should be at least 2 characters
+                  </p>
+                  <p
+                    id="supplier-name-error-msg"
+                    class="mt-1.5 text-xs text-red-600 hidden"
+                  ></p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <button
+                    type="submit"
+                    id="supplier-submit-btn"
+                    disabled
+                    class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+                  >
+                    Save Supplier
+                  </button>
+                  <button
+                    type="button"
+                    id="supplier-reset"
+                    class="inline-flex items-center px-3 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Ingredients Manager -->
+            <div
+              id="manager-ingredients"
+              class="manager-panel space-y-6 hidden"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Ingredients</h3>
+                <button
+                  id="new-ingredient-btn"
+                  type="button"
+                  class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  <svg
+                    class="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  New Ingredient
+                </button>
+              </div>
+
+              <div>
+                <div
+                  id="ingredient-list"
+                  class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                ></div>
+              </div>
+
+              <!-- Hidden form template -->
+              <form id="ingredient-form" class="hidden space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <!-- Ingredient Name -->
+                  <div>
+                    <label
+                      for="ingredient-name"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Ingredient Name <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input
+                        id="ingredient-name"
+                        name="name"
+                        type="text"
+                        required
+                        placeholder="e.g., Cheddar Cheese, Olive Oil"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                      />
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                      >
+                        <svg
+                          id="ingredient-name-valid"
+                          class="w-5 h-5 text-green-500 hidden"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Category -->
+                  <div>
+                    <label
+                      for="ingredient-category"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Category <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input
+                        id="ingredient-category"
+                        name="category"
+                        type="text"
+                        required
+                        placeholder="e.g., Dairy, Meat, Vegetables"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                      />
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                      >
+                        <svg
+                          id="ingredient-category-valid"
+                          class="w-5 h-5 text-green-500 hidden"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <!-- Purchase Unit -->
+                  <div>
+                    <label
+                      for="ingredient-unit"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Purchase Unit <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input
+                        id="ingredient-unit"
+                        name="purchaseUnit"
+                        type="text"
+                        required
+                        placeholder="e.g., 1kg, 500g, 2L, 12 pack"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                      />
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                      >
+                        <svg
+                          id="ingredient-unit-valid"
+                          class="w-5 h-5 text-green-500 hidden"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Purchase Cost -->
+                  <div>
+                    <label
+                      for="ingredient-cost"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Purchase Cost (£) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                      <input
+                        id="ingredient-cost"
+                        name="purchaseCost"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                        placeholder="0.00"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                      />
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                      >
+                        <svg
+                          id="ingredient-cost-valid"
+                          class="w-5 h-5 text-green-500 hidden"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    <p class="mt-1.5 text-xs text-gray-500">Price ex-VAT</p>
+                  </div>
+                </div>
+
+                <!-- VAT & Supplier Row -->
+                <div class="flex flex-col md:flex-row gap-6">
+                  <div class="flex items-center">
+                    <label
+                      class="inline-flex items-center text-sm font-medium text-gray-700 cursor-pointer"
+                    >
+                      <input
+                        id="ingredient-vat"
+                        name="purchaseVat"
+                        type="checkbox"
+                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-4 h-4 transition-all duration-150"
+                      />
+                      <span class="ml-2">Price includes VAT</span>
+                    </label>
+                  </div>
+
+                  <div class="flex-1">
+                    <label
+                      for="ingredient-supplier"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      🏪 Supplier <span class="text-gray-400">(optional)</span>
+                    </label>
+                    <div class="relative">
+                      <select
+                        id="ingredient-supplier"
+                        name="supplier"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
+                      >
+                        <option value="">Select a supplier</option>
+                      </select>
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                      >
+                        <svg
+                          class="w-4 h-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- Conversion Rule -->
+                  <div>
+                    <label
+                      for="ingredient-conversion"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Conversion Rule
+                      <span class="text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="ingredient-conversion"
+                      name="conversionRate"
+                      type="text"
+                      placeholder="e.g., 1 loaf = 16 slices"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
+                    />
+                  </div>
+
+                  <!-- Notes -->
+                  <div>
+                    <label
+                      for="ingredient-notes"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Notes <span class="text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="ingredient-notes"
+                      name="notes"
+                      type="text"
+                      placeholder="Any additional info"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3 pt-2">
+                  <button
+                    type="submit"
+                    id="ingredient-submit-btn"
+                    disabled
+                    class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+                  >
+                    Save Ingredient
+                  </button>
+                  <button
+                    type="button"
+                    id="ingredient-reset"
+                    class="inline-flex items-center px-3 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all duration-150"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Recipes Manager -->
+            <div id="manager-recipes" class="manager-panel space-y-6 hidden">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Recipes</h3>
+                <button
+                  id="new-recipe-btn"
+                  type="button"
+                  class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  <svg
+                    class="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  New Recipe
+                </button>
+              </div>
+
+              <div>
+                <div
+                  id="recipe-manager-list"
+                  class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                ></div>
+              </div>
+
+              <!-- Hidden form template -->
+              <form id="recipe-form" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      for="recipe-name"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Recipe Name <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="recipe-name"
+                      name="name"
+                      type="text"
+                      required
+                      placeholder="e.g., Margherita Pizza, Club Sandwich"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="recipe-category"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Category <span class="text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="recipe-category"
+                      name="category"
+                      type="text"
+                      placeholder="e.g., Pizza, Sandwiches, Desserts"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label
+                      for="recipe-stage"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Stage <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="recipe-stage"
+                      name="stage"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="development">Development</option>
+                      <option value="active">Active</option>
+                      <option value="discontinued">Discontinued</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      for="recipe-class"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Class <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="recipe-class"
+                      name="class"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="menu_item">Menu Item</option>
+                      <option value="base_template">Base Template</option>
+                      <option value="sub_recipe">Sub Recipe</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      for="recipe-parent"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Extends <span class="text-gray-400">(optional)</span>
+                    </label>
+                    <select
+                      id="recipe-parent"
+                      name="extends"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">-- None --</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label
+                      for="recipe-price"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Target Price <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="recipe-price"
+                      name="price"
+                      type="number"
+                      min="0"
+                      step="1"
+                      required
+                      placeholder="e.g., 450"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p class="mt-1.5 text-xs text-gray-500">
+                      Price in pence, ex-VAT
+                    </p>
+                  </div>
+                  <div>
+                    <label
+                      for="recipe-margin"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Target Margin
+                      <span class="text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="recipe-margin"
+                      name="margin"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="1"
+                      placeholder="e.g., 65"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p class="mt-1.5 text-xs text-gray-500">Target margin %</p>
+                  </div>
+                  <div class="flex items-start pt-8">
+                    <label
+                      class="inline-flex items-center text-sm font-medium text-gray-700 cursor-pointer"
+                    >
+                      <input
+                        id="recipe-vat"
+                        name="vat"
+                        type="checkbox"
+                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-4 h-4 transition-all duration-150"
+                      />
+                      <span class="ml-2">VAT applicable</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      for="recipe-yield-amount"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Yield Amount <span class="text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="recipe-yield-amount"
+                      name="yieldAmount"
+                      type="number"
+                      min="0"
+                      step="1"
+                      placeholder="e.g., 1000"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p class="mt-1.5 text-xs text-gray-500">
+                      For sub-recipes only
+                    </p>
+                  </div>
+                  <div>
+                    <label
+                      for="recipe-yield-unit"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Yield Unit <span class="text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="recipe-yield-unit"
+                      name="yieldUnit"
+                      type="text"
+                      placeholder="e.g., ml, g, portions"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <p class="mt-1.5 text-xs text-gray-500">
+                      Unit of measurement
+                    </p>
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-semibold text-gray-700">
+                      Ingredients
+                    </h4>
+                    <button
+                      type="button"
+                      id="add-ingredient-row"
+                      class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-300 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors duration-150"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
+                      Add Ingredient
+                    </button>
+                  </div>
+                  <div id="recipe-ingredients-rows" class="space-y-3"></div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <button
+                    type="submit"
+                    class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none"
+                  >
+                    Save Recipe
+                  </button>
+                  <button
+                    type="button"
+                    id="recipe-reset"
+                    class="inline-flex items-center px-3 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
 
         <!-- Recipe List View -->
-        <div id="recipe-list" class="hidden">
-          <div class="mb-6">
-            <h2 class="text-xl font-semibold text-gray-900">All Recipes</h2>
-            <p class="text-gray-600">
-              Click on a recipe to view detailed cost breakdown
-            </p>
+        <section id="recipe-report-section">
+          <div id="loading" class="text-center py-12">
+            <div
+              class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"
+            ></div>
+            <p class="mt-4 text-gray-600">Loading recipes...</p>
           </div>
-          <div
-            id="recipes-container"
-            class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-          ></div>
-        </div>
+
+          <div id="recipe-list" class="hidden">
+            <div class="mb-6 flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-semibold text-gray-900">All Recipes</h2>
+                <p class="text-gray-600">
+                  Click on a recipe to view detailed cost breakdown
+                </p>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  data-manager-switch="recipes"
+                  class="inline-flex items-center px-4 py-2 rounded-md border border-blue-200 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                >
+                  + New Recipe
+                </button>
+              </div>
+            </div>
+            <div
+              id="recipes-container"
+              class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+            ></div>
+          </div>
+        </section>
 
         <!-- Recipe Detail View -->
-        <div id="recipe-detail" class="hidden">
+        <section id="recipe-detail" class="hidden">
           <button
             id="back-btn"
             class="mb-4 text-blue-600 hover:text-blue-800 flex items-center"
@@ -61,19 +889,1310 @@
             Back to recipes
           </button>
           <div id="detail-container"></div>
-        </div>
+        </section>
       </main>
     </div>
 
     <script>
       const API_BASE = '/api'
-      let currentView = 'list'
+      const state = {
+        suppliers: [],
+        ingredients: [],
+        recipes: [],
+        editing: {
+          supplier: null,
+          ingredient: null,
+          recipe: null,
+        },
+        activeManager: 'suppliers',
+      }
 
-      // Fetch and display recipes
-      async function loadRecipes() {
+      // Modal functionality
+      function openModal(title, formId) {
+        const modal = document.getElementById('modal')
+        const overlay = document.getElementById('modal-overlay')
+        const modalBody = document.getElementById('modal-body')
+        const modalTitle = document.getElementById('modal-title')
+        const form = document.getElementById(formId)
+
+        modalTitle.textContent = title
+
+        // Move form into modal
+        const formClone = form.cloneNode(true)
+        formClone.classList.remove('hidden')
+        formClone.id = `${formId}-active`
+        modalBody.innerHTML = ''
+        modalBody.appendChild(formClone)
+
+        // Show modal with animation
+        modal.classList.remove('hidden')
+        overlay.classList.remove('hidden')
+
+        setTimeout(() => {
+          modal
+            .querySelector('.modal-content')
+            .classList.remove('scale-95', 'opacity-0')
+          modal
+            .querySelector('.modal-content')
+            .classList.add('scale-100', 'opacity-100')
+        }, 10)
+
+        // Rebind form events for the cloned form
+        if (formId === 'supplier-form') {
+          formClone.addEventListener('submit', async (e) => {
+            const success = await handleSupplierSubmit(e)
+            if (success) closeModal()
+          })
+          formClone
+            .querySelector('#supplier-reset')
+            ?.addEventListener('click', clearSupplierForm)
+
+          // Attach real-time validation
+          const nameInput = formClone.querySelector('#supplier-name')
+          nameInput?.addEventListener('input', () =>
+            validateSupplierForm(formClone)
+          )
+          nameInput?.addEventListener('blur', () =>
+            validateSupplierForm(formClone)
+          )
+          // Run validation once to set initial state
+          setTimeout(() => validateSupplierForm(formClone), 10)
+        } else if (formId === 'ingredient-form') {
+          formClone.addEventListener('submit', async (e) => {
+            const success = await handleIngredientSubmit(e)
+            if (success) closeModal()
+          })
+          formClone
+            .querySelector('#ingredient-reset')
+            ?.addEventListener('click', clearIngredientForm)
+          populateIngredientSelectors()
+
+          // Attach real-time validation
+          const fields = ['name', 'category', 'unit', 'cost']
+          fields.forEach((field) => {
+            const input = formClone.querySelector(`#ingredient-${field}`)
+            input?.addEventListener('input', () =>
+              validateIngredientForm(formClone)
+            )
+            input?.addEventListener('blur', () =>
+              validateIngredientForm(formClone)
+            )
+          })
+          // Run validation once to set initial state
+          setTimeout(() => validateIngredientForm(formClone), 10)
+        } else if (formId === 'recipe-form') {
+          formClone.addEventListener('submit', async (e) => {
+            const success = await handleRecipeSubmit(e)
+            if (success) closeModal()
+          })
+          formClone
+            .querySelector('#recipe-reset')
+            ?.addEventListener('click', clearRecipeForm)
+          formClone
+            .querySelector('#add-ingredient-row')
+            ?.addEventListener('click', () =>
+              addIngredientRow(
+                formClone.querySelector('#recipe-ingredients-rows')
+              )
+            )
+          // Initialize with one ingredient row
+          const ingredientRows = formClone.querySelector(
+            '#recipe-ingredients-rows'
+          )
+          if (ingredientRows.children.length === 0) {
+            addIngredientRow(ingredientRows)
+          }
+          populateIngredientSelectors()
+        }
+
+        // Focus first input
+        setTimeout(() => {
+          const firstInput = formClone.querySelector(
+            'input:not([type="checkbox"]), select, textarea'
+          )
+          firstInput?.focus()
+        }, 100)
+      }
+
+      function closeModal() {
+        const modal = document.getElementById('modal')
+        const overlay = document.getElementById('modal-overlay')
+        const modalContent = modal.querySelector('.modal-content')
+
+        // Animate out
+        modalContent.classList.remove('scale-100', 'opacity-100')
+        modalContent.classList.add('scale-95', 'opacity-0')
+
+        setTimeout(() => {
+          modal.classList.add('hidden')
+          overlay.classList.add('hidden')
+          document.getElementById('modal-body').innerHTML = ''
+        }, 200)
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        bindManagerNavigation()
+        bindForms()
+        bindModalTriggers()
+        loadManagementData()
+        loadRecipeReport()
+        startEventStream()
+      })
+
+      async function fetchJSON(pathname, options) {
+        const response = await fetch(`${API_BASE}${pathname}`, options)
+        if (!response.ok) {
+          const payload = await response.text()
+          throw new Error(payload || response.statusText)
+        }
+        const text = await response.text()
+        return text ? JSON.parse(text) : null
+      }
+
+      async function sendJSON(pathname, method, payload) {
+        return fetchJSON(pathname, {
+          method,
+          headers: {
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        })
+      }
+
+      // Real-time validation
+      function validateIngredientForm(form) {
+        const fields = {
+          name: form.querySelector('#ingredient-name'),
+          category: form.querySelector('#ingredient-category'),
+          unit: form.querySelector('#ingredient-unit'),
+          cost: form.querySelector('#ingredient-cost'),
+        }
+
+        const icons = {
+          name: form.querySelector('#ingredient-name-valid'),
+          category: form.querySelector('#ingredient-category-valid'),
+          unit: form.querySelector('#ingredient-unit-valid'),
+          cost: form.querySelector('#ingredient-cost-valid'),
+        }
+
+        const submitBtn = form.querySelector('#ingredient-submit-btn')
+
+        // Validate name
+        const nameValid = fields.name.value.trim().length >= 2
+        if (nameValid) {
+          icons.name.classList.remove('hidden')
+          fields.name.classList.add('border-green-300')
+          fields.name.classList.remove('border-red-300')
+        } else if (fields.name.value.trim().length > 0) {
+          icons.name.classList.add('hidden')
+          fields.name.classList.add('border-red-300')
+          fields.name.classList.remove('border-green-300')
+        } else {
+          icons.name.classList.add('hidden')
+          fields.name.classList.remove('border-red-300', 'border-green-300')
+        }
+
+        // Validate category
+        const categoryValid = fields.category.value.trim().length >= 2
+        if (categoryValid) {
+          icons.category.classList.remove('hidden')
+          fields.category.classList.add('border-green-300')
+        } else {
+          icons.category.classList.add('hidden')
+          fields.category.classList.remove('border-green-300')
+        }
+
+        // Validate unit
+        const unitValid = fields.unit.value.trim().length >= 1
+        if (unitValid) {
+          icons.unit.classList.remove('hidden')
+          fields.unit.classList.add('border-green-300')
+        } else {
+          icons.unit.classList.add('hidden')
+          fields.unit.classList.remove('border-green-300')
+        }
+
+        // Validate cost
+        const cost = parseFloat(fields.cost.value)
+        const costValid = !isNaN(cost) && cost > 0
+        if (costValid) {
+          icons.cost.classList.remove('hidden')
+          fields.cost.classList.add('border-green-300')
+        } else {
+          icons.cost.classList.add('hidden')
+          fields.cost.classList.remove('border-green-300')
+        }
+
+        // Enable submit only if all required fields valid
+        const allValid = nameValid && categoryValid && unitValid && costValid
+        submitBtn.disabled = !allValid
+      }
+
+      function validateSupplierForm(form) {
+        const nameInput = form.querySelector('#supplier-name')
+        const submitBtn = form.querySelector('#supplier-submit-btn')
+        const validIcon = form.querySelector('#supplier-name-valid')
+        const errorIcon = form.querySelector('#supplier-name-error')
+        const errorMsg = form.querySelector('#supplier-name-error-msg')
+        const hint = form.querySelector('#supplier-name-hint')
+
+        const name = nameInput.value.trim()
+        let isValid = false
+
+        if (name.length === 0) {
+          // Empty - show neither icon
+          validIcon.classList.add('hidden')
+          errorIcon.classList.add('hidden')
+          errorMsg.classList.add('hidden')
+          hint.classList.remove('hidden')
+          nameInput.classList.remove('border-red-300', 'border-green-300')
+        } else if (name.length < 2) {
+          // Too short
+          validIcon.classList.add('hidden')
+          errorIcon.classList.remove('hidden')
+          errorMsg.textContent = 'Name must be at least 2 characters'
+          errorMsg.classList.remove('hidden')
+          hint.classList.add('hidden')
+          nameInput.classList.add('border-red-300')
+          nameInput.classList.remove('border-green-300')
+        } else {
+          // Valid
+          validIcon.classList.remove('hidden')
+          errorIcon.classList.add('hidden')
+          errorMsg.classList.add('hidden')
+          hint.classList.add('hidden')
+          nameInput.classList.add('border-green-300')
+          nameInput.classList.remove('border-red-300')
+          isValid = true
+        }
+
+        // Enable/disable submit button
+        submitBtn.disabled = !isValid
+      }
+
+      function bindModalTriggers() {
+        // New entity buttons
+        document
+          .getElementById('new-supplier-btn')
+          ?.addEventListener('click', () => {
+            clearSupplierForm()
+            openModal('New Supplier', 'supplier-form')
+          })
+
+        document
+          .getElementById('new-ingredient-btn')
+          ?.addEventListener('click', () => {
+            clearIngredientForm()
+            openModal('New Ingredient', 'ingredient-form')
+          })
+
+        document
+          .getElementById('new-recipe-btn')
+          ?.addEventListener('click', () => {
+            clearRecipeForm()
+            openModal('New Recipe', 'recipe-form')
+          })
+
+        // Modal close button
+        document
+          .getElementById('modal-close')
+          ?.addEventListener('click', closeModal)
+
+        // Backdrop click
+        document
+          .getElementById('modal-overlay')
+          ?.addEventListener('click', closeModal)
+
+        // ESC key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            const modal = document.getElementById('modal')
+            if (!modal.classList.contains('hidden')) {
+              closeModal()
+            }
+          }
+        })
+      }
+
+      function bindManagerNavigation() {
+        document
+          .querySelectorAll('.manager-tab')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              setActiveManager(button.dataset.manager)
+            )
+          )
+
+        document
+          .querySelectorAll('[data-manager-switch]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              setActiveManager(button.dataset.managerSwitch)
+            )
+          )
+      }
+
+      function setActiveManager(key) {
+        state.activeManager = key
+
+        document.querySelectorAll('.manager-tab').forEach((button) => {
+          const isActive = button.dataset.manager === key
+          button.classList.toggle('bg-blue-600', isActive)
+          button.classList.toggle('text-white', isActive)
+          button.classList.toggle('border', !isActive)
+          button.classList.toggle('border-blue-200', !isActive)
+          button.classList.toggle('text-blue-600', !isActive)
+          button.setAttribute('aria-selected', String(isActive))
+        })
+
+        document.querySelectorAll('.manager-panel').forEach((panel) => {
+          panel.classList.add('hidden')
+        })
+
+        const activePanel = document.getElementById(`manager-${key}`)
+        if (activePanel) {
+          activePanel.classList.remove('hidden')
+        }
+      }
+
+      function bindForms() {
+        document
+          .getElementById('supplier-form')
+          .addEventListener('submit', handleSupplierSubmit)
+
+        document
+          .getElementById('supplier-reset')
+          .addEventListener('click', clearSupplierForm)
+
+        document
+          .getElementById('ingredient-form')
+          .addEventListener('submit', handleIngredientSubmit)
+
+        document
+          .getElementById('ingredient-reset')
+          .addEventListener('click', clearIngredientForm)
+
+        document
+          .getElementById('recipe-form')
+          .addEventListener('submit', handleRecipeSubmit)
+
+        document
+          .getElementById('recipe-reset')
+          .addEventListener('click', clearRecipeForm)
+
+        document
+          .getElementById('add-ingredient-row')
+          .addEventListener('click', () =>
+            addIngredientRow(document.getElementById('recipe-ingredients-rows'))
+          )
+
+        const ingredientContainer = document.getElementById(
+          'recipe-ingredients-rows'
+        )
+        if (ingredientContainer && ingredientContainer.children.length === 0) {
+          addIngredientRow(ingredientContainer)
+        }
+      }
+
+      /**
+       * Show a toast notification
+       * @param {string} message - The message to display
+       * @param {'success'|'error'|'info'} type - The type of toast
+       * @param {number} duration - Auto-dismiss duration in ms (0 = no auto-dismiss)
+       */
+      function showToast(message, type = 'info', duration = 4000) {
+        const container = document.getElementById('toast-container')
+        const toast = document.createElement('div')
+        toast.className =
+          'pointer-events-auto flex items-start gap-3 max-w-sm w-full bg-white rounded-lg shadow-lg border px-4 py-3 transform transition-all duration-300 translate-x-full opacity-0'
+
+        // Icon based on type
+        let icon = ''
+        let borderColor = 'border-gray-200'
+        let iconColor = 'text-gray-500'
+
+        if (type === 'success') {
+          borderColor = 'border-green-400'
+          iconColor = 'text-green-500'
+          icon = `
+            <svg class="w-5 h-5 flex-shrink-0 ${iconColor}" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+          `
+        } else if (type === 'error') {
+          borderColor = 'border-red-400'
+          iconColor = 'text-red-500'
+          icon = `
+            <svg class="w-5 h-5 flex-shrink-0 ${iconColor}" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+          `
+        } else {
+          borderColor = 'border-blue-400'
+          iconColor = 'text-blue-500'
+          icon = `
+            <svg class="w-5 h-5 flex-shrink-0 ${iconColor}" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+          `
+        }
+
+        toast.classList.add(borderColor)
+
+        toast.innerHTML = `
+          ${icon}
+          <p class="flex-1 text-sm text-gray-900">${message}</p>
+          <button class="toast-close flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        `
+
+        container.appendChild(toast)
+
+        // Animate in
+        setTimeout(() => {
+          toast.classList.remove('translate-x-full', 'opacity-0')
+          toast.classList.add('translate-x-0', 'opacity-100')
+        }, 10)
+
+        // Remove toast function
+        const removeToast = () => {
+          toast.classList.add('translate-x-full', 'opacity-0')
+          setTimeout(() => {
+            toast.remove()
+          }, 300)
+        }
+
+        // Close button handler
+        toast
+          .querySelector('.toast-close')
+          .addEventListener('click', removeToast)
+
+        // Auto-dismiss
+        if (duration > 0) {
+          setTimeout(removeToast, duration)
+        }
+      }
+
+      // Keep old function for backward compatibility during migration
+      function setFeedback(elementId, message, tone = 'info') {
+        showToast(message, tone)
+      }
+
+      /**
+       * Show delete confirmation modal
+       * @param {string} entityType - Type of entity (e.g., 'Supplier', 'Ingredient', 'Recipe')
+       * @param {string} entityName - Name of the entity to delete
+       * @param {string} message - Warning message
+       * @param {Function} onConfirm - Callback when delete is confirmed
+       * @returns {Promise<boolean>} - Resolves to true if confirmed, false if cancelled
+       */
+      function showDeleteModal(entityType, entityName, message, onConfirm) {
+        return new Promise((resolve) => {
+          const modal = document.getElementById('delete-modal')
+          const overlay = document.getElementById('delete-modal-overlay')
+          const content = modal.querySelector('.delete-modal-content')
+          const entityTypeEl = document.getElementById('delete-entity-type')
+          const messageEl = document.getElementById('delete-message')
+          const cancelBtn = document.getElementById('delete-cancel-btn')
+          const confirmBtn = document.getElementById('delete-confirm-btn')
+
+          // Set content
+          entityTypeEl.textContent = entityType
+          messageEl.textContent = message
+
+          // Show modal with animation
+          modal.classList.remove('hidden')
+          overlay.classList.remove('hidden')
+          setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0')
+            content.classList.add('scale-100', 'opacity-100')
+          }, 10)
+
+          // Close function
+          const closeModal = () => {
+            content.classList.remove('scale-100', 'opacity-100')
+            content.classList.add('scale-95', 'opacity-0')
+            setTimeout(() => {
+              modal.classList.add('hidden')
+              overlay.classList.add('hidden')
+              cancelBtn.removeEventListener('click', handleCancel)
+              confirmBtn.removeEventListener('click', handleConfirm)
+              overlay.removeEventListener('click', handleCancel)
+            }, 200)
+          }
+
+          // Handlers
+          const handleCancel = () => {
+            closeModal()
+            resolve(false)
+          }
+
+          const handleConfirm = async () => {
+            setButtonLoading(confirmBtn, true)
+            try {
+              await onConfirm()
+              closeModal()
+              resolve(true)
+            } catch (error) {
+              showToast(error.message, 'error')
+              resolve(false)
+            } finally {
+              setButtonLoading(confirmBtn, false)
+            }
+          }
+
+          // Event listeners
+          cancelBtn.addEventListener('click', handleCancel)
+          confirmBtn.addEventListener('click', handleConfirm)
+          overlay.addEventListener('click', handleCancel)
+
+          // ESC key handler
+          const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+              handleCancel()
+              document.removeEventListener('keydown', handleEsc)
+            }
+          }
+          document.addEventListener('keydown', handleEsc)
+        })
+      }
+
+      /**
+       * Set loading state on a button
+       * @param {HTMLButtonElement} button - The button element
+       * @param {boolean} loading - Whether to show loading state
+       */
+      function setButtonLoading(button, loading) {
+        if (loading) {
+          button.disabled = true
+          button.dataset.originalText = button.innerHTML
+          button.innerHTML = `
+            <svg class="animate-spin h-4 w-4 text-white inline-block" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="ml-2">Saving...</span>
+          `
+        } else {
+          button.disabled = false
+          if (button.dataset.originalText) {
+            button.innerHTML = button.dataset.originalText
+            delete button.dataset.originalText
+          }
+        }
+      }
+
+      async function loadManagementData() {
         try {
-          const response = await fetch(`${API_BASE}/report`)
-          const recipes = await response.json()
+          const [suppliers, ingredients, recipes] = await Promise.all([
+            fetchJSON('/suppliers'),
+            fetchJSON('/ingredients'),
+            fetchJSON('/recipes'),
+          ])
+
+          state.suppliers = suppliers || []
+          state.ingredients = ingredients || []
+          state.recipes = recipes || []
+
+          renderSupplierList()
+          renderIngredientList()
+          renderRecipeManagerList()
+          populateIngredientSelectors()
+        } catch (error) {
+          console.error('Failed to load management data', error)
+        }
+      }
+
+      function renderSupplierList() {
+        const container = document.getElementById('supplier-list')
+        if (!container) return
+
+        if (state.suppliers.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-full text-sm text-gray-500">
+              No suppliers yet. Use the form above to add one.
+            </div>
+          `
+          return
+        }
+
+        container.innerHTML = state.suppliers
+          .map(
+            (supplier) => `
+            <div class="border border-gray-200 rounded-lg p-4 bg-white">
+              <h4 class="text-sm font-semibold text-gray-900">${supplier.name}</h4>
+              <p class="text-xs text-gray-500 mt-1">slug: ${supplier.slug}</p>
+              <div class="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-600 bg-gray-50"
+                  data-action="edit-supplier"
+                  data-slug="${supplier.slug}"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-md border border-gray-200 text-red-600 bg-red-50"
+                  data-action="delete-supplier"
+                  data-slug="${supplier.slug}"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          `
+          )
+          .join('')
+
+        container
+          .querySelectorAll('[data-action="edit-supplier"]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              startEditSupplier(button.dataset.slug)
+            )
+          )
+
+        container
+          .querySelectorAll('[data-action="delete-supplier"]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              handleDeleteSupplier(button.dataset.slug)
+            )
+          )
+      }
+
+      function renderIngredientList() {
+        const container = document.getElementById('ingredient-list')
+        if (!container) return
+
+        if (state.ingredients.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-full text-sm text-gray-500">
+              No ingredients yet. Use the form above to add one.
+            </div>
+          `
+          return
+        }
+
+        container.innerHTML = state.ingredients
+          .map(
+            (ingredient) => `
+            <div class="border border-gray-200 rounded-lg p-4 bg-white">
+              <h4 class="text-sm font-semibold text-gray-900">${ingredient.name}</h4>
+              <p class="text-xs text-gray-500">Category: ${
+                ingredient.category || '—'
+              }</p>
+              <p class="text-xs text-gray-500">Supplier: ${
+                ingredient.supplierSlug || 'generic'
+              }</p>
+              <div class="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-600 bg-gray-50"
+                  data-action="edit-ingredient"
+                  data-slug="${ingredient.slug}"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-md border border-gray-200 text-red-600 bg-red-50"
+                  data-action="delete-ingredient"
+                  data-slug="${ingredient.slug}"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          `
+          )
+          .join('')
+
+        container
+          .querySelectorAll('[data-action="edit-ingredient"]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              startEditIngredient(button.dataset.slug)
+            )
+          )
+
+        container
+          .querySelectorAll('[data-action="delete-ingredient"]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              handleDeleteIngredient(button.dataset.slug)
+            )
+          )
+      }
+
+      function renderRecipeManagerList() {
+        const container = document.getElementById('recipe-manager-list')
+        if (!container) return
+
+        if (state.recipes.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-full text-sm text-gray-500">
+              No recipes yet. Use the form above to add one.
+            </div>
+          `
+          return
+        }
+
+        container.innerHTML = state.recipes
+          .map(
+            (recipe) => `
+            <div class="border border-gray-200 rounded-lg p-4 bg-white">
+              <h4 class="text-sm font-semibold text-gray-900">${recipe.name}</h4>
+              <p class="text-xs text-gray-500">Slug: ${recipe.slug}</p>
+              <div class="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-600 bg-gray-50"
+                  data-action="edit-recipe"
+                  data-slug="${recipe.slug}"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-md border border-gray-200 text-red-600 bg-red-50"
+                  data-action="delete-recipe"
+                  data-slug="${recipe.slug}"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          `
+          )
+          .join('')
+
+        container
+          .querySelectorAll('[data-action="edit-recipe"]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              startEditRecipe(button.dataset.slug)
+            )
+          )
+
+        container
+          .querySelectorAll('[data-action="delete-recipe"]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              handleDeleteRecipe(button.dataset.slug)
+            )
+          )
+      }
+
+      function startEditSupplier(slug) {
+        const supplier = state.suppliers.find((item) => item.slug === slug)
+        if (!supplier) return
+
+        setActiveManager('suppliers')
+
+        // Populate original form with data
+        document.getElementById('supplier-name').value = supplier.name
+        document.querySelector(
+          '#supplier-form button[type="submit"]'
+        ).textContent = 'Update Supplier'
+        state.editing.supplier = slug
+
+        // Open modal with populated form
+        openModal(`Edit Supplier: ${supplier.name}`, 'supplier-form')
+      }
+
+      async function startEditIngredient(slug) {
+        setActiveManager('ingredients')
+        try {
+          const ingredient = await fetchJSON(`/ingredients/${slug}`)
+          if (!ingredient) return
+
+          document.getElementById('ingredient-name').value = ingredient.name
+          document.getElementById('ingredient-category').value =
+            ingredient.category || ''
+          document.getElementById('ingredient-unit').value =
+            ingredient.purchase.unit || ''
+          document.getElementById('ingredient-cost').value =
+            ingredient.purchase.cost || 0
+          document.getElementById('ingredient-vat').checked =
+            !!ingredient.purchase.vat
+          populateIngredientSelectors()
+          document.getElementById('ingredient-supplier').value =
+            ingredient.supplierSlug || ''
+          document.getElementById('ingredient-conversion').value =
+            ingredient.conversionRate || ''
+          document.getElementById('ingredient-notes').value =
+            ingredient.notes || ''
+
+          document.querySelector(
+            '#ingredient-form button[type="submit"]'
+          ).textContent = 'Update Ingredient'
+          state.editing.ingredient = slug
+
+          // Open modal with populated form
+          openModal(`Edit Ingredient: ${ingredient.name}`, 'ingredient-form')
+        } catch (error) {
+          alert(`Unable to load ingredient: ${error.message}`)
+        }
+      }
+
+      async function startEditRecipe(slug) {
+        setActiveManager('recipes')
+        try {
+          const recipe = await fetchJSON(`/recipes/${slug}`)
+          if (!recipe) return
+
+          document.getElementById('recipe-name').value = recipe.name
+          document.getElementById('recipe-category').value =
+            recipe.category || ''
+          document.getElementById('recipe-stage').value =
+            recipe.stage || 'development'
+          document.getElementById('recipe-class').value =
+            recipe.class || 'menu_item'
+          document.getElementById('recipe-parent').value = recipe.parent || ''
+          document.getElementById('recipe-price').value = recipe.sellPrice || 0
+          document.getElementById('recipe-margin').value =
+            recipe.targetMargin || ''
+          document.getElementById('recipe-vat').checked = !!recipe.includesVat
+          document.getElementById('recipe-yield-amount').value =
+            recipe.yieldAmount || ''
+          document.getElementById('recipe-yield-unit').value =
+            recipe.yieldUnit || ''
+
+          const ingredients = Array.isArray(recipe.ingredients)
+            ? recipe.ingredients
+            : JSON.parse(recipe.ingredients || '[]')
+
+          const container = document.getElementById('recipe-ingredients-rows')
+          container.innerHTML = ''
+          if (ingredients.length > 0) {
+            ingredients.forEach((item) =>
+              addIngredientRow(container, {
+                type: item.type || 'ingredient',
+                slug: item.slug,
+                unit: item.unit || item.with?.unit || '',
+              })
+            )
+          } else {
+            addIngredientRow(container)
+          }
+
+          populateIngredientSelectors()
+
+          container
+            .querySelectorAll('.ingredient-slug')
+            .forEach((select, index) => {
+              const item = ingredients[index]
+              if (item && item.slug) {
+                select.value = item.slug
+              }
+            })
+
+          document.querySelector(
+            '#recipe-form button[type="submit"]'
+          ).textContent = 'Update Recipe'
+          state.editing.recipe = slug
+
+          // Open modal with populated form
+          openModal(`Edit Recipe: ${recipe.name}`, 'recipe-form')
+        } catch (error) {
+          alert(`Unable to load recipe: ${error.message}`)
+        }
+      }
+
+      function clearSupplierForm() {
+        document.getElementById('supplier-form').reset()
+        state.editing.supplier = null
+        document.querySelector(
+          '#supplier-form button[type="submit"]'
+        ).textContent = 'Save Supplier'
+      }
+
+      function clearIngredientForm() {
+        document.getElementById('ingredient-form').reset()
+        state.editing.ingredient = null
+        document.querySelector(
+          '#ingredient-form button[type="submit"]'
+        ).textContent = 'Save Ingredient'
+      }
+
+      function clearRecipeForm() {
+        document.getElementById('recipe-form').reset()
+        state.editing.recipe = null
+        const rows = document.getElementById('recipe-ingredients-rows')
+        rows.innerHTML = ''
+        addIngredientRow(rows)
+        populateIngredientSelectors()
+        document.querySelector(
+          '#recipe-form button[type="submit"]'
+        ).textContent = 'Save Recipe'
+      }
+
+      async function handleSupplierSubmit(event) {
+        event.preventDefault()
+        const form = event.target
+        const submitButton = form.querySelector('button[type="submit"]')
+        const name = form.name.value.trim()
+
+        if (!name) {
+          showToast('Supplier name is required', 'error')
+          return false
+        }
+
+        const slug = state.editing.supplier
+        const payload = { name }
+
+        setButtonLoading(submitButton, true)
+
+        try {
+          if (slug) {
+            await sendJSON(`/suppliers/${slug}`, 'PUT', payload)
+            clearSupplierForm()
+            showToast(`Supplier "${name}" updated successfully`, 'success')
+          } else {
+            await sendJSON('/suppliers', 'POST', payload)
+            clearSupplierForm()
+            showToast(`Supplier "${name}" created successfully`, 'success')
+          }
+
+          await loadManagementData()
+          await loadRecipeReport()
+          return true
+        } catch (error) {
+          showToast(error.message, 'error')
+          return false
+        } finally {
+          setButtonLoading(submitButton, false)
+        }
+      }
+
+      async function handleIngredientSubmit(event) {
+        event.preventDefault()
+        const form = event.target
+        const submitButton = form.querySelector('button[type="submit"]')
+
+        const name = form.name.value.trim()
+        const category = form.category.value.trim()
+        const unit = form.purchaseUnit.value.trim()
+        const costValue = form.purchaseCost.value
+        const supplierSlug = form.supplier.value
+        const conversionRate = form.conversionRate.value.trim()
+        const notes = form.notes.value.trim()
+        const vat = form.purchaseVat.checked
+
+        const cost = parseFloat(costValue)
+        if (!name || !category || !unit || Number.isNaN(cost)) {
+          showToast('Please complete all required fields', 'error')
+          return false
+        }
+
+        const payload = {
+          name,
+          category,
+          purchase: {
+            unit,
+            cost,
+            vat,
+          },
+          supplier: supplierSlug ? { uses: `slug:${supplierSlug}` } : undefined,
+          conversionRate: conversionRate || undefined,
+          notes: notes || undefined,
+        }
+
+        const slug = state.editing.ingredient
+        setButtonLoading(submitButton, true)
+
+        try {
+          if (slug) {
+            await sendJSON(`/ingredients/${slug}`, 'PUT', payload)
+            clearIngredientForm()
+            showToast(`Ingredient "${name}" updated successfully`, 'success')
+          } else {
+            await sendJSON('/ingredients', 'POST', payload)
+            clearIngredientForm()
+            showToast(`Ingredient "${name}" created successfully`, 'success')
+          }
+
+          await loadManagementData()
+          await loadRecipeReport()
+          return true
+        } catch (error) {
+          showToast(error.message, 'error')
+          return false
+        } finally {
+          setButtonLoading(submitButton, false)
+        }
+      }
+
+      async function handleRecipeSubmit(event) {
+        event.preventDefault()
+        const form = event.target
+        const submitButton = form.querySelector('button[type="submit"]')
+
+        const name = form.name.value.trim()
+        const category = form.category.value.trim()
+        const stage = form.stage.value
+        const recipeClass = form.class.value
+        const parent = form.extends.value
+        const priceValue = form.price.value
+        const marginValue = form.margin.value
+        const vat = form.vat.checked
+        const yieldAmountValue = form.yieldAmount.value
+        const yieldUnit = form.yieldUnit.value.trim()
+
+        const price = Number(priceValue)
+        if (!name || Number.isNaN(price)) {
+          showToast('Recipe name and price are required', 'error')
+          return false
+        }
+
+        const ingredients = collectIngredientRows(form)
+          .filter((row) => row.slug && row.unit)
+          .map((row) => ({
+            type: row.type,
+            uses: `slug:${row.slug}`,
+            with: { unit: row.unit },
+          }))
+
+        const payload = {
+          name,
+          category: category || undefined,
+          stage,
+          class: recipeClass,
+          costing: {
+            price,
+            margin: marginValue ? Number(marginValue) : undefined,
+            vat,
+          },
+          ingredients,
+          yieldAmount: yieldAmountValue ? Number(yieldAmountValue) : undefined,
+          yieldUnit: yieldUnit || undefined,
+        }
+
+        if (parent) {
+          payload.extends = `slug:${parent}`
+        }
+
+        const slug = state.editing.recipe
+        setButtonLoading(submitButton, true)
+
+        try {
+          if (slug) {
+            await sendJSON(`/recipes/${slug}`, 'PUT', payload)
+            clearRecipeForm()
+            showToast(`Recipe "${name}" updated successfully`, 'success')
+          } else {
+            await sendJSON('/recipes', 'POST', payload)
+            clearRecipeForm()
+            showToast(`Recipe "${name}" created successfully`, 'success')
+          }
+
+          await loadManagementData()
+          await loadRecipeReport()
+          return true
+        } catch (error) {
+          showToast(error.message, 'error')
+          return false
+        } finally {
+          setButtonLoading(submitButton, false)
+        }
+      }
+
+      async function handleDeleteSupplier(slug) {
+        await showDeleteModal(
+          'Supplier',
+          slug,
+          `Are you sure you want to delete supplier "${slug}"? This action cannot be undone.`,
+          async () => {
+            await fetchJSON(`/suppliers/${slug}`, { method: 'DELETE' })
+            if (state.editing.supplier === slug) {
+              clearSupplierForm()
+            }
+            showToast(`Supplier "${slug}" deleted successfully`, 'success')
+            await loadManagementData()
+            await loadRecipeReport()
+          }
+        )
+      }
+
+      async function handleDeleteIngredient(slug) {
+        await showDeleteModal(
+          'Ingredient',
+          slug,
+          `Are you sure you want to delete ingredient "${slug}"? This may affect recipes using this ingredient.`,
+          async () => {
+            await fetchJSON(`/ingredients/${slug}`, { method: 'DELETE' })
+            if (state.editing.ingredient === slug) {
+              clearIngredientForm()
+            }
+            showToast(`Ingredient "${slug}" deleted successfully`, 'success')
+            await loadManagementData()
+            await loadRecipeReport()
+          }
+        )
+      }
+
+      async function handleDeleteRecipe(slug) {
+        await showDeleteModal(
+          'Recipe',
+          slug,
+          `Are you sure you want to delete recipe "${slug}"? This action cannot be undone.`,
+          async () => {
+            await fetchJSON(`/recipes/${slug}`, { method: 'DELETE' })
+            if (state.editing.recipe === slug) {
+              clearRecipeForm()
+            }
+            showToast(`Recipe "${slug}" deleted successfully`, 'success')
+            await loadManagementData()
+            await loadRecipeReport()
+          }
+        )
+      }
+
+      function addIngredientRow(container, initial) {
+        const row = document.createElement('div')
+        row.className =
+          'ingredient-row overflow-y-scroll flex flex-col md:flex-row md:items-center gap-3 border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow duration-150'
+        row.innerHTML = `
+          <div class="flex-1 flex flex-col sm:flex-row gap-3">
+            <select class="ingredient-type px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150">
+              <option value="ingredient">🥕 Ingredient</option>
+              <option value="recipe">📋 Recipe</option>
+            </select>
+            <select class="ingredient-slug flex-1 px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150">
+              <option value="">-- Select --</option>
+            </select>
+            <input
+              type="text"
+              class="ingredient-unit w-full sm:w-32 px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
+              placeholder="e.g., 50g, 100ml"
+            />
+          </div>
+          <button
+            type="button"
+            class="remove-ingredient-row inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg border border-red-300 text-red-600 bg-red-50 hover:bg-red-100 transition-colors duration-150"
+          >
+            Remove
+          </button>
+        `
+
+        container.appendChild(row)
+
+        const typeSelect = row.querySelector('.ingredient-type')
+        typeSelect.addEventListener('change', () =>
+          populateIngredientSelectors()
+        )
+
+        row
+          .querySelector('.remove-ingredient-row')
+          .addEventListener('click', () => {
+            if (container.children.length > 1) {
+              row.remove()
+            }
+          })
+
+        if (initial) {
+          typeSelect.value = initial.type || 'ingredient'
+          row.querySelector('.ingredient-unit').value = initial.unit || ''
+        }
+
+        populateIngredientSelectors()
+
+        if (initial && initial.slug) {
+          row.querySelector('.ingredient-slug').value = initial.slug
+        }
+      }
+
+      function collectIngredientRows(form) {
+        const container = form || document
+        return Array.from(
+          container.querySelectorAll('#recipe-ingredients-rows .ingredient-row')
+        ).map((row) => ({
+          type: row.querySelector('.ingredient-type').value,
+          slug: row.querySelector('.ingredient-slug').value,
+          unit: row.querySelector('.ingredient-unit').value,
+        }))
+      }
+
+      function populateIngredientSelectors() {
+        const ingredientOptions = state.ingredients
+          .map((ing) => `<option value="${ing.slug}">${ing.name}</option>`)
+          .join('')
+
+        const recipeOptions = state.recipes
+          .map((rec) => `<option value="${rec.slug}">${rec.name}</option>`)
+          .join('')
+
+        document
+          .querySelectorAll('#recipe-ingredients-rows .ingredient-row')
+          .forEach((row) => {
+            const typeSelect = row.querySelector('.ingredient-type')
+            const slugSelect = row.querySelector('.ingredient-slug')
+            const current = slugSelect.value
+            if (typeSelect.value === 'recipe') {
+              slugSelect.innerHTML = `<option value="">-- Select --</option>${recipeOptions}`
+            } else {
+              slugSelect.innerHTML = `<option value="">-- Select --</option>${ingredientOptions}`
+            }
+            slugSelect.value = current
+          })
+
+        const supplierSelect = document.getElementById('ingredient-supplier')
+        if (supplierSelect) {
+          supplierSelect.innerHTML = state.suppliers
+            .map(
+              (supplier) =>
+                `<option value="${supplier.slug}">${supplier.name}</option>`
+            )
+            .join('')
+        }
+
+        const parentSelect = document.getElementById('recipe-parent')
+        if (parentSelect) {
+          const preserve = parentSelect.value
+          parentSelect.innerHTML =
+            '<option value="">-- None --</option>' +
+            state.recipes
+              .map(
+                (recipe) =>
+                  `<option value="${recipe.slug}">${recipe.name}</option>`
+              )
+              .join('')
+          parentSelect.value = preserve
+        }
+      }
+
+      function startEventStream() {
+        if (!window.EventSource) {
+          console.warn('EventSource not supported in this browser')
+          return
+        }
+
+        const source = new EventSource(`${API_BASE}/events`)
+
+        source.addEventListener('entity', (event) => {
+          try {
+            JSON.parse(event.data)
+            loadManagementData()
+            loadRecipeReport()
+          } catch (error) {
+            console.error('Failed to parse event payload', error)
+          }
+        })
+
+        source.addEventListener('error', () => {
+          source.close()
+          setTimeout(startEventStream, 5000)
+        })
+      }
+
+      async function loadRecipeReport() {
+        try {
+          const recipes = await fetchJSON('/report')
 
           document.getElementById('loading').classList.add('hidden')
           document.getElementById('recipe-list').classList.remove('hidden')
@@ -83,168 +2202,152 @@
             .map((recipe) => {
               if (!recipe.success) {
                 return `
-                            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                                <h3 class="font-semibold text-red-900">${recipe.slug}</h3>
-                                <p class="text-sm text-red-600 mt-1">Error: ${recipe.error}</p>
-                            </div>
-                        `
+                  <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h3 class="font-semibold text-red-900">${recipe.slug}</h3>
+                    <p class="text-sm text-red-600 mt-1">Error: ${recipe.error}</p>
+                  </div>
+                `
               }
 
               const marginColor = recipe.margin.meetsTarget ? 'green' : 'red'
               const marginIcon = recipe.margin.meetsTarget ? '✓' : '✗'
 
               return `
-                        <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer"
-                             onclick="loadRecipeDetail('${recipe.slug}')">
-                            <h3 class="font-semibold text-gray-900 text-lg mb-2">${recipe.name}</h3>
-                            <div class="space-y-2 text-sm">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Cost:</span>
-                                    <span class="font-medium">£${recipe.cost.toFixed(2)}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Sell Price:</span>
-                                    <span class="font-medium">£${recipe.margin.sellPrice.toFixed(2)}</span>
-                                </div>
-                                <div class="flex justify-between items-center pt-2 border-t">
-                                    <span class="text-gray-600">Margin:</span>
-                                    <span class="font-semibold text-${marginColor}-600">
-                                        ${marginIcon} ${recipe.margin.actualMargin.toFixed(1)}%
-                                    </span>
-                                </div>
-                                <div class="text-xs text-gray-500">
-                                    Target: ${recipe.margin.targetMargin}%
-                                </div>
-                            </div>
-                        </div>
-                    `
+                <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                     onclick="loadRecipeDetail('${recipe.slug}')">
+                  <h3 class="font-semibold text-gray-900 text-lg mb-2">${recipe.name}</h3>
+                  <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Cost:</span>
+                      <span class="font-medium">£${recipe.cost.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Sell Price:</span>
+                      <span class="font-medium">£${recipe.margin.sellPrice.toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t">
+                      <span class="text-gray-600">Margin:</span>
+                      <span class="font-semibold text-${marginColor}-600">
+                        ${marginIcon} ${recipe.margin.actualMargin.toFixed(1)}%
+                      </span>
+                    </div>
+                    <div class="text-xs text-gray-500">Target: ${recipe.margin.targetMargin}%</div>
+                  </div>
+                </div>
+              `
             })
             .join('')
         } catch (error) {
           document.getElementById('loading').innerHTML = `
-                    <div class="text-red-600">
-                        <p class="font-semibold">Error loading recipes</p>
-                        <p class="text-sm mt-2">${error.message}</p>
-                    </div>
-                `
+            <div class="text-red-600">
+              <p class="font-semibold">Error loading recipes</p>
+              <p class="text-sm mt-2">${error.message}</p>
+            </div>
+          `
         }
       }
 
-      // Load recipe detail
       async function loadRecipeDetail(slug) {
         try {
           document.getElementById('recipe-list').classList.add('hidden')
           document.getElementById('recipe-detail').classList.remove('hidden')
 
-          const response = await fetch(`${API_BASE}/recipes/${slug}/calculate`)
-          const data = await response.json()
+          const data = await fetchJSON(`/recipes/${slug}/calculate`)
 
           const container = document.getElementById('detail-container')
           const marginColor = data.margin.meetsTarget ? 'green' : 'red'
 
           container.innerHTML = `
-                    <div class="bg-white border border-gray-200 rounded-lg p-6">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4">${data.recipe.name}</h2>
-
-                        <!-- Cost Breakdown -->
-                        <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Cost Breakdown</h3>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                ${renderCostTree(data.cost.breakdown)}
-                                <div class="mt-4 pt-4 border-t border-gray-300">
-                                    <div class="flex justify-between text-lg font-semibold">
-                                        <span>Total Cost:</span>
-                                        <span>£${data.cost.total.toFixed(2)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Pricing & Margin -->
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Pricing & Margin</h3>
-                            <div class="bg-gray-50 rounded-lg p-4 space-y-3">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Sell Price (ex-VAT):</span>
-                                    <span class="font-medium">£${data.margin.sellPrice.toFixed(2)}</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Customer Price:</span>
-                                    <span class="font-medium">£${data.margin.customerPrice.toFixed(2)}</span>
-                                </div>
-                                ${
-                                  data.margin.vatApplicable
-                                    ? `
-                                    <div class="flex justify-between text-sm text-gray-500">
-                                        <span>VAT:</span>
-                                        <span>£${data.margin.vatAmount.toFixed(2)}</span>
-                                    </div>
-                                `
-                                    : '<div class="text-sm text-gray-500">VAT not applicable</div>'
-                                }
-                                <div class="flex justify-between pt-3 border-t">
-                                    <span class="text-gray-600">Profit:</span>
-                                    <span class="font-medium text-green-600">£${data.margin.profit.toFixed(2)}</span>
-                                </div>
-                                <div class="flex justify-between items-center pt-3 border-t">
-                                    <span class="text-gray-600">Margin:</span>
-                                    <div class="text-right">
-                                        <span class="text-2xl font-bold text-${marginColor}-600">
-                                            ${data.margin.actualMargin.toFixed(1)}%
-                                        </span>
-                                        <div class="text-sm text-gray-500">Target: ${data.margin.targetMargin}%</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="bg-white border border-gray-200 rounded-lg p-6">
+              <h2 class="text-2xl font-bold text-gray-900 mb-4">${data.recipe.name}</h2>
+              <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Cost Breakdown</h3>
+                <div class="bg-gray-50 rounded-lg p-4">
+                  ${renderCostTree(data.cost.breakdown)}
+                  <div class="mt-4 pt-4 border-t border-gray-300">
+                    <div class="flex justify-between text-lg font-semibold">
+                      <span>Total Cost:</span>
+                      <span>£${data.cost.total.toFixed(2)}</span>
                     </div>
-                `
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-3">Pricing & Margin</h3>
+                <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Sell Price (ex-VAT):</span>
+                    <span class="font-medium">£${data.margin.sellPrice.toFixed(2)}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Customer Price:</span>
+                    <span class="font-medium">£${data.margin.customerPrice.toFixed(2)}</span>
+                  </div>
+                  ${
+                    data.margin.vatApplicable
+                      ? `
+                        <div class="flex justify-between text-sm text-gray-500">
+                          <span>VAT:</span>
+                          <span>£${data.margin.vatAmount.toFixed(2)}</span>
+                        </div>
+                      `
+                      : '<div class="text-sm text-gray-500">VAT not applicable</div>'
+                  }
+                  <div class="flex justify-between pt-3 border-t">
+                    <span class="text-gray-600">Profit:</span>
+                    <span class="font-medium text-green-600">£${data.margin.profit.toFixed(2)}</span>
+                  </div>
+                  <div class="flex justify-between items-center pt-3 border-t">
+                    <span class="text-gray-600">Margin:</span>
+                    <div class="text-right">
+                      <span class="text-2xl font-bold text-${marginColor}-600">
+                        ${data.margin.actualMargin.toFixed(1)}%
+                      </span>
+                      <div class="text-sm text-gray-500">Target: ${data.margin.targetMargin}%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `
         } catch (error) {
           document.getElementById('detail-container').innerHTML = `
-                    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
-                        <p class="font-semibold text-red-900">Error loading recipe details</p>
-                        <p class="text-sm text-red-600 mt-2">${error.message}</p>
-                    </div>
-                `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+              <p class="font-semibold text-red-900">Error loading recipe details</p>
+              <p class="text-sm text-red-600 mt-2">${error.message}</p>
+            </div>
+          `
         }
       }
 
-      // Render cost breakdown tree
       function renderCostTree(items, depth = 0) {
         return items
           .map((item) => {
             const indent = depth * 20
             const icon = item.type === 'recipe' ? '📦' : '🥕'
-
             let html = `
-                    <div class="py-2" style="padding-left: ${indent}px">
-                        <div class="flex justify-between items-start">
-                            <span class="text-gray-700">
-                                ${icon} ${item.name}
-                                <span class="text-sm text-gray-500">(${item.amount} ${item.unit})</span>
-                            </span>
-                            <span class="font-medium text-gray-900 ml-4">£${item.cost.toFixed(2)}</span>
-                        </div>
-                    </div>
-                `
-
+              <div class="py-2" style="padding-left: ${indent}px">
+                <div class="flex justify-between items-start">
+                  <span class="text-gray-700">
+                    ${icon} ${item.name}
+                    <span class="text-sm text-gray-500">(${item.amount} ${item.unit})</span>
+                  </span>
+                  <span class="font-medium text-gray-900 ml-4">£${item.cost.toFixed(2)}</span>
+                </div>
+              </div>
+            `
             if (item.children && item.children.length > 0) {
               html += renderCostTree(item.children, depth + 1)
             }
-
             return html
           })
           .join('')
       }
 
-      // Back button handler
       document.getElementById('back-btn').addEventListener('click', () => {
         document.getElementById('recipe-detail').classList.add('hidden')
         document.getElementById('recipe-list').classList.remove('hidden')
       })
-
-      // Initialize
-      loadRecipes()
     </script>
   </body>
 </html>
