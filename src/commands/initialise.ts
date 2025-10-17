@@ -18,18 +18,37 @@ export const initialise = new Command()
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
     log.info('initialise', 'Initialising the cli')
 
-    const { working, database: dbPath, force } = cmd.optsWithGlobals()
+    const {
+      location,
+      working,
+      workspace,
+      database: dbPath,
+      force,
+    } = cmd.optsWithGlobals()
 
-    // Create a working dir
-    const { base, data } = await spin(createWorkingDirectory(working), {
-      text: '⚙ Creating working directory',
-      successText: 'Created working directory',
+    // Use location if provided, otherwise fall back to working (deprecated)
+    const locationDir = location || working
+    const workspaceDir = workspace
+
+    // Create system directories (location)
+    const { base: locationBase } = await spin(
+      createLocationDirectory(locationDir),
+      {
+        text: '⚙ Creating system directories',
+        successText: 'Created system directories',
+      }
+    )
+
+    // Create workspace directories
+    await spin(createWorkspaceDirectory(workspaceDir), {
+      text: '⚙ Creating workspace directories',
+      successText: 'Created workspace directories',
     })
 
-    // Create the config file within the above folder
-    await writeDefaultConfiguration(base, force)
+    // Create the config file
+    await writeDefaultConfiguration(locationBase, force)
 
-    // Delete the old database first,
+    // Delete the old database if force is enabled
     if (force) {
       const databaseDeletion = await prompt({
         type: 'select',
@@ -48,16 +67,16 @@ export const initialise = new Command()
 
       if (databaseDeletion.delete) {
         await fs
-          .access(path.join(data, dbPath))
-          .then(() => fs.unlink(path.join(data, dbPath)))
+          .access(path.join(locationBase, dbPath))
+          .then(() => fs.unlink(path.join(locationBase, dbPath)))
           .catch(() => log.verbose('initialise', 'Database does not exist'))
 
         log.warn('initialise', 'Database deleted')
       }
     }
 
-    // Initialise the database file
-    const db = database(path.join(data, dbPath))
+    // Initialise the database file at location root
+    const db = database(path.join(locationBase, dbPath))
 
     await migrate.call(
       db,
@@ -66,25 +85,40 @@ export const initialise = new Command()
     )
 
     console.log(
-      '\nInitialised margin system.\nDatabase: ✔\nDirectory: ✔ (%s)',
-      base
+      '\nInitialised margin system.\nLocation: ✔ (%s)\nWorkspace: ✔ (%s)',
+      locationBase,
+      workspaceDir
     )
   })
 
-async function createWorkingDirectory(dir: PathLike) {
+/**
+ * Create location directory structure (system data)
+ * Contains: conf/ and database file
+ */
+async function createLocationDirectory(dir: PathLike) {
   const base = (await fs.mkdir(dir, { recursive: true })) || dir.toString()
-
-  const data =
-    (await fs.mkdir(path.join(dir.toString(), './data'), {
-      recursive: true,
-    })) || path.join(dir.toString(), './data')
 
   const conf =
     (await fs.mkdir(path.join(dir.toString(), './conf'), {
       recursive: true,
     })) || path.join(dir.toString(), './conf')
 
-  return { base, data, conf }
+  return { base, conf }
+}
+
+/**
+ * Create workspace directory structure (user YAML files)
+ * Contains: suppliers/, ingredients/, recipes/
+ */
+async function createWorkspaceDirectory(dir: PathLike) {
+  const base = (await fs.mkdir(dir, { recursive: true })) || dir.toString()
+
+  // Create subdirectories for YAML files
+  await fs.mkdir(path.join(base, 'suppliers'), { recursive: true })
+  await fs.mkdir(path.join(base, 'ingredients'), { recursive: true })
+  await fs.mkdir(path.join(base, 'recipes'), { recursive: true })
+
+  return { base }
 }
 
 // Use `force` for overwriting the previous configuration. Clean the slate as you will.
