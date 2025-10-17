@@ -114,4 +114,25 @@ describe('FileWriter', () => {
 
     await expect(fs.access(filePath)).rejects.toThrow()
   })
+
+  test('adds auto-generated warning header to YAML files', async () => {
+    const data: SupplierImportData = {
+      name: 'ASDA',
+      slug: 'asda',
+    }
+
+    const filePath = await writer.write('supplier', 'asda', data, tempDir)
+    const raw = await fs.readFile(filePath, 'utf-8')
+
+    expect(raw).toContain('# WARNING: This file was auto-generated')
+    expect(raw).toContain('# Please make any changes through the UI')
+    expect(raw).toContain('# Direct edits may be overwritten')
+
+    // Ensure YAML still parses correctly despite header
+    const parsed = YAML.parse(raw)
+    expect(parsed).toEqual({
+      object: 'supplier',
+      data,
+    })
+  })
 })
