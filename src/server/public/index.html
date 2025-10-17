@@ -240,9 +240,107 @@
       <div class="flex-1 flex flex-col min-h-screen">
         <!-- Header Bar -->
         <header class="bg-white border-b border-gray-200 px-8 py-4">
-          <h2 id="view-title" class="text-2xl font-semibold text-gray-900">
-            Dashboard
-          </h2>
+          <div class="flex items-center justify-between gap-4">
+            <h2 id="view-title" class="text-2xl font-semibold text-gray-900">
+              Dashboard
+            </h2>
+
+            <!-- Search & Filters (only shown on management/margins views) -->
+            <div id="search-filters" class="hidden flex-1 max-w-2xl flex items-center gap-3">
+              <!-- Search Input -->
+              <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="search-input"
+                  class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Search..."
+                />
+              </div>
+
+              <!-- Filter Dropdown -->
+              <div class="relative">
+                <button
+                  id="filter-toggle"
+                  class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                  </svg>
+                  Filters
+                  <span id="filter-count" class="ml-2 hidden inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    0
+                  </span>
+                </button>
+
+                <!-- Filter Dropdown Menu (hidden by default) -->
+                <div
+                  id="filter-menu"
+                  class="hidden absolute right-0 mt-2 w-72 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+                >
+                  <div class="p-4 space-y-4">
+                    <!-- Filter by Category (for ingredients/recipes) -->
+                    <div id="filter-category-group" class="hidden">
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Category
+                      </label>
+                      <select
+                        id="filter-category"
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      >
+                        <option value="">All Categories</option>
+                      </select>
+                    </div>
+
+                    <!-- Filter by Class (for recipes) -->
+                    <div id="filter-class-group" class="hidden">
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Class
+                      </label>
+                      <select
+                        id="filter-class"
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      >
+                        <option value="">All Classes</option>
+                        <option value="menu_item">Menu Item</option>
+                        <option value="base_template">Base Template</option>
+                        <option value="sub_recipe">Sub Recipe</option>
+                      </select>
+                    </div>
+
+                    <!-- Filter by Margin (for margins view) -->
+                    <div id="filter-margin-group" class="hidden">
+                      <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Margin Status
+                      </label>
+                      <select
+                        id="filter-margin"
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      >
+                        <option value="">All Recipes</option>
+                        <option value="below-target">Below Target</option>
+                        <option value="meets-target">Meets/Exceeds Target</option>
+                      </select>
+                    </div>
+
+                    <!-- Clear Filters Button -->
+                    <div class="pt-2 border-t border-gray-200">
+                      <button
+                        id="clear-filters"
+                        class="w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Clear All Filters
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </header>
 
         <!-- Content -->
@@ -1092,6 +1190,12 @@
           recipe: null,
         },
         activeManager: 'suppliers',
+        filters: {
+          searchQuery: '',
+          category: '',
+          class: '',
+          margin: '',
+        },
       }
 
       // Modal functionality
@@ -1219,6 +1323,7 @@
 
       document.addEventListener('DOMContentLoaded', () => {
         bindNavigation()
+        bindSearchAndFilters()
         bindManagerNavigation()
         bindForms()
         bindModalTriggers()
@@ -1445,6 +1550,18 @@
           link.classList.toggle('hover:bg-blue-700', isActive)
         })
 
+        // Show/hide search & filters based on view
+        const searchFilters = document.getElementById('search-filters')
+        const showSearch = ['suppliers', 'ingredients', 'recipes', 'margins'].includes(viewName)
+        searchFilters.classList.toggle('hidden', !showSearch)
+        searchFilters.classList.toggle('flex', showSearch)
+
+        // Configure filters for current view
+        configureFiltersForView(viewName)
+
+        // Reset filters when switching views
+        resetFilters()
+
         // Show/hide manager panels for management views
         if (['suppliers', 'ingredients', 'recipes'].includes(viewName)) {
           setActiveManager(viewName)
@@ -1477,6 +1594,140 @@
         }
       }
 
+      // Search & Filter Functions
+      function configureFiltersForView(viewName) {
+        // Hide all filter groups
+        document.getElementById('filter-category-group').classList.add('hidden')
+        document.getElementById('filter-class-group').classList.add('hidden')
+        document.getElementById('filter-margin-group').classList.add('hidden')
+
+        // Show relevant filters for each view
+        if (viewName === 'ingredients' || viewName === 'recipes') {
+          document.getElementById('filter-category-group').classList.remove('hidden')
+        }
+        if (viewName === 'recipes') {
+          document.getElementById('filter-class-group').classList.remove('hidden')
+        }
+        if (viewName === 'margins') {
+          document.getElementById('filter-margin-group').classList.remove('hidden')
+        }
+
+        // Update search placeholder
+        const searchInput = document.getElementById('search-input')
+        const placeholders = {
+          suppliers: 'Search suppliers...',
+          ingredients: 'Search ingredients...',
+          recipes: 'Search recipes...',
+          margins: 'Search recipes...',
+        }
+        searchInput.placeholder = placeholders[viewName] || 'Search...'
+      }
+
+      function resetFilters() {
+        state.filters.searchQuery = ''
+        state.filters.category = ''
+        state.filters.class = ''
+        state.filters.margin = ''
+
+        document.getElementById('search-input').value = ''
+        document.getElementById('filter-category').value = ''
+        document.getElementById('filter-class').value = ''
+        document.getElementById('filter-margin').value = ''
+
+        updateFilterCount()
+        applyFilters()
+      }
+
+      function updateFilterCount() {
+        const count =
+          (state.filters.searchQuery ? 1 : 0) +
+          (state.filters.category ? 1 : 0) +
+          (state.filters.class ? 1 : 0) +
+          (state.filters.margin ? 1 : 0)
+
+        const countBadge = document.getElementById('filter-count')
+        if (count > 0) {
+          countBadge.textContent = count
+          countBadge.classList.remove('hidden')
+        } else {
+          countBadge.classList.add('hidden')
+        }
+      }
+
+      function applyFilters() {
+        // Determine current view
+        const activeView = Array.from(
+          document.querySelectorAll('.view-content')
+        ).find((el) => !el.classList.contains('hidden'))
+
+        if (!activeView) return
+
+        const viewId = activeView.id.replace('view-', '')
+
+        // Apply filters based on view
+        if (viewId === 'suppliers') {
+          filterSuppliers()
+        } else if (viewId === 'ingredients') {
+          filterIngredients()
+        } else if (viewId === 'recipes') {
+          filterRecipes()
+        } else if (viewId === 'margins') {
+          // Margins view uses same data as recipes
+          filterRecipes()
+        }
+      }
+
+      function filterSuppliers() {
+        const query = state.filters.searchQuery.toLowerCase()
+        const list = document.getElementById('supplier-list')
+        const cards = list.querySelectorAll('[data-supplier-slug]')
+
+        cards.forEach((card) => {
+          const name = card.querySelector('h4')?.textContent.toLowerCase() || ''
+          const matches = !query || name.includes(query)
+          card.style.display = matches ? '' : 'none'
+        })
+      }
+
+      function filterIngredients() {
+        const query = state.filters.searchQuery.toLowerCase()
+        const category = state.filters.category
+        const list = document.getElementById('ingredient-list')
+        const cards = list.querySelectorAll('[data-ingredient-slug]')
+
+        cards.forEach((card) => {
+          const name = card.querySelector('h4')?.textContent.toLowerCase() || ''
+          const cardCategory = card.dataset.ingredientCategory || ''
+
+          const matchesSearch = !query || name.includes(query)
+          const matchesCategory = !category || cardCategory === category
+          const matches = matchesSearch && matchesCategory
+
+          card.style.display = matches ? '' : 'none'
+        })
+      }
+
+      function filterRecipes() {
+        const query = state.filters.searchQuery.toLowerCase()
+        const category = state.filters.category
+        const recipeClass = state.filters.class
+        const list = document.getElementById('recipes-container')
+        const cards = list.querySelectorAll('[data-recipe-slug]')
+
+        cards.forEach((card) => {
+          const name = card.querySelector('h4')?.textContent.toLowerCase() || ''
+          const cardCategory = card.dataset.recipeCategory || ''
+          const cardClass = card.dataset.recipeClass || ''
+
+          const matchesSearch = !query || name.includes(query)
+          const matchesCategory = !category || cardCategory === category
+          const matchesClass = !recipeClass || cardClass === recipeClass
+          const matches = matchesSearch && matchesCategory && matchesClass
+
+          card.style.display = matches ? '' : 'none'
+        })
+      }
+
       function toggleManagementSubmenu() {
         const subnav = document.getElementById('management-subnav')
         const chevron = document.getElementById('management-chevron')
@@ -1489,6 +1740,61 @@
           subnav.classList.add('hidden')
           chevron.classList.remove('rotate-180')
         }
+      }
+
+      function bindSearchAndFilters() {
+        // Search input with debouncing
+        let searchTimeout
+        const searchInput = document.getElementById('search-input')
+        searchInput.addEventListener('input', (e) => {
+          clearTimeout(searchTimeout)
+          searchTimeout = setTimeout(() => {
+            state.filters.searchQuery = e.target.value
+            updateFilterCount()
+            applyFilters()
+          }, 300) // 300ms debounce
+        })
+
+        // Filter dropdown toggle
+        const filterToggle = document.getElementById('filter-toggle')
+        const filterMenu = document.getElementById('filter-menu')
+
+        filterToggle.addEventListener('click', (e) => {
+          e.stopPropagation()
+          filterMenu.classList.toggle('hidden')
+        })
+
+        // Close filter menu when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!filterMenu.contains(e.target) && !filterToggle.contains(e.target)) {
+            filterMenu.classList.add('hidden')
+          }
+        })
+
+        // Filter change handlers
+        document.getElementById('filter-category').addEventListener('change', (e) => {
+          state.filters.category = e.target.value
+          updateFilterCount()
+          applyFilters()
+        })
+
+        document.getElementById('filter-class').addEventListener('change', (e) => {
+          state.filters.class = e.target.value
+          updateFilterCount()
+          applyFilters()
+        })
+
+        document.getElementById('filter-margin').addEventListener('change', (e) => {
+          state.filters.margin = e.target.value
+          updateFilterCount()
+          applyFilters()
+        })
+
+        // Clear filters button
+        document.getElementById('clear-filters').addEventListener('click', () => {
+          resetFilters()
+          filterMenu.classList.add('hidden')
+        })
       }
 
       function bindNavigation() {
