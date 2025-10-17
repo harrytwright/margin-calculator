@@ -122,57 +122,62 @@
               </div>
 
               <!-- Hidden form template -->
-              <form id="supplier-form" class="hidden space-y-6">
+              <form id="supplier-form" class="hidden space-y-5">
                 <!-- Supplier Name Field -->
-                <div class="relative">
-                  <input
-                    id="supplier-name"
-                    name="name"
-                    type="text"
-                    required
-                    placeholder=" "
-                    class="peer block w-full px-3 pt-6 pb-2 text-gray-900 bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
-                  />
+                <div>
                   <label
                     for="supplier-name"
-                    class="absolute text-sm text-gray-500 duration-150 transform -translate-y-3 scale-75 top-4 left-3 z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-blue-600"
+                    class="block text-sm font-medium text-gray-700 mb-2"
                   >
-                    Supplier Name *
+                    Supplier Name <span class="text-red-500">*</span>
                   </label>
-                  <div
-                    class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                  >
-                    <svg
-                      id="supplier-name-valid"
-                      class="w-5 h-5 text-green-500 hidden"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
+                  <div class="relative">
+                    <input
+                      id="supplier-name"
+                      name="name"
+                      type="text"
+                      required
+                      placeholder="e.g., Tesco, ASDA, Sysco"
+                      class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                    />
+                    <div
+                      class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
                     >
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                    <svg
-                      id="supplier-name-error"
-                      class="w-5 h-5 text-red-500 hidden"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+                      <svg
+                        id="supplier-name-valid"
+                        class="w-5 h-5 text-green-500 hidden"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <svg
+                        id="supplier-name-error"
+                        class="w-5 h-5 text-red-500 hidden"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </div>
                   </div>
-                  <p id="supplier-name-hint" class="mt-1 text-sm text-gray-500">
-                    e.g., Tesco, ASDA, Sysco
+                  <p
+                    id="supplier-name-hint"
+                    class="mt-1.5 text-xs text-gray-500 hidden"
+                  >
+                    Name should be at least 2 characters
                   </p>
                   <p
                     id="supplier-name-error-msg"
-                    class="mt-1 text-sm text-red-600 hidden"
+                    class="mt-1.5 text-xs text-red-600 hidden"
                   ></p>
                 </div>
 
@@ -237,158 +242,155 @@
               </div>
 
               <!-- Hidden form template -->
-              <form id="ingredient-form" class="hidden space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <form id="ingredient-form" class="hidden space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <!-- Ingredient Name -->
-                  <div class="relative">
-                    <input
-                      id="ingredient-name"
-                      name="name"
-                      type="text"
-                      required
-                      placeholder=" "
-                      class="peer block w-full px-3 pt-6 pb-2 text-gray-900 bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
-                    />
+                  <div>
                     <label
                       for="ingredient-name"
-                      class="absolute text-sm text-gray-500 duration-150 transform -translate-y-3 scale-75 top-4 left-3 z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-blue-600"
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
-                      Ingredient Name *
+                      Ingredient Name <span class="text-red-500">*</span>
                     </label>
-                    <div
-                      class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
-                      <svg
-                        id="ingredient-name-valid"
-                        class="w-5 h-5 text-green-500 hidden"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
+                    <div class="relative">
+                      <input
+                        id="ingredient-name"
+                        name="name"
+                        type="text"
+                        required
+                        placeholder="e.g., Cheddar Cheese, Olive Oil"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                      />
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
                       >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
+                        <svg
+                          id="ingredient-name-valid"
+                          class="w-5 h-5 text-green-500 hidden"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
                     </div>
-                    <p class="mt-1 text-sm text-gray-500">
-                      e.g., Cheddar Cheese, Olive Oil
-                    </p>
                   </div>
 
                   <!-- Category -->
-                  <div class="relative">
-                    <input
-                      id="ingredient-category"
-                      name="category"
-                      type="text"
-                      required
-                      placeholder=" "
-                      class="peer block w-full px-3 pt-6 pb-2 text-gray-900 bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
-                    />
+                  <div>
                     <label
                       for="ingredient-category"
-                      class="absolute text-sm text-gray-500 duration-150 transform -translate-y-3 scale-75 top-4 left-3 z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-blue-600"
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
-                      Category *
+                      Category <span class="text-red-500">*</span>
                     </label>
-                    <div
-                      class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
-                      <svg
-                        id="ingredient-category-valid"
-                        class="w-5 h-5 text-green-500 hidden"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
+                    <div class="relative">
+                      <input
+                        id="ingredient-category"
+                        name="category"
+                        type="text"
+                        required
+                        placeholder="e.g., Dairy, Meat, Vegetables"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                      />
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
                       >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
+                        <svg
+                          id="ingredient-category-valid"
+                          class="w-5 h-5 text-green-500 hidden"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
                     </div>
-                    <p class="mt-1 text-sm text-gray-500">
-                      e.g., Dairy, Meat, Vegetables
-                    </p>
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <!-- Purchase Unit -->
-                  <div class="relative">
-                    <input
-                      id="ingredient-unit"
-                      name="purchaseUnit"
-                      type="text"
-                      required
-                      placeholder=" "
-                      class="peer block w-full px-3 pt-6 pb-2 text-gray-900 bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
-                    />
+                  <div>
                     <label
                       for="ingredient-unit"
-                      class="absolute text-sm text-gray-500 duration-150 transform -translate-y-3 scale-75 top-4 left-3 z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-blue-600"
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
-                      Purchase Unit *
+                      Purchase Unit <span class="text-red-500">*</span>
                     </label>
-                    <div
-                      class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
-                      <svg
-                        id="ingredient-unit-valid"
-                        class="w-5 h-5 text-green-500 hidden"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
+                    <div class="relative">
+                      <input
+                        id="ingredient-unit"
+                        name="purchaseUnit"
+                        type="text"
+                        required
+                        placeholder="e.g., 1kg, 500g, 2L, 12 pack"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                      />
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
                       >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
+                        <svg
+                          id="ingredient-unit-valid"
+                          class="w-5 h-5 text-green-500 hidden"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
                     </div>
-                    <p class="mt-1 text-sm text-gray-500">
-                      e.g., 1kg, 500g, 2L, 12 pack
-                    </p>
                   </div>
 
                   <!-- Purchase Cost -->
-                  <div class="relative">
-                    <input
-                      id="ingredient-cost"
-                      name="purchaseCost"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      required
-                      placeholder=" "
-                      class="peer block w-full px-3 pt-6 pb-2 text-gray-900 bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
-                    />
+                  <div>
                     <label
                       for="ingredient-cost"
-                      class="absolute text-sm text-gray-500 duration-150 transform -translate-y-3 scale-75 top-4 left-3 z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-blue-600"
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
-                      Purchase Cost (£) *
+                      Purchase Cost (£) <span class="text-red-500">*</span>
                     </label>
-                    <div
-                      class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
-                      <svg
-                        id="ingredient-cost-valid"
-                        class="w-5 h-5 text-green-500 hidden"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
+                    <div class="relative">
+                      <input
+                        id="ingredient-cost"
+                        name="purchaseCost"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                        placeholder="0.00"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 placeholder:text-gray-400"
+                      />
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
                       >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
+                        <svg
+                          id="ingredient-cost-valid"
+                          class="w-5 h-5 text-green-500 hidden"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                      </div>
                     </div>
-                    <p class="mt-1 text-sm text-gray-500">
-                      Enter price without VAT if applicable
-                    </p>
+                    <p class="mt-1.5 text-xs text-gray-500">Price ex-VAT</p>
                   </div>
                 </div>
 
@@ -408,79 +410,76 @@
                     </label>
                   </div>
 
-                  <div class="flex-1 relative">
-                    <select
-                      id="ingredient-supplier"
-                      name="supplier"
-                      class="peer block w-full px-3 pt-6 pb-2 text-gray-900 bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
-                    >
-                      <option value="">No supplier</option>
-                    </select>
+                  <div class="flex-1">
                     <label
                       for="ingredient-supplier"
-                      class="absolute text-sm text-gray-500 duration-150 transform -translate-y-3 scale-75 top-4 left-3 z-10 origin-[0]"
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
-                      🏪 Supplier (optional)
+                      🏪 Supplier <span class="text-gray-400">(optional)</span>
                     </label>
-                    <div
-                      class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-                    >
-                      <svg
-                        class="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    <div class="relative">
+                      <select
+                        id="ingredient-supplier"
+                        name="supplier"
+                        class="block w-full px-4 py-2.5 pr-10 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
                       >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
+                        <option value="">Select a supplier</option>
+                      </select>
+                      <div
+                        class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                      >
+                        <svg
+                          class="w-4 h-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <!-- Conversion Rule -->
-                  <div class="relative">
+                  <div>
+                    <label
+                      for="ingredient-conversion"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Conversion Rule
+                      <span class="text-gray-400">(optional)</span>
+                    </label>
                     <input
                       id="ingredient-conversion"
                       name="conversionRate"
                       type="text"
-                      placeholder=" "
-                      class="peer block w-full px-3 pt-6 pb-2 text-gray-900 bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
+                      placeholder="e.g., 1 loaf = 16 slices"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
                     />
-                    <label
-                      for="ingredient-conversion"
-                      class="absolute text-sm text-gray-500 duration-150 transform -translate-y-3 scale-75 top-4 left-3 z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-blue-600"
-                    >
-                      Conversion Rule (optional)
-                    </label>
-                    <p class="mt-1 text-sm text-gray-500">
-                      e.g., 1 loaf = 16 slices
-                    </p>
                   </div>
 
                   <!-- Notes -->
-                  <div class="relative">
+                  <div>
+                    <label
+                      for="ingredient-notes"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Notes <span class="text-gray-400">(optional)</span>
+                    </label>
                     <input
                       id="ingredient-notes"
                       name="notes"
                       type="text"
-                      placeholder=" "
-                      class="peer block w-full px-3 pt-6 pb-2 text-gray-900 bg-white border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-150"
+                      placeholder="Any additional info"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
                     />
-                    <label
-                      for="ingredient-notes"
-                      class="absolute text-sm text-gray-500 duration-150 transform -translate-y-3 scale-75 top-4 left-3 z-10 origin-[0] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-blue-600"
-                    >
-                      Notes (optional)
-                    </label>
-                    <p class="mt-1 text-sm text-gray-500">
-                      Any additional info
-                    </p>
                   </div>
                 </div>
 
@@ -542,48 +541,53 @@
               </div>
 
               <!-- Hidden form template -->
-              <form id="recipe-form" class="hidden space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form id="recipe-form" class="hidden space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label
-                      class="block text-sm font-medium text-gray-700"
                       for="recipe-name"
-                      >Recipe Name</label
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
+                      Recipe Name <span class="text-red-500">*</span>
+                    </label>
                     <input
                       id="recipe-name"
                       name="name"
                       type="text"
                       required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="e.g., Margherita Pizza, Club Sandwich"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                   <div>
                     <label
-                      class="block text-sm font-medium text-gray-700"
                       for="recipe-category"
-                      >Category (optional)</label
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
+                      Category <span class="text-gray-400">(optional)</span>
+                    </label>
                     <input
                       id="recipe-category"
                       name="category"
                       type="text"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="e.g., Pizza, Sandwiches, Desserts"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label
-                      class="block text-sm font-medium text-gray-700"
                       for="recipe-stage"
-                      >Stage</label
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
+                      Stage <span class="text-red-500">*</span>
+                    </label>
                     <select
                       id="recipe-stage"
                       name="stage"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="development">Development</option>
                       <option value="active">Active</option>
@@ -592,14 +596,15 @@
                   </div>
                   <div>
                     <label
-                      class="block text-sm font-medium text-gray-700"
                       for="recipe-class"
-                      >Class</label
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
+                      Class <span class="text-red-500">*</span>
+                    </label>
                     <select
                       id="recipe-class"
                       name="class"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="menu_item">Menu Item</option>
                       <option value="base_template">Base Template</option>
@@ -608,27 +613,29 @@
                   </div>
                   <div>
                     <label
-                      class="block text-sm font-medium text-gray-700"
                       for="recipe-parent"
-                      >Extends (optional)</label
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
+                      Extends <span class="text-gray-400">(optional)</span>
+                    </label>
                     <select
                       id="recipe-parent"
                       name="extends"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="block w-full px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">-- None --</option>
                     </select>
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label
-                      class="block text-sm font-medium text-gray-700"
                       for="recipe-price"
-                      >Target Price (pence)</label
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
+                      Target Price <span class="text-red-500">*</span>
+                    </label>
                     <input
                       id="recipe-price"
                       name="price"
@@ -636,15 +643,21 @@
                       min="0"
                       step="1"
                       required
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="e.g., 450"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p class="mt-1.5 text-xs text-gray-500">
+                      Price in pence, ex-VAT
+                    </p>
                   </div>
                   <div>
                     <label
-                      class="block text-sm font-medium text-gray-700"
                       for="recipe-margin"
-                      >Target Margin (%)</label
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
+                      Target Margin
+                      <span class="text-gray-400">(optional)</span>
+                    </label>
                     <input
                       id="recipe-margin"
                       name="margin"
@@ -652,56 +665,68 @@
                       min="0"
                       max="100"
                       step="1"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="e.g., 65"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p class="mt-1.5 text-xs text-gray-500">Target margin %</p>
                   </div>
-                  <div class="flex items-center">
+                  <div class="flex items-start pt-8">
                     <label
-                      class="inline-flex items-center text-sm text-gray-700 mt-6"
+                      class="inline-flex items-center text-sm font-medium text-gray-700 cursor-pointer"
                     >
                       <input
                         id="recipe-vat"
                         name="vat"
                         type="checkbox"
-                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 w-4 h-4 transition-all duration-150"
                       />
                       <span class="ml-2">VAT applicable</span>
                     </label>
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label
-                      class="block text-sm font-medium text-gray-700"
                       for="recipe-yield-amount"
-                      >Yield Amount (optional)</label
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
+                      Yield Amount <span class="text-gray-400">(optional)</span>
+                    </label>
                     <input
                       id="recipe-yield-amount"
                       name="yieldAmount"
                       type="number"
                       min="0"
                       step="1"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="e.g., 1000"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p class="mt-1.5 text-xs text-gray-500">
+                      For sub-recipes only
+                    </p>
                   </div>
                   <div>
                     <label
-                      class="block text-sm font-medium text-gray-700"
                       for="recipe-yield-unit"
-                      >Yield Unit (optional)</label
+                      class="block text-sm font-medium text-gray-700 mb-2"
                     >
+                      Yield Unit <span class="text-gray-400">(optional)</span>
+                    </label>
                     <input
                       id="recipe-yield-unit"
                       name="yieldUnit"
                       type="text"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="e.g., ml, g, portions"
+                      class="block w-full px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
+                    <p class="mt-1.5 text-xs text-gray-500">
+                      Unit of measurement
+                    </p>
                   </div>
                 </div>
 
-                <div class="space-y-3">
+                <div class="space-y-4">
                   <div class="flex items-center justify-between">
                     <h4 class="text-sm font-semibold text-gray-700">
                       Ingredients
@@ -709,12 +734,25 @@
                     <button
                       type="button"
                       id="add-ingredient-row"
-                      class="inline-flex items-center px-3 py-1.5 rounded-md border border-blue-200 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                      class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-300 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors duration-150"
                     >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 4v16m8-8H4"
+                        />
+                      </svg>
                       Add Ingredient
                     </button>
                   </div>
-                  <div id="recipe-ingredients-rows" class="space-y-2"></div>
+                  <div id="recipe-ingredients-rows" class="space-y-3"></div>
                 </div>
 
                 <div class="flex items-center gap-3">
@@ -1805,25 +1843,25 @@
       function addIngredientRow(container, initial) {
         const row = document.createElement('div')
         row.className =
-          'ingredient-row flex flex-col md:flex-row md:items-center gap-2 border border-gray-200 rounded-md p-3 bg-gray-50'
+          'ingredient-row flex flex-col md:flex-row md:items-center gap-3 border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow duration-150'
         row.innerHTML = `
-          <div class="flex-1 flex gap-2">
-            <select class="ingredient-type rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-              <option value="ingredient">Ingredient</option>
-              <option value="recipe">Recipe</option>
+          <div class="flex-1 flex flex-col sm:flex-row gap-3">
+            <select class="ingredient-type px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150">
+              <option value="ingredient">🥕 Ingredient</option>
+              <option value="recipe">📋 Recipe</option>
             </select>
-            <select class="ingredient-slug flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <select class="ingredient-slug flex-1 px-4 py-2.5 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150">
               <option value="">-- Select --</option>
             </select>
             <input
               type="text"
-              class="ingredient-unit w-32 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="Unit"
+              class="ingredient-unit w-full sm:w-32 px-4 py-2.5 text-gray-900 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
+              placeholder="e.g., 50g, 100ml"
             />
           </div>
           <button
             type="button"
-            class="remove-ingredient-row px-3 py-1.5 text-xs rounded-md border border-red-200 text-red-600 bg-red-50"
+            class="remove-ingredient-row inline-flex items-center justify-center px-4 py-2.5 text-sm font-medium rounded-lg border border-red-300 text-red-600 bg-red-50 hover:bg-red-100 transition-colors duration-150"
           >
             Remove
           </button>
