@@ -49,7 +49,7 @@ describe('FileWatcher (integration)', () => {
       importerFactory: () =>
         new Importer(db, {
           importOnly: true,
-          projectRoot: tempDir,
+          dataDir: tempDir,
         }),
     })
 

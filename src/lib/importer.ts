@@ -54,7 +54,7 @@ export interface ImportError {
 
 export interface BaseImportOptions {
   failFast?: boolean
-  projectRoot?: string // Root directory for @/ references (defaults to cwd)
+  dataDir?: string // Root directory for @/ references (defaults to cwd)
   processors?: [
     string,
     (
@@ -74,7 +74,7 @@ export interface ImportOptions extends BaseImportOptions {
   importOnly?: boolean
 }
 
-const defaultProjectRoot = process.cwd()
+const defaultDataDir = process.cwd()
 
 /**
  * Centralized importer for all entity types
@@ -128,7 +128,7 @@ export class Importer {
     this.options = {
       failFast: false,
       importOnly: false,
-      projectRoot: defaultProjectRoot,
+      dataDir: defaultDataDir,
       processors: [],
       ...options,
     }
@@ -202,12 +202,12 @@ export class Importer {
    */
   resolveReferenceToPath(currentFile: string, ref: string): string | null {
     const parsed = parseReference(ref)
-    const projectRoot = this.options.projectRoot || defaultProjectRoot
+    const dataDir = this.options.dataDir || defaultDataDir
 
     switch (parsed.type) {
       case 'absolute':
-        // @/ingredients/ham.yaml → /project/ingredients/ham.yaml
-        return path.join(projectRoot, ref.slice(2))
+        // @/ingredients/ham.yaml → /dataDir/ingredients/ham.yaml
+        return path.join(dataDir, ref.slice(2))
 
       case 'relative':
         // ./cheese.yaml → resolve from current file's directory
@@ -636,8 +636,8 @@ export class Importer {
     }
     this.errors = []
     this.importedFiles.clear()
-    this.slugToPath.clear()
-    this.slugMap.clear()
     this.resolvedDataCache.clear()
+    // Note: Keep slugToPath and slugMap across imports
+    // These are persistent indices used by FileWatcher and API endpoints
   }
 }
