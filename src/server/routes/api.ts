@@ -14,6 +14,7 @@ import { SupplierService } from '../../services/supplier'
 import type { ServerConfig } from '../index'
 import { EntityPersistence } from '../services/entity-persistence'
 import { HttpError } from '../utils/http-error'
+import { ValidationException, Validator } from '../utils/validation'
 
 export function createApiRouter(config: ServerConfig): Router {
   const router = Router()
@@ -29,6 +30,7 @@ export function createApiRouter(config: ServerConfig): Router {
     ingredient,
     recipe: recipeService,
   })
+  const validator = new Validator(config.database)
 
   router.get('/suppliers', async (_req, res) => {
     try {
@@ -143,6 +145,30 @@ export function createApiRouter(config: ServerConfig): Router {
   router.post('/ingredients', async (req, res) => {
     try {
       const parsed = ingredientImportDataSchema.parse(req.body)
+
+      // Validate supplier exists if provided
+      if (parsed.supplier?.uses) {
+        const supplierSlug = parsed.supplier.uses.replace('slug:', '')
+        if (!(await validator.supplierExists(supplierSlug))) {
+          validator.fail([
+            {
+              field: 'supplier',
+              message: `Supplier '${supplierSlug}' not found. Please create the supplier first.`,
+            },
+          ])
+        }
+      }
+
+      // Validate purchase cost is positive
+      if (!validator.isPositiveNumber(parsed.purchase.cost)) {
+        validator.fail([
+          {
+            field: 'purchase.cost',
+            message: 'Purchase cost must be greater than 0',
+          },
+        ])
+      }
+
       const record = await persistence.createIngredient(parsed)
       res.status(201).json(record)
     } catch (error) {
@@ -153,6 +179,55 @@ export function createApiRouter(config: ServerConfig): Router {
   router.post('/recipes', async (req, res) => {
     try {
       const parsed = recipeImportDataSchema.parse(req.body)
+
+      // Validate price is positive
+      if (
+        parsed.costing?.price &&
+        !validator.isPositiveNumber(parsed.costing.price)
+      ) {
+        validator.fail([
+          {
+            field: 'costing.price',
+            message: 'Price must be greater than 0',
+          },
+        ])
+      }
+
+      // Validate margin is in range 0-100
+      if (
+        parsed.costing?.margin !== undefined &&
+        !validator.isInRange(parsed.costing.margin, 0, 100)
+      ) {
+        validator.fail([
+          {
+            field: 'costing.margin',
+            message: 'Target margin must be between 0 and 100',
+          },
+        ])
+      }
+
+      // Validate all ingredients exist
+      if (parsed.ingredients && parsed.ingredients.length > 0) {
+        const errors = []
+        for (const ing of parsed.ingredients) {
+          const slug = ing.uses.replace(/^(slug:|ref:@\/)/, '')
+          const exists =
+            ing.type === 'ingredient'
+              ? await validator.ingredientExists(slug)
+              : await validator.recipeExists(slug)
+
+          if (!exists) {
+            errors.push({
+              field: 'ingredients',
+              message: `${ing.type === 'ingredient' ? 'Ingredient' : 'Recipe'} '${slug}' not found. Please create it first.`,
+            })
+          }
+        }
+        if (errors.length > 0) {
+          validator.fail(errors)
+        }
+      }
+
       const record = await persistence.createRecipe(parsed)
       res.status(201).json(record)
     } catch (error) {
@@ -173,6 +248,30 @@ export function createApiRouter(config: ServerConfig): Router {
   router.put('/ingredients/:slug', async (req, res) => {
     try {
       const parsed = ingredientImportDataSchema.parse(req.body)
+
+      // Validate supplier exists if provided
+      if (parsed.supplier?.uses) {
+        const supplierSlug = parsed.supplier.uses.replace('slug:', '')
+        if (!(await validator.supplierExists(supplierSlug))) {
+          validator.fail([
+            {
+              field: 'supplier',
+              message: `Supplier '${supplierSlug}' not found. Please create the supplier first.`,
+            },
+          ])
+        }
+      }
+
+      // Validate purchase cost is positive
+      if (!validator.isPositiveNumber(parsed.purchase.cost)) {
+        validator.fail([
+          {
+            field: 'purchase.cost',
+            message: 'Purchase cost must be greater than 0',
+          },
+        ])
+      }
+
       const record = await persistence.updateIngredient(req.params.slug, parsed)
       res.json(record)
     } catch (error) {
@@ -183,6 +282,55 @@ export function createApiRouter(config: ServerConfig): Router {
   router.put('/recipes/:slug', async (req, res) => {
     try {
       const parsed = recipeImportDataSchema.parse(req.body)
+
+      // Validate price is positive
+      if (
+        parsed.costing?.price &&
+        !validator.isPositiveNumber(parsed.costing.price)
+      ) {
+        validator.fail([
+          {
+            field: 'costing.price',
+            message: 'Price must be greater than 0',
+          },
+        ])
+      }
+
+      // Validate margin is in range 0-100
+      if (
+        parsed.costing?.margin !== undefined &&
+        !validator.isInRange(parsed.costing.margin, 0, 100)
+      ) {
+        validator.fail([
+          {
+            field: 'costing.margin',
+            message: 'Target margin must be between 0 and 100',
+          },
+        ])
+      }
+
+      // Validate all ingredients exist
+      if (parsed.ingredients && parsed.ingredients.length > 0) {
+        const errors = []
+        for (const ing of parsed.ingredients) {
+          const slug = ing.uses.replace(/^(slug:|ref:@\/)/, '')
+          const exists =
+            ing.type === 'ingredient'
+              ? await validator.ingredientExists(slug)
+              : await validator.recipeExists(slug)
+
+          if (!exists) {
+            errors.push({
+              field: 'ingredients',
+              message: `${ing.type === 'ingredient' ? 'Ingredient' : 'Recipe'} '${slug}' not found. Please create it first.`,
+            })
+          }
+        }
+        if (errors.length > 0) {
+          validator.fail(errors)
+        }
+      }
+
       const record = await persistence.updateRecipe(req.params.slug, parsed)
       res.json(record)
     } catch (error) {
@@ -328,6 +476,13 @@ export function createApiRouter(config: ServerConfig): Router {
 }
 
 function handleError(res: Response, error: unknown) {
+  if (error instanceof ValidationException) {
+    return res.status(400).json({
+      error: 'Validation failed',
+      details: error.errors,
+    })
+  }
+
   if (error instanceof HttpError) {
     return res.status(error.status).json({
       error: error.message,
