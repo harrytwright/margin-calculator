@@ -60,6 +60,62 @@
       class="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-none"
     ></div>
 
+    <!-- Delete Confirmation Modal -->
+    <div
+      id="delete-modal-overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity duration-200"
+    ></div>
+    <div
+      id="delete-modal"
+      class="fixed inset-0 flex items-center justify-center hidden z-50 pointer-events-none"
+    >
+      <div
+        class="delete-modal-content bg-white rounded-lg shadow-xl max-w-md w-full mx-4 pointer-events-auto transform transition-all duration-200 scale-95 opacity-0"
+      >
+        <div class="px-6 py-5">
+          <div class="flex items-start gap-4">
+            <div
+              class="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center"
+            >
+              <svg
+                class="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">
+                Delete <span id="delete-entity-type"></span>?
+              </h3>
+              <p id="delete-message" class="text-sm text-gray-600 mb-4"></p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-6 py-4 flex gap-3 justify-end rounded-b-lg">
+          <button
+            id="delete-cancel-btn"
+            class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-150"
+          >
+            Cancel
+          </button>
+          <button
+            id="delete-confirm-btn"
+            class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div id="app" class="min-h-screen">
       <!-- Header -->
       <header class="bg-white shadow-sm">
@@ -1326,6 +1382,85 @@
       }
 
       /**
+       * Show delete confirmation modal
+       * @param {string} entityType - Type of entity (e.g., 'Supplier', 'Ingredient', 'Recipe')
+       * @param {string} entityName - Name of the entity to delete
+       * @param {string} message - Warning message
+       * @param {Function} onConfirm - Callback when delete is confirmed
+       * @returns {Promise<boolean>} - Resolves to true if confirmed, false if cancelled
+       */
+      function showDeleteModal(entityType, entityName, message, onConfirm) {
+        return new Promise((resolve) => {
+          const modal = document.getElementById('delete-modal')
+          const overlay = document.getElementById('delete-modal-overlay')
+          const content = modal.querySelector('.delete-modal-content')
+          const entityTypeEl = document.getElementById('delete-entity-type')
+          const messageEl = document.getElementById('delete-message')
+          const cancelBtn = document.getElementById('delete-cancel-btn')
+          const confirmBtn = document.getElementById('delete-confirm-btn')
+
+          // Set content
+          entityTypeEl.textContent = entityType
+          messageEl.textContent = message
+
+          // Show modal with animation
+          modal.classList.remove('hidden')
+          overlay.classList.remove('hidden')
+          setTimeout(() => {
+            content.classList.remove('scale-95', 'opacity-0')
+            content.classList.add('scale-100', 'opacity-100')
+          }, 10)
+
+          // Close function
+          const closeModal = () => {
+            content.classList.remove('scale-100', 'opacity-100')
+            content.classList.add('scale-95', 'opacity-0')
+            setTimeout(() => {
+              modal.classList.add('hidden')
+              overlay.classList.add('hidden')
+              cancelBtn.removeEventListener('click', handleCancel)
+              confirmBtn.removeEventListener('click', handleConfirm)
+              overlay.removeEventListener('click', handleCancel)
+            }, 200)
+          }
+
+          // Handlers
+          const handleCancel = () => {
+            closeModal()
+            resolve(false)
+          }
+
+          const handleConfirm = async () => {
+            setButtonLoading(confirmBtn, true)
+            try {
+              await onConfirm()
+              closeModal()
+              resolve(true)
+            } catch (error) {
+              showToast(error.message, 'error')
+              resolve(false)
+            } finally {
+              setButtonLoading(confirmBtn, false)
+            }
+          }
+
+          // Event listeners
+          cancelBtn.addEventListener('click', handleCancel)
+          confirmBtn.addEventListener('click', handleConfirm)
+          overlay.addEventListener('click', handleCancel)
+
+          // ESC key handler
+          const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+              handleCancel()
+              document.removeEventListener('keydown', handleEsc)
+            }
+          }
+          document.addEventListener('keydown', handleEsc)
+        })
+      }
+
+      /**
        * Set loading state on a button
        * @param {HTMLButtonElement} button - The button element
        * @param {boolean} loading - Whether to show loading state
@@ -1868,48 +2003,54 @@
       }
 
       async function handleDeleteSupplier(slug) {
-        if (!confirm(`Delete supplier "${slug}"?`)) return
-        try {
-          await fetchJSON(`/suppliers/${slug}`, { method: 'DELETE' })
-          if (state.editing.supplier === slug) {
-            clearSupplierForm()
+        await showDeleteModal(
+          'Supplier',
+          slug,
+          `Are you sure you want to delete supplier "${slug}"? This action cannot be undone.`,
+          async () => {
+            await fetchJSON(`/suppliers/${slug}`, { method: 'DELETE' })
+            if (state.editing.supplier === slug) {
+              clearSupplierForm()
+            }
+            showToast(`Supplier "${slug}" deleted successfully`, 'success')
+            await loadManagementData()
+            await loadRecipeReport()
           }
-          showToast(`Supplier "${slug}" deleted successfully`, 'success')
-          await loadManagementData()
-          await loadRecipeReport()
-        } catch (error) {
-          showToast(error.message, 'error')
-        }
+        )
       }
 
       async function handleDeleteIngredient(slug) {
-        if (!confirm(`Delete ingredient "${slug}"?`)) return
-        try {
-          await fetchJSON(`/ingredients/${slug}`, { method: 'DELETE' })
-          if (state.editing.ingredient === slug) {
-            clearIngredientForm()
+        await showDeleteModal(
+          'Ingredient',
+          slug,
+          `Are you sure you want to delete ingredient "${slug}"? This may affect recipes using this ingredient.`,
+          async () => {
+            await fetchJSON(`/ingredients/${slug}`, { method: 'DELETE' })
+            if (state.editing.ingredient === slug) {
+              clearIngredientForm()
+            }
+            showToast(`Ingredient "${slug}" deleted successfully`, 'success')
+            await loadManagementData()
+            await loadRecipeReport()
           }
-          showToast(`Ingredient "${slug}" deleted successfully`, 'success')
-          await loadManagementData()
-          await loadRecipeReport()
-        } catch (error) {
-          showToast(error.message, 'error')
-        }
+        )
       }
 
       async function handleDeleteRecipe(slug) {
-        if (!confirm(`Delete recipe "${slug}"?`)) return
-        try {
-          await fetchJSON(`/recipes/${slug}`, { method: 'DELETE' })
-          if (state.editing.recipe === slug) {
-            clearRecipeForm()
+        await showDeleteModal(
+          'Recipe',
+          slug,
+          `Are you sure you want to delete recipe "${slug}"? This action cannot be undone.`,
+          async () => {
+            await fetchJSON(`/recipes/${slug}`, { method: 'DELETE' })
+            if (state.editing.recipe === slug) {
+              clearRecipeForm()
+            }
+            showToast(`Recipe "${slug}" deleted successfully`, 'success')
+            await loadManagementData()
+            await loadRecipeReport()
           }
-          showToast(`Recipe "${slug}" deleted successfully`, 'success')
-          await loadManagementData()
-          await loadRecipeReport()
-        } catch (error) {
-          showToast(error.message, 'error')
-        }
+        )
       }
 
       function addIngredientRow(container, initial) {
