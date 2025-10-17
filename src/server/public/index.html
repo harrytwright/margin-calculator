@@ -7,6 +7,49 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-gray-50">
+    <!-- Modal Overlay -->
+    <div
+      id="modal-overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity duration-200"
+    ></div>
+
+    <!-- Modal Container -->
+    <div
+      id="modal"
+      class="fixed inset-0 flex items-center justify-center hidden z-50 pointer-events-none"
+    >
+      <div
+        class="modal-content bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto pointer-events-auto transform transition-all duration-200 scale-95 opacity-0"
+      >
+        <div
+          class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-lg"
+        >
+          <h2 id="modal-title" class="text-xl font-semibold text-gray-900"></h2>
+          <button
+            id="modal-close"
+            class="text-gray-400 hover:text-gray-600 focus:outline-none"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div id="modal-body" class="px-6 py-6">
+          <!-- Form content will be injected here -->
+        </div>
+      </div>
+    </div>
+
     <div id="app" class="min-h-screen">
       <!-- Header -->
       <header class="bg-white shadow-sm">
@@ -47,9 +90,43 @@
           <div class="p-6 space-y-8">
             <!-- Suppliers Manager -->
             <div id="manager-suppliers" class="manager-panel space-y-6">
-              <form id="supplier-form" class="space-y-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Suppliers</h3>
+                <button
+                  id="new-supplier-btn"
+                  type="button"
+                  class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  <svg
+                    class="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  New Supplier
+                </button>
+              </div>
+
+              <div>
+                <div
+                  id="supplier-list"
+                  class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                ></div>
+              </div>
+
+              <!-- Hidden form template -->
+              <form id="supplier-form" class="hidden space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700" for="supplier-name"
+                  <label
+                    class="block text-sm font-medium text-gray-700"
+                    for="supplier-name"
                     >Supplier Name</label
                   >
                   <input
@@ -75,25 +152,57 @@
                   >
                     Clear
                   </button>
-                  <span id="supplier-feedback" class="text-sm text-gray-500"></span>
+                  <span
+                    id="supplier-feedback"
+                    class="text-sm text-gray-500"
+                  ></span>
                 </div>
               </form>
-
-              <div>
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Existing Suppliers</h3>
-                <div
-                  id="supplier-list"
-                  class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
-                ></div>
-              </div>
             </div>
 
             <!-- Ingredients Manager -->
-            <div id="manager-ingredients" class="manager-panel space-y-6 hidden">
-              <form id="ingredient-form" class="space-y-4">
+            <div
+              id="manager-ingredients"
+              class="manager-panel space-y-6 hidden"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Ingredients</h3>
+                <button
+                  id="new-ingredient-btn"
+                  type="button"
+                  class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  <svg
+                    class="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  New Ingredient
+                </button>
+              </div>
+
+              <div>
+                <div
+                  id="ingredient-list"
+                  class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                ></div>
+              </div>
+
+              <!-- Hidden form template -->
+              <form id="ingredient-form" class="hidden space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="ingredient-name"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="ingredient-name"
                       >Ingredient Name</label
                     >
                     <input
@@ -105,7 +214,9 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="ingredient-category"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="ingredient-category"
                       >Category</label
                     >
                     <input
@@ -120,7 +231,9 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="ingredient-unit"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="ingredient-unit"
                       >Purchase Unit</label
                     >
                     <input
@@ -133,7 +246,9 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="ingredient-cost"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="ingredient-cost"
                       >Purchase Cost</label
                     >
                     <input
@@ -160,7 +275,9 @@
                   </label>
 
                   <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700" for="ingredient-supplier"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="ingredient-supplier"
                       >Supplier</label
                     >
                     <select
@@ -173,7 +290,9 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="ingredient-conversion"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="ingredient-conversion"
                       >Conversion Rule (optional)</label
                     >
                     <input
@@ -185,7 +304,9 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="ingredient-notes"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="ingredient-notes"
                       >Notes</label
                     >
                     <input
@@ -211,25 +332,54 @@
                   >
                     Clear
                   </button>
-                  <span id="ingredient-feedback" class="text-sm text-gray-500"></span>
+                  <span
+                    id="ingredient-feedback"
+                    class="text-sm text-gray-500"
+                  ></span>
                 </div>
               </form>
-
-              <div>
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Existing Ingredients</h3>
-                <div
-                  id="ingredient-list"
-                  class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
-                ></div>
-              </div>
             </div>
 
             <!-- Recipes Manager -->
             <div id="manager-recipes" class="manager-panel space-y-6 hidden">
-              <form id="recipe-form" class="space-y-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Recipes</h3>
+                <button
+                  id="new-recipe-btn"
+                  type="button"
+                  class="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  <svg
+                    class="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  New Recipe
+                </button>
+              </div>
+
+              <div>
+                <div
+                  id="recipe-manager-list"
+                  class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                ></div>
+              </div>
+
+              <!-- Hidden form template -->
+              <form id="recipe-form" class="hidden space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="recipe-name"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="recipe-name"
                       >Recipe Name</label
                     >
                     <input
@@ -241,7 +391,9 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="recipe-category"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="recipe-category"
                       >Category (optional)</label
                     >
                     <input
@@ -255,7 +407,9 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="recipe-stage"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="recipe-stage"
                       >Stage</label
                     >
                     <select
@@ -269,7 +423,9 @@
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="recipe-class"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="recipe-class"
                       >Class</label
                     >
                     <select
@@ -283,7 +439,9 @@
                     </select>
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="recipe-parent"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="recipe-parent"
                       >Extends (optional)</label
                     >
                     <select
@@ -298,7 +456,9 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="recipe-price"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="recipe-price"
                       >Target Price (pence)</label
                     >
                     <input
@@ -312,7 +472,9 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="recipe-margin"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="recipe-margin"
                       >Target Margin (%)</label
                     >
                     <input
@@ -326,7 +488,9 @@
                     />
                   </div>
                   <div class="flex items-center">
-                    <label class="inline-flex items-center text-sm text-gray-700 mt-6">
+                    <label
+                      class="inline-flex items-center text-sm text-gray-700 mt-6"
+                    >
                       <input
                         id="recipe-vat"
                         name="vat"
@@ -340,7 +504,9 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="recipe-yield-amount"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="recipe-yield-amount"
                       >Yield Amount (optional)</label
                     >
                     <input
@@ -353,7 +519,9 @@
                     />
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700" for="recipe-yield-unit"
+                    <label
+                      class="block text-sm font-medium text-gray-700"
+                      for="recipe-yield-unit"
                       >Yield Unit (optional)</label
                     >
                     <input
@@ -367,7 +535,9 @@
 
                 <div class="space-y-3">
                   <div class="flex items-center justify-between">
-                    <h4 class="text-sm font-semibold text-gray-700">Ingredients</h4>
+                    <h4 class="text-sm font-semibold text-gray-700">
+                      Ingredients
+                    </h4>
                     <button
                       type="button"
                       id="add-ingredient-row"
@@ -393,14 +563,12 @@
                   >
                     Clear
                   </button>
-                  <span id="recipe-feedback" class="text-sm text-gray-500"></span>
+                  <span
+                    id="recipe-feedback"
+                    class="text-sm text-gray-500"
+                  ></span>
                 </div>
               </form>
-
-              <div>
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Existing Recipes</h3>
-                <div id="recipe-manager-list" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
-              </div>
             </div>
           </div>
         </section>
@@ -479,9 +647,108 @@
         activeManager: 'suppliers',
       }
 
+      // Modal functionality
+      function openModal(title, formId) {
+        const modal = document.getElementById('modal')
+        const overlay = document.getElementById('modal-overlay')
+        const modalBody = document.getElementById('modal-body')
+        const modalTitle = document.getElementById('modal-title')
+        const form = document.getElementById(formId)
+
+        modalTitle.textContent = title
+
+        // Move form into modal
+        const formClone = form.cloneNode(true)
+        formClone.classList.remove('hidden')
+        formClone.id = `${formId}-active`
+        modalBody.innerHTML = ''
+        modalBody.appendChild(formClone)
+
+        // Show modal with animation
+        modal.classList.remove('hidden')
+        overlay.classList.remove('hidden')
+
+        setTimeout(() => {
+          modal
+            .querySelector('.modal-content')
+            .classList.remove('scale-95', 'opacity-0')
+          modal
+            .querySelector('.modal-content')
+            .classList.add('scale-100', 'opacity-100')
+        }, 10)
+
+        // Rebind form events for the cloned form
+        if (formId === 'supplier-form') {
+          formClone.addEventListener('submit', async (e) => {
+            const success = await handleSupplierSubmit(e)
+            if (success) closeModal()
+          })
+          formClone
+            .querySelector('#supplier-reset')
+            ?.addEventListener('click', clearSupplierForm)
+        } else if (formId === 'ingredient-form') {
+          formClone.addEventListener('submit', async (e) => {
+            const success = await handleIngredientSubmit(e)
+            if (success) closeModal()
+          })
+          formClone
+            .querySelector('#ingredient-reset')
+            ?.addEventListener('click', clearIngredientForm)
+          populateIngredientSelectors()
+        } else if (formId === 'recipe-form') {
+          formClone.addEventListener('submit', async (e) => {
+            const success = await handleRecipeSubmit(e)
+            if (success) closeModal()
+          })
+          formClone
+            .querySelector('#recipe-reset')
+            ?.addEventListener('click', clearRecipeForm)
+          formClone
+            .querySelector('#add-ingredient-row')
+            ?.addEventListener('click', () =>
+              addIngredientRow(
+                formClone.querySelector('#recipe-ingredients-rows')
+              )
+            )
+          // Initialize with one ingredient row
+          const ingredientRows = formClone.querySelector(
+            '#recipe-ingredients-rows'
+          )
+          if (ingredientRows.children.length === 0) {
+            addIngredientRow(ingredientRows)
+          }
+          populateIngredientSelectors()
+        }
+
+        // Focus first input
+        setTimeout(() => {
+          const firstInput = formClone.querySelector(
+            'input:not([type="checkbox"]), select, textarea'
+          )
+          firstInput?.focus()
+        }, 100)
+      }
+
+      function closeModal() {
+        const modal = document.getElementById('modal')
+        const overlay = document.getElementById('modal-overlay')
+        const modalContent = modal.querySelector('.modal-content')
+
+        // Animate out
+        modalContent.classList.remove('scale-100', 'opacity-100')
+        modalContent.classList.add('scale-95', 'opacity-0')
+
+        setTimeout(() => {
+          modal.classList.add('hidden')
+          overlay.classList.add('hidden')
+          document.getElementById('modal-body').innerHTML = ''
+        }, 200)
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         bindManagerNavigation()
         bindForms()
+        bindModalTriggers()
         loadManagementData()
         loadRecipeReport()
         startEventStream()
@@ -504,6 +771,50 @@
             'content-type': 'application/json',
           },
           body: JSON.stringify(payload),
+        })
+      }
+
+      function bindModalTriggers() {
+        // New entity buttons
+        document
+          .getElementById('new-supplier-btn')
+          ?.addEventListener('click', () => {
+            clearSupplierForm()
+            openModal('New Supplier', 'supplier-form')
+          })
+
+        document
+          .getElementById('new-ingredient-btn')
+          ?.addEventListener('click', () => {
+            clearIngredientForm()
+            openModal('New Ingredient', 'ingredient-form')
+          })
+
+        document
+          .getElementById('new-recipe-btn')
+          ?.addEventListener('click', () => {
+            clearRecipeForm()
+            openModal('New Recipe', 'recipe-form')
+          })
+
+        // Modal close button
+        document
+          .getElementById('modal-close')
+          ?.addEventListener('click', closeModal)
+
+        // Backdrop click
+        document
+          .getElementById('modal-overlay')
+          ?.addEventListener('click', closeModal)
+
+        // ESC key
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            const modal = document.getElementById('modal')
+            if (!modal.classList.contains('hidden')) {
+              closeModal()
+            }
+          }
         })
       }
 
@@ -809,11 +1120,15 @@
 
         setActiveManager('suppliers')
 
+        // Populate original form with data
         document.getElementById('supplier-name').value = supplier.name
-        document.querySelector('#supplier-form button[type="submit"]').textContent =
-          'Update Supplier'
-        document.getElementById('supplier-feedback').textContent = `Editing ${slug}`
+        document.querySelector(
+          '#supplier-form button[type="submit"]'
+        ).textContent = 'Update Supplier'
         state.editing.supplier = slug
+
+        // Open modal with populated form
+        openModal(`Edit Supplier: ${supplier.name}`, 'supplier-form')
       }
 
       async function startEditIngredient(slug) {
@@ -823,21 +1138,29 @@
           if (!ingredient) return
 
           document.getElementById('ingredient-name').value = ingredient.name
-          document.getElementById('ingredient-category').value = ingredient.category || ''
-          document.getElementById('ingredient-unit').value = ingredient.purchase.unit || ''
-          document.getElementById('ingredient-cost').value = ingredient.purchase.cost || 0
-          document.getElementById('ingredient-vat').checked = !!ingredient.purchase.vat
+          document.getElementById('ingredient-category').value =
+            ingredient.category || ''
+          document.getElementById('ingredient-unit').value =
+            ingredient.purchase.unit || ''
+          document.getElementById('ingredient-cost').value =
+            ingredient.purchase.cost || 0
+          document.getElementById('ingredient-vat').checked =
+            !!ingredient.purchase.vat
           populateIngredientSelectors()
           document.getElementById('ingredient-supplier').value =
             ingredient.supplierSlug || ''
           document.getElementById('ingredient-conversion').value =
             ingredient.conversionRate || ''
-          document.getElementById('ingredient-notes').value = ingredient.notes || ''
+          document.getElementById('ingredient-notes').value =
+            ingredient.notes || ''
 
-          document.querySelector('#ingredient-form button[type="submit"]').textContent =
-            'Update Ingredient'
-          document.getElementById('ingredient-feedback').textContent = `Editing ${slug}`
+          document.querySelector(
+            '#ingredient-form button[type="submit"]'
+          ).textContent = 'Update Ingredient'
           state.editing.ingredient = slug
+
+          // Open modal with populated form
+          openModal(`Edit Ingredient: ${ingredient.name}`, 'ingredient-form')
         } catch (error) {
           alert(`Unable to load ingredient: ${error.message}`)
         }
@@ -850,15 +1173,21 @@
           if (!recipe) return
 
           document.getElementById('recipe-name').value = recipe.name
-          document.getElementById('recipe-category').value = recipe.category || ''
-          document.getElementById('recipe-stage').value = recipe.stage || 'development'
-          document.getElementById('recipe-class').value = recipe.class || 'menu_item'
+          document.getElementById('recipe-category').value =
+            recipe.category || ''
+          document.getElementById('recipe-stage').value =
+            recipe.stage || 'development'
+          document.getElementById('recipe-class').value =
+            recipe.class || 'menu_item'
           document.getElementById('recipe-parent').value = recipe.parent || ''
           document.getElementById('recipe-price').value = recipe.sellPrice || 0
-          document.getElementById('recipe-margin').value = recipe.targetMargin || ''
+          document.getElementById('recipe-margin').value =
+            recipe.targetMargin || ''
           document.getElementById('recipe-vat').checked = !!recipe.includesVat
-          document.getElementById('recipe-yield-amount').value = recipe.yieldAmount || ''
-          document.getElementById('recipe-yield-unit').value = recipe.yieldUnit || ''
+          document.getElementById('recipe-yield-amount').value =
+            recipe.yieldAmount || ''
+          document.getElementById('recipe-yield-unit').value =
+            recipe.yieldUnit || ''
 
           const ingredients = Array.isArray(recipe.ingredients)
             ? recipe.ingredients
@@ -889,10 +1218,13 @@
               }
             })
 
-          document.querySelector('#recipe-form button[type="submit"]').textContent =
-            'Update Recipe'
-          document.getElementById('recipe-feedback').textContent = `Editing ${slug}`
+          document.querySelector(
+            '#recipe-form button[type="submit"]'
+          ).textContent = 'Update Recipe'
           state.editing.recipe = slug
+
+          // Open modal with populated form
+          openModal(`Edit Recipe: ${recipe.name}`, 'recipe-form')
         } catch (error) {
           alert(`Unable to load recipe: ${error.message}`)
         }
@@ -904,8 +1236,9 @@
           document.getElementById('supplier-feedback').textContent = ''
         }
         state.editing.supplier = null
-        document.querySelector('#supplier-form button[type="submit"]').textContent =
-          'Save Supplier'
+        document.querySelector(
+          '#supplier-form button[type="submit"]'
+        ).textContent = 'Save Supplier'
       }
 
       function clearIngredientForm(resetFeedback = true) {
@@ -914,8 +1247,9 @@
           document.getElementById('ingredient-feedback').textContent = ''
         }
         state.editing.ingredient = null
-        document.querySelector('#ingredient-form button[type="submit"]').textContent =
-          'Save Ingredient'
+        document.querySelector(
+          '#ingredient-form button[type="submit"]'
+        ).textContent = 'Save Ingredient'
       }
 
       function clearRecipeForm(resetFeedback = true) {
@@ -928,8 +1262,9 @@
         rows.innerHTML = ''
         addIngredientRow(rows)
         populateIngredientSelectors()
-        document.querySelector('#recipe-form button[type="submit"]').textContent =
-          'Save Recipe'
+        document.querySelector(
+          '#recipe-form button[type="submit"]'
+        ).textContent = 'Save Recipe'
       }
 
       async function handleSupplierSubmit(event) {
@@ -940,14 +1275,17 @@
 
         if (!name) {
           setFeedback('supplier-feedback', 'Name is required', 'error')
-          return
+          return false
         }
 
         const slug = state.editing.supplier
         const payload = { name }
 
         submitButton.disabled = true
-        setFeedback('supplier-feedback', slug ? 'Updating supplier...' : 'Creating supplier...')
+        setFeedback(
+          'supplier-feedback',
+          slug ? 'Updating supplier...' : 'Creating supplier...'
+        )
 
         try {
           if (slug) {
@@ -962,8 +1300,10 @@
 
           await loadManagementData()
           await loadRecipeReport()
+          return true
         } catch (error) {
           setFeedback('supplier-feedback', error.message, 'error')
+          return false
         } finally {
           submitButton.disabled = false
         }
@@ -985,8 +1325,12 @@
 
         const cost = parseFloat(costValue)
         if (!name || !category || !unit || Number.isNaN(cost)) {
-          setFeedback('ingredient-feedback', 'Please complete required fields', 'error')
-          return
+          setFeedback(
+            'ingredient-feedback',
+            'Please complete required fields',
+            'error'
+          )
+          return false
         }
 
         const payload = {
@@ -997,9 +1341,7 @@
             cost,
             vat,
           },
-          supplier: supplierSlug
-            ? { uses: `slug:${supplierSlug}` }
-            : undefined,
+          supplier: supplierSlug ? { uses: `slug:${supplierSlug}` } : undefined,
           conversionRate: conversionRate || undefined,
           notes: notes || undefined,
         }
@@ -1024,8 +1366,10 @@
 
           await loadManagementData()
           await loadRecipeReport()
+          return true
         } catch (error) {
           setFeedback('ingredient-feedback', error.message, 'error')
+          return false
         } finally {
           submitButton.disabled = false
         }
@@ -1050,10 +1394,10 @@
         const price = Number(priceValue)
         if (!name || Number.isNaN(price)) {
           setFeedback('recipe-feedback', 'Name and price are required', 'error')
-          return
+          return false
         }
 
-        const ingredients = collectIngredientRows()
+        const ingredients = collectIngredientRows(form)
           .filter((row) => row.slug && row.unit)
           .map((row) => ({
             type: row.type,
@@ -1082,7 +1426,10 @@
 
         const slug = state.editing.recipe
         submitButton.disabled = true
-        setFeedback('recipe-feedback', slug ? 'Updating recipe...' : 'Creating recipe...')
+        setFeedback(
+          'recipe-feedback',
+          slug ? 'Updating recipe...' : 'Creating recipe...'
+        )
 
         try {
           if (slug) {
@@ -1097,8 +1444,10 @@
 
           await loadManagementData()
           await loadRecipeReport()
+          return true
         } catch (error) {
           setFeedback('recipe-feedback', error.message, 'error')
+          return false
         } finally {
           submitButton.disabled = false
         }
@@ -1151,7 +1500,8 @@
 
       function addIngredientRow(container, initial) {
         const row = document.createElement('div')
-        row.className = 'ingredient-row flex flex-col md:flex-row md:items-center gap-2 border border-gray-200 rounded-md p-3 bg-gray-50'
+        row.className =
+          'ingredient-row flex flex-col md:flex-row md:items-center gap-2 border border-gray-200 rounded-md p-3 bg-gray-50'
         row.innerHTML = `
           <div class="flex-1 flex gap-2">
             <select class="ingredient-type rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -1178,13 +1528,17 @@
         container.appendChild(row)
 
         const typeSelect = row.querySelector('.ingredient-type')
-        typeSelect.addEventListener('change', () => populateIngredientSelectors())
+        typeSelect.addEventListener('change', () =>
+          populateIngredientSelectors()
+        )
 
-        row.querySelector('.remove-ingredient-row').addEventListener('click', () => {
-          if (container.children.length > 1) {
-            row.remove()
-          }
-        })
+        row
+          .querySelector('.remove-ingredient-row')
+          .addEventListener('click', () => {
+            if (container.children.length > 1) {
+              row.remove()
+            }
+          })
 
         if (initial) {
           typeSelect.value = initial.type || 'ingredient'
@@ -1198,9 +1552,10 @@
         }
       }
 
-      function collectIngredientRows() {
+      function collectIngredientRows(form) {
+        const container = form || document
         return Array.from(
-          document.querySelectorAll('#recipe-ingredients-rows .ingredient-row')
+          container.querySelectorAll('#recipe-ingredients-rows .ingredient-row')
         ).map((row) => ({
           type: row.querySelector('.ingredient-type').value,
           slug: row.querySelector('.ingredient-slug').value,
@@ -1224,25 +1579,34 @@
             const slugSelect = row.querySelector('.ingredient-slug')
             const current = slugSelect.value
             if (typeSelect.value === 'recipe') {
-            slugSelect.innerHTML = `<option value="">-- Select --</option>${recipeOptions}`
-          } else {
-            slugSelect.innerHTML = `<option value="">-- Select --</option>${ingredientOptions}`
-          }
-          slugSelect.value = current
-        })
+              slugSelect.innerHTML = `<option value="">-- Select --</option>${recipeOptions}`
+            } else {
+              slugSelect.innerHTML = `<option value="">-- Select --</option>${ingredientOptions}`
+            }
+            slugSelect.value = current
+          })
 
         const supplierSelect = document.getElementById('ingredient-supplier')
         if (supplierSelect) {
           supplierSelect.innerHTML = state.suppliers
-            .map((supplier) => `<option value="${supplier.slug}">${supplier.name}</option>`)
+            .map(
+              (supplier) =>
+                `<option value="${supplier.slug}">${supplier.name}</option>`
+            )
             .join('')
         }
 
         const parentSelect = document.getElementById('recipe-parent')
         if (parentSelect) {
           const preserve = parentSelect.value
-          parentSelect.innerHTML = '<option value="">-- None --</option>' +
-            state.recipes.map((recipe) => `<option value="${recipe.slug}">${recipe.name}</option>`).join('')
+          parentSelect.innerHTML =
+            '<option value="">-- None --</option>' +
+            state.recipes
+              .map(
+                (recipe) =>
+                  `<option value="${recipe.slug}">${recipe.name}</option>`
+              )
+              .join('')
           parentSelect.value = preserve
         }
       }
