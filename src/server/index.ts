@@ -34,6 +34,10 @@ export function createServer(config: ServerConfig): Express {
   app.use(express.static(path.join(__dirname, 'public')))
 
   // API routes
+  app.use(
+    '/api',
+    require('./middleware/morgan').morgan(require('@harrytwright/logger'))
+  )
   app.use('/api', createApiRouter(config))
 
   // Serve index.html for root
