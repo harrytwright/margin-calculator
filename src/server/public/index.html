@@ -1230,8 +1230,17 @@
       async function fetchJSON(pathname, options) {
         const response = await fetch(`${API_BASE}${pathname}`, options)
         if (!response.ok) {
-          const payload = await response.text()
-          throw new Error(payload || response.statusText)
+          const contentType = response.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json()
+            // Create custom error with parsed details
+            const error = new Error(errorData.error || response.statusText)
+            error.validationErrors = errorData.details || []
+            throw error
+          } else {
+            const payload = await response.text()
+            throw new Error(payload || response.statusText)
+          }
         }
         const text = await response.text()
         return text ? JSON.parse(text) : null
@@ -1677,6 +1686,61 @@
       // Keep old function for backward compatibility during migration
       function setFeedback(elementId, message, tone = 'info') {
         showToast(message, tone)
+      }
+
+      /**
+       * Display validation errors inline below form fields
+       */
+      function showValidationErrors(form, errors) {
+        // Clear any existing error messages
+        form.querySelectorAll('.validation-error').forEach((el) => el.remove())
+        form.querySelectorAll('.border-red-300').forEach((el) => {
+          el.classList.remove('border-red-300')
+        })
+
+        errors.forEach((error) => {
+          // Map API field names to form input IDs
+          const fieldMapping = {
+            'supplier': 'ingredient-supplier, recipe-supplier',
+            'purchase.cost': 'ingredient-cost',
+            'costing.price': 'recipe-price',
+            'costing.margin': 'recipe-margin',
+            'name': 'supplier-name, ingredient-name, recipe-name',
+            'category': 'ingredient-category, recipe-category',
+            'ingredients': 'recipe-ingredients-rows',
+          }
+
+          const possibleIds = fieldMapping[error.field] || error.field
+          const ids = possibleIds.split(', ')
+
+          for (const id of ids) {
+            const input = form.querySelector(`#${id}`)
+            if (input) {
+              // Add red border
+              input.classList.add('border-red-300')
+
+              // Create error message element
+              const errorEl = document.createElement('p')
+              errorEl.className = 'validation-error text-red-600 text-sm mt-1'
+              errorEl.textContent = error.message
+
+              // Insert after the input or its parent wrapper
+              const parent = input.parentElement
+              parent.insertBefore(errorEl, input.nextSibling)
+              break
+            }
+          }
+        })
+      }
+
+      /**
+       * Clear all validation errors from a form
+       */
+      function clearValidationErrors(form) {
+        form.querySelectorAll('.validation-error').forEach((el) => el.remove())
+        form.querySelectorAll('.border-red-300').forEach((el) => {
+          el.classList.remove('border-red-300')
+        })
       }
 
       /**
@@ -2134,6 +2198,10 @@
         event.preventDefault()
         const form = event.target
         const submitButton = form.querySelector('button[type="submit"]')
+
+        // Clear previous validation errors
+        clearValidationErrors(form)
+
         const name = form.name.value.trim()
 
         if (!name) {
@@ -2161,7 +2229,13 @@
           await loadRecipeReport()
           return true
         } catch (error) {
-          showToast(error.message, 'error')
+          // Check if this is a validation error
+          if (error.validationErrors && error.validationErrors.length > 0) {
+            showValidationErrors(form, error.validationErrors)
+            showToast('Please fix the errors below', 'error')
+          } else {
+            showToast(error.message, 'error')
+          }
           return false
         } finally {
           setButtonLoading(submitButton, false)
@@ -2172,6 +2246,9 @@
         event.preventDefault()
         const form = event.target
         const submitButton = form.querySelector('button[type="submit"]')
+
+        // Clear previous validation errors
+        clearValidationErrors(form)
 
         const name = form.name.value.trim()
         const category = form.category.value.trim()
@@ -2219,7 +2296,13 @@
           await loadRecipeReport()
           return true
         } catch (error) {
-          showToast(error.message, 'error')
+          // Check if this is a validation error
+          if (error.validationErrors && error.validationErrors.length > 0) {
+            showValidationErrors(form, error.validationErrors)
+            showToast('Please fix the errors below', 'error')
+          } else {
+            showToast(error.message, 'error')
+          }
           return false
         } finally {
           setButtonLoading(submitButton, false)
@@ -2230,6 +2313,9 @@
         event.preventDefault()
         const form = event.target
         const submitButton = form.querySelector('button[type="submit"]')
+
+        // Clear previous validation errors
+        clearValidationErrors(form)
 
         const name = form.name.value.trim()
         const category = form.category.value.trim()
@@ -2284,7 +2370,7 @@
             clearRecipeForm()
             showToast(`Recipe "${name}" updated successfully`, 'success')
           } else {
-            await sendJSON('/recipes', 'POST', payload)
+            await sendJSON(`/recipes`, 'POST', payload)
             clearRecipeForm()
             showToast(`Recipe "${name}" created successfully`, 'success')
           }
@@ -2293,7 +2379,13 @@
           await loadRecipeReport()
           return true
         } catch (error) {
-          showToast(error.message, 'error')
+          // Check if this is a validation error
+          if (error.validationErrors && error.validationErrors.length > 0) {
+            showValidationErrors(form, error.validationErrors)
+            showToast('Please fix the errors below', 'error')
+          } else {
+            showToast(error.message, 'error')
+          }
           return false
         } finally {
           setButtonLoading(submitButton, false)
