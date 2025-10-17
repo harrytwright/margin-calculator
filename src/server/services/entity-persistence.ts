@@ -1,5 +1,5 @@
-import { promises as fs } from 'fs'
 import type { Dirent } from 'fs'
+import { promises as fs } from 'fs'
 import path from 'path'
 
 import log from '@harrytwright/logger'
@@ -11,10 +11,10 @@ import type {
   RecipeImportData,
   SupplierImportData,
 } from '../../schema'
-import { slugify } from '../../utils/slugify'
 import { IngredientService } from '../../services/ingredient'
 import { RecipeService } from '../../services/recipe'
 import { SupplierService } from '../../services/supplier'
+import { slugify } from '../../utils/slugify'
 import type { ServerConfig } from '../index'
 import { HttpError } from '../utils/http-error'
 
@@ -32,7 +32,7 @@ export class EntityPersistence {
     private readonly config: ServerConfig,
     private readonly services: PersistenceServices
   ) {
-    this.dataRoot = path.join(config.workingDir, 'data')
+    this.dataRoot = config.workspaceDir
   }
 
   async createSupplier(data: SupplierImportData) {
@@ -240,7 +240,11 @@ export class EntityPersistence {
       try {
         await this.fileWriter.deleteFile(existingPath)
       } catch (error) {
-        log.warn('persistence', error as Error, 'Failed to delete supplier file')
+        log.warn(
+          'persistence',
+          error as Error,
+          'Failed to delete supplier file'
+        )
       }
     } else {
       log.warn(
@@ -266,7 +270,11 @@ export class EntityPersistence {
       try {
         await this.fileWriter.deleteFile(existingPath)
       } catch (error) {
-        log.warn('persistence', error as Error, 'Failed to delete ingredient file')
+        log.warn(
+          'persistence',
+          error as Error,
+          'Failed to delete ingredient file'
+        )
       }
     } else {
       log.warn(
@@ -308,10 +316,7 @@ export class EntityPersistence {
     }
   }
 
-  private async ensureSlug(
-    provided: string | undefined,
-    fallbackName: string
-  ) {
+  private async ensureSlug(provided: string | undefined, fallbackName: string) {
     return provided && provided.length > 0
       ? provided
       : await slugify(fallbackName)
@@ -321,7 +326,7 @@ export class EntityPersistence {
     return new Importer(this.config.database, {
       failFast: true,
       importOnly,
-      projectRoot: this.dataRoot,
+      dataDir: this.dataRoot,
       processors: [
         ['supplier', this.services.supplier],
         ['ingredient', this.services.ingredient],
@@ -338,7 +343,10 @@ export class EntityPersistence {
       try {
         return await importer.import(files)
       } catch (error) {
-        if (attempt === maxAttempts - 1 || !this.isRecoverableImportError(error)) {
+        if (
+          attempt === maxAttempts - 1 ||
+          !this.isRecoverableImportError(error)
+        ) {
           throw error
         }
         await this.delay(50 * (attempt + 1))

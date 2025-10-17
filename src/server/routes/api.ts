@@ -22,7 +22,7 @@ export function createApiRouter(config: ServerConfig): Router {
   const supplier = new SupplierService(config.database)
   const ingredient = new IngredientService(config.database, supplier)
   const recipeService = new RecipeService(config.database, ingredient)
-  const configService = new ConfigService(config.workingDir)
+  const configService = new ConfigService(config.locationDir)
   const calculator = new Calculator(recipeService, ingredient, configService)
   const persistence = new EntityPersistence(config, {
     supplier,

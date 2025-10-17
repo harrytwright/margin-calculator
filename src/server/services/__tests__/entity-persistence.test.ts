@@ -31,8 +31,9 @@ describe('EntityPersistence create flow', () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'entity-persistence-'))
-    dbPath = path.join(tempDir, 'data', 'test.sqlite')
-    await fs.mkdir(path.dirname(dbPath), { recursive: true })
+    dbPath = path.join(tempDir, 'test.sqlite')
+    const dataDir = path.join(tempDir, 'data')
+    await fs.mkdir(dataDir, { recursive: true })
 
     db = database(dbPath)
     await migrate.call(
@@ -49,7 +50,8 @@ describe('EntityPersistence create flow', () => {
     const config: ServerConfig = {
       port: 0,
       database: db as unknown as any,
-      workingDir: tempDir,
+      locationDir: tempDir,
+      workspaceDir: dataDir,
       openBrowser: false,
     }
 
@@ -66,7 +68,9 @@ describe('EntityPersistence create flow', () => {
   })
 
   test('creates supplier, ingredient, and recipe', async () => {
-    const supplier = await persistence.createSupplier({ name: 'Atlantic Foods' })
+    const supplier = await persistence.createSupplier({
+      name: 'Atlantic Foods',
+    })
 
     expect(supplier.slug).toBe('atlantic-foods')
     expect(supplier.name).toBe('Atlantic Foods')
@@ -98,7 +102,9 @@ describe('EntityPersistence create flow', () => {
     expect(ingredient.supplierSlug).toBe('atlantic-foods')
 
     const ingredientFile = path.join(tempDir, 'data', 'ingredients', 'ham.yaml')
-    const ingredientYaml = YAML.parse(await fs.readFile(ingredientFile, 'utf-8'))
+    const ingredientYaml = YAML.parse(
+      await fs.readFile(ingredientFile, 'utf-8')
+    )
     expect(ingredientYaml).toMatchObject({
       object: 'ingredient',
       data: {
@@ -130,7 +136,12 @@ describe('EntityPersistence create flow', () => {
     expect(recipe?.slug).toBe('ham-sandwich')
     expect(recipe?.ingredients).toHaveLength(1)
 
-    const recipeFile = path.join(tempDir, 'data', 'recipes', 'ham-sandwich.yaml')
+    const recipeFile = path.join(
+      tempDir,
+      'data',
+      'recipes',
+      'ham-sandwich.yaml'
+    )
     const recipeYaml = YAML.parse(await fs.readFile(recipeFile, 'utf-8'))
     expect(recipeYaml).toMatchObject({
       object: 'recipe',
@@ -176,12 +187,7 @@ describe('EntityPersistence create flow', () => {
       'suppliers',
       'atlantic-foods.yaml'
     )
-    const ingredientPath = path.join(
-      tempDir,
-      'data',
-      'ingredients',
-      'ham.yaml'
-    )
+    const ingredientPath = path.join(tempDir, 'data', 'ingredients', 'ham.yaml')
     const recipePath = path.join(
       tempDir,
       'data',
@@ -226,7 +232,9 @@ describe('EntityPersistence create flow', () => {
     const supplierYaml = YAML.parse(await fs.readFile(supplierPath, 'utf-8'))
     expect(supplierYaml.data.name).toBe('Atlantic Foods Intl')
 
-    const ingredientYaml = YAML.parse(await fs.readFile(ingredientPath, 'utf-8'))
+    const ingredientYaml = YAML.parse(
+      await fs.readFile(ingredientPath, 'utf-8')
+    )
     expect(ingredientYaml.data.name).toBe('Smoked Ham')
 
     const recipeYaml = YAML.parse(await fs.readFile(recipePath, 'utf-8'))
@@ -268,12 +276,7 @@ describe('EntityPersistence create flow', () => {
       'suppliers',
       'atlantic-foods.yaml'
     )
-    const ingredientPath = path.join(
-      tempDir,
-      'data',
-      'ingredients',
-      'ham.yaml'
-    )
+    const ingredientPath = path.join(tempDir, 'data', 'ingredients', 'ham.yaml')
     const recipePath = path.join(
       tempDir,
       'data',

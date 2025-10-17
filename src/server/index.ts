@@ -1,9 +1,9 @@
+import { EventEmitter } from 'events'
 import express, { Express } from 'express'
 import fs from 'fs/promises'
 import { Server } from 'http'
 import { Kysely } from 'kysely'
 import path from 'path'
-import { EventEmitter } from 'events'
 
 import log from '@harrytwright/logger'
 
@@ -19,7 +19,8 @@ import { createApiRouter } from './routes/api'
 export interface ServerConfig {
   port: number
   database: Kysely<DB>
-  workingDir: string
+  locationDir: string
+  workspaceDir: string
   openBrowser?: boolean
   watchFiles?: boolean
   events?: EventEmitter
@@ -81,9 +82,10 @@ export async function startServer(
 }
 
 async function startFileWatcher(config: ServerConfig): Promise<FileWatcher> {
-  const dataRoot = path.join(config.workingDir, 'data')
+  const dataRoot = config.workspaceDir
 
   await ensureDirectories([
+    dataRoot,
     path.join(dataRoot, 'suppliers'),
     path.join(dataRoot, 'ingredients'),
     path.join(dataRoot, 'recipes'),
@@ -106,7 +108,7 @@ async function startFileWatcher(config: ServerConfig): Promise<FileWatcher> {
     importerFactory: () =>
       new Importer(config.database, {
         failFast: true,
-        projectRoot: dataRoot,
+        dataDir: dataRoot,
         processors: [
           ['supplier', supplierService],
           ['ingredient', ingredientService],

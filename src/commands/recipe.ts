@@ -35,9 +35,21 @@ const importer = new Command()
 
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
 
-    const { working, database: dbName, failFast, root } = cmd.optsWithGlobals()
+    const {
+      location,
+      working,
+      workspace,
+      database: dbName,
+      failFast,
+      root,
+    } = cmd.optsWithGlobals()
 
-    if (!(await isInitialised(path.join(working)))) {
+    // Use location if provided, otherwise fall back to working (deprecated)
+    const locationDir = location || working
+    // Use workspace if provided, otherwise fall back to root (deprecated) or working/data
+    const workspaceDir = workspace || root || path.join(working, 'data')
+
+    if (!(await isInitialised(locationDir))) {
       log.error(
         'ingredients.recipe',
         'margin is not yet initialised. Call `$ margin initialise` first'
@@ -45,7 +57,7 @@ const importer = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(working, './data', dbName))
+    const db = database(path.join(locationDir, dbName))
 
     // Initialize services
     const supplier = new SupplierService(db)
@@ -54,7 +66,7 @@ const importer = new Command()
 
     const importer = new Importer(db, {
       failFast,
-      projectRoot: path.join(process.cwd(), root || ''),
+      dataDir: path.resolve(process.cwd(), workspaceDir),
       processors: [
         ['supplier', supplier],
         ['ingredient', ingredient],
@@ -95,9 +107,12 @@ const calculate = new Command()
   .action(async (slugs: string[], opts, cmd) => {
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
 
-    const { working, database: dbName, json } = cmd.optsWithGlobals()
+    const { location, working, database: dbName, json } = cmd.optsWithGlobals()
 
-    if (!(await isInitialised(path.join(working)))) {
+    // Use location if provided, otherwise fall back to working (deprecated)
+    const locationDir = location || working
+
+    if (!(await isInitialised(locationDir))) {
       log.error(
         'recipe.calculate',
         'margin is not yet initialised. Call `$ margin initialise` first'
@@ -105,7 +120,7 @@ const calculate = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(working, './data', dbName))
+    const db = database(path.join(locationDir, dbName))
 
     // Initialize services
     const supplier = new SupplierService(db)
@@ -118,7 +133,7 @@ const calculate = new Command()
     const { runCalculations } = await import('../lib/runner.js')
 
     // Initialize calculator with config
-    const config = new ConfigService(working)
+    const config = new ConfigService(locationDir)
     const calculator = new Calculator(recipeService, ingredient, config)
 
     // Choose reporter based on --json flag
@@ -161,9 +176,12 @@ const report = new Command()
   .action(async (opts, cmd) => {
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
 
-    const { working, database: dbName, json } = cmd.optsWithGlobals()
+    const { location, working, database: dbName, json } = cmd.optsWithGlobals()
 
-    if (!(await isInitialised(path.join(working)))) {
+    // Use location if provided, otherwise fall back to working (deprecated)
+    const locationDir = location || working
+
+    if (!(await isInitialised(locationDir))) {
       log.error(
         'recipe.report',
         'margin is not yet initialised. Call `$ margin initialise` first'
@@ -171,7 +189,7 @@ const report = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(working, './data', dbName))
+    const db = database(path.join(locationDir, dbName))
 
     // Initialize services
     const supplier = new SupplierService(db)
@@ -194,7 +212,7 @@ const report = new Command()
     const { runCalculations } = await import('../lib/runner.js')
 
     // Initialize calculator with config
-    const config = new ConfigService(working)
+    const config = new ConfigService(locationDir)
     const calculator = new Calculator(recipeService, ingredient, config)
 
     // Choose reporter based on --json flag
