@@ -116,44 +116,217 @@
       </div>
     </div>
 
-    <div id="app" class="min-h-screen">
-      <!-- Header -->
-      <header class="bg-white shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 class="text-2xl font-bold text-gray-900">🍽️ Margin Calculator</h1>
+    <div id="app" class="min-h-screen flex">
+      <!-- Sidebar -->
+      <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <!-- Logo/Header -->
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h1 class="text-xl font-bold text-gray-900">🍽️ Margin Calculator</h1>
         </div>
-      </header>
 
-      <!-- Main Content -->
-      <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <!-- Management Section -->
-        <section class="bg-white border border-gray-200 rounded-lg shadow-sm">
-          <div class="border-b border-gray-200 px-6 py-4 flex flex-wrap gap-2">
-            <span class="text-sm text-gray-500 mr-4">Manage data:</span>
-            <button
-              class="manager-tab px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none"
-              data-manager="suppliers"
-              aria-selected="true"
+        <!-- Navigation -->
+        <nav class="flex-1 px-4 py-6 space-y-1">
+          <!-- Dashboard -->
+          <a
+            href="#"
+            data-view="dashboard"
+            class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              Suppliers
-            </button>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+            Dashboard
+          </a>
+
+          <!-- Management Section -->
+          <div class="space-y-1">
             <button
-              class="manager-tab px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded hover:bg-blue-50 focus:outline-none"
-              data-manager="ingredients"
-              aria-selected="false"
+              id="management-toggle"
+              class="nav-link flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100"
             >
-              Ingredients
+              <span class="flex items-center">
+                <svg
+                  class="w-5 h-5 mr-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+                Management
+              </span>
+              <svg
+                id="management-chevron"
+                class="w-4 h-4 transform transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
             </button>
-            <button
-              class="manager-tab px-4 py-2 text-sm font-medium text-blue-600 border border-blue-200 rounded hover:bg-blue-50 focus:outline-none"
-              data-manager="recipes"
-              aria-selected="false"
-            >
-              Recipes
-            </button>
+
+            <!-- Sub-navigation (initially hidden) -->
+            <div id="management-subnav" class="hidden pl-11 space-y-1">
+              <a
+                href="#"
+                data-view="suppliers"
+                class="nav-link block px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              >
+                Suppliers
+              </a>
+              <a
+                href="#"
+                data-view="ingredients"
+                class="nav-link block px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              >
+                Ingredients
+              </a>
+              <a
+                href="#"
+                data-view="recipes"
+                class="nav-link block px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+              >
+                Recipes
+              </a>
+            </div>
           </div>
 
-          <div class="p-6 space-y-8">
+          <!-- Margins -->
+          <a
+            href="#"
+            data-view="margins"
+            class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100"
+          >
+            <svg
+              class="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Margins
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content Area -->
+      <div class="flex-1 flex flex-col min-h-screen">
+        <!-- Header Bar -->
+        <header class="bg-white border-b border-gray-200 px-8 py-4">
+          <h2 id="view-title" class="text-2xl font-semibold text-gray-900">
+            Dashboard
+          </h2>
+        </header>
+
+        <!-- Content -->
+        <main class="flex-1 px-8 py-8 bg-gray-50 overflow-auto">
+          <!-- Dashboard View -->
+          <div id="view-dashboard" class="view-content">
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+              <!-- Summary Cards -->
+              <div
+                class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm"
+              >
+                <h3 class="text-sm font-medium text-gray-500 mb-2">
+                  Total Recipes
+                </h3>
+                <p id="stat-total-recipes" class="text-3xl font-bold text-gray-900">
+                  0
+                </p>
+              </div>
+              <div
+                class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm"
+              >
+                <h3 class="text-sm font-medium text-gray-500 mb-2">
+                  Avg Margin
+                </h3>
+                <p id="stat-avg-margin" class="text-3xl font-bold text-gray-900">
+                  0%
+                </p>
+              </div>
+              <div
+                class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm"
+              >
+                <h3 class="text-sm font-medium text-gray-500 mb-2">
+                  Below Target
+                </h3>
+                <p id="stat-below-target" class="text-3xl font-bold text-red-600">
+                  0
+                </p>
+              </div>
+              <div
+                class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm"
+              >
+                <h3 class="text-sm font-medium text-gray-500 mb-2">
+                  Total Ingredients
+                </h3>
+                <p
+                  id="stat-total-ingredients"
+                  class="text-3xl font-bold text-gray-900"
+                >
+                  0
+                </p>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                Quick Actions
+              </h3>
+              <div class="flex flex-wrap gap-3">
+                <button
+                  data-view="suppliers"
+                  class="nav-action inline-flex items-center px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  + New Supplier
+                </button>
+                <button
+                  data-view="ingredients"
+                  class="nav-action inline-flex items-center px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  + New Ingredient
+                </button>
+                <button
+                  data-view="recipes"
+                  class="nav-action inline-flex items-center px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  + New Recipe
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Suppliers View -->
+          <div id="view-suppliers" class="view-content hidden">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 space-y-6">
             <!-- Suppliers Manager -->
             <div id="manager-suppliers" class="manager-panel space-y-6">
               <div class="flex items-center justify-between mb-4">
@@ -266,7 +439,12 @@
                 </div>
               </form>
             </div>
+            </div>
+          </div>
 
+          <!-- Ingredients View -->
+          <div id="view-ingredients" class="view-content hidden">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 space-y-6">
             <!-- Ingredients Manager -->
             <div
               id="manager-ingredients"
@@ -564,7 +742,12 @@
                 </div>
               </form>
             </div>
+            </div>
+          </div>
 
+          <!-- Recipes View -->
+          <div id="view-recipes" class="view-content hidden">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 space-y-6">
             <!-- Recipes Manager -->
             <div id="manager-recipes" class="manager-panel space-y-6 hidden">
               <div class="flex items-center justify-between mb-4">
@@ -830,11 +1013,13 @@
                 </div>
               </form>
             </div>
+            </div>
           </div>
-        </section>
 
-        <!-- Recipe List View -->
-        <section id="recipe-report-section">
+          <!-- Margins View -->
+          <div id="view-margins" class="view-content hidden space-y-6">
+            <!-- Recipe List -->
+            <div id="recipe-report-section">
           <div id="loading" class="text-center py-12">
             <div
               class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"
@@ -865,10 +1050,10 @@
               class="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
             ></div>
           </div>
-        </section>
+            </div>
 
-        <!-- Recipe Detail View -->
-        <section id="recipe-detail" class="hidden">
+            <!-- Recipe Detail View -->
+            <div id="recipe-detail" class="hidden">
           <button
             id="back-btn"
             class="mb-4 text-blue-600 hover:text-blue-800 flex items-center"
@@ -889,8 +1074,10 @@
             Back to recipes
           </button>
           <div id="detail-container"></div>
-        </section>
-      </main>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
 
     <script>
@@ -1031,6 +1218,7 @@
       }
 
       document.addEventListener('DOMContentLoaded', () => {
+        bindNavigation()
         bindManagerNavigation()
         bindForms()
         bindModalTriggers()
@@ -1211,6 +1399,116 @@
               closeModal()
             }
           }
+        })
+      }
+
+      // View Navigation
+      function switchView(viewName) {
+        // Hide all views
+        document.querySelectorAll('.view-content').forEach((view) => {
+          view.classList.add('hidden')
+        })
+
+        // Show selected view
+        const targetView = document.getElementById(`view-${viewName}`)
+        if (targetView) {
+          targetView.classList.remove('hidden')
+        }
+
+        // Update header title
+        const titles = {
+          dashboard: 'Dashboard',
+          suppliers: 'Suppliers',
+          ingredients: 'Ingredients',
+          recipes: 'Recipes',
+          margins: 'Margins',
+        }
+        document.getElementById('view-title').textContent = titles[viewName] || viewName
+
+        // Update nav link active states
+        document.querySelectorAll('.nav-link').forEach((link) => {
+          const isActive = link.dataset.view === viewName
+          link.classList.toggle('bg-blue-600', isActive)
+          link.classList.toggle('text-white', isActive)
+          link.classList.toggle('text-gray-700', !isActive)
+          link.classList.toggle('text-gray-600', !isActive)
+          link.classList.toggle('hover:bg-gray-100', !isActive)
+          link.classList.toggle('hover:bg-blue-700', isActive)
+        })
+
+        // Show/hide manager panels for management views
+        if (['suppliers', 'ingredients', 'recipes'].includes(viewName)) {
+          setActiveManager(viewName)
+        }
+
+        // Load data for specific views
+        if (viewName === 'dashboard') {
+          loadDashboardStats()
+        } else if (viewName === 'margins') {
+          loadMargins()
+        }
+      }
+
+      function loadDashboardStats() {
+        // Update dashboard statistics
+        document.getElementById('stat-total-recipes').textContent =
+          state.recipes.length
+        document.getElementById('stat-total-ingredients').textContent =
+          state.ingredients.length
+
+        // Calculate avg margin and below target count (placeholder for now)
+        document.getElementById('stat-avg-margin').textContent = '0%'
+        document.getElementById('stat-below-target').textContent = '0'
+      }
+
+      function loadMargins() {
+        // The existing loadRecipes() function will be called
+        if (state.recipes.length === 0) {
+          loadRecipes()
+        }
+      }
+
+      function toggleManagementSubmenu() {
+        const subnav = document.getElementById('management-subnav')
+        const chevron = document.getElementById('management-chevron')
+        const isHidden = subnav.classList.contains('hidden')
+
+        if (isHidden) {
+          subnav.classList.remove('hidden')
+          chevron.classList.add('rotate-180')
+        } else {
+          subnav.classList.add('hidden')
+          chevron.classList.remove('rotate-180')
+        }
+      }
+
+      function bindNavigation() {
+        // Sidebar navigation links
+        document.querySelectorAll('[data-view]').forEach((link) => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault()
+            switchView(link.dataset.view)
+
+            // Auto-expand management submenu if clicking on management items
+            if (['suppliers', 'ingredients', 'recipes'].includes(link.dataset.view)) {
+              const subnav = document.getElementById('management-subnav')
+              if (subnav.classList.contains('hidden')) {
+                toggleManagementSubmenu()
+              }
+            }
+          })
+        })
+
+        // Management toggle button
+        document
+          .getElementById('management-toggle')
+          .addEventListener('click', toggleManagementSubmenu)
+
+        // Quick action buttons on dashboard
+        document.querySelectorAll('.nav-action').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            switchView(btn.dataset.view)
+          })
         })
       }
 
