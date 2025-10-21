@@ -13,6 +13,10 @@ export const ui = new Command()
   .option('-p, --port <port>', 'Port to run the server on', '3000')
   .option('--no-open', 'Do not automatically open browser')
   .option('--no-watch', 'Disable live file watching and automatic imports')
+  .option(
+    '--standalone',
+    'Run in standalone mode (database-only storage, no file watching)'
+  )
   .action(async (opts, cmd) => {
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
 
@@ -25,6 +29,7 @@ export const ui = new Command()
       port,
       open,
       watch: watchFlag,
+      standalone,
     } = cmd.optsWithGlobals()
 
     // Use location if provided, otherwise fall back to working (deprecated)
@@ -32,13 +37,24 @@ export const ui = new Command()
     // Use workspace if provided, otherwise fall back to working/data
     const workspaceDir = workspace || path.join(working, 'data')
 
-    const watch = watchFlag !== false
+    // Standalone mode forces database-only storage and disables file watching
+    let finalStorageMode = storageMode
+    let watch = watchFlag !== false
+
+    if (standalone) {
+      finalStorageMode = 'database-only'
+      watch = false
+      log.info(
+        'ui',
+        '🔒 Running in standalone mode (database-only, no file watching)'
+      )
+    }
 
     // Validate storage mode
-    if (storageMode && !['fs', 'database-only'].includes(storageMode)) {
+    if (finalStorageMode && !['fs', 'database-only'].includes(finalStorageMode)) {
       log.error(
         'ui',
-        `Invalid storage mode '${storageMode}'. Must be 'fs' or 'database-only'`
+        `Invalid storage mode '${finalStorageMode}'. Must be 'fs' or 'database-only'`
       )
       process.exit(1)
     }
@@ -59,7 +75,7 @@ export const ui = new Command()
         database: db,
         locationDir,
         workspaceDir,
-        storageMode,
+        storageMode: finalStorageMode,
         openBrowser: open,
         watchFiles: watch,
       })
