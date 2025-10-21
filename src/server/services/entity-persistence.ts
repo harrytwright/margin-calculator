@@ -50,7 +50,13 @@ export class EntityPersistence {
       this.dataRoot
     )
 
-    await this.importFiles([filePath])
+    // In database-only mode (no file path), insert directly
+    if (!filePath) {
+      await this.services.supplier.upsert(slug, dataWithSlug)
+    } else {
+      // In filesystem mode, import the file
+      await this.importFiles([filePath])
+    }
 
     const record = await this.services.supplier.findById(slug)
     if (!record) {
@@ -75,7 +81,13 @@ export class EntityPersistence {
       this.dataRoot
     )
 
-    await this.importFiles([filePath])
+    // In database-only mode (no file path), insert directly
+    if (!filePath) {
+      await this.services.ingredient.upsert(slug, dataWithSlug)
+    } else {
+      // In filesystem mode, import the file
+      await this.importFiles([filePath])
+    }
 
     const record = await this.services.ingredient.findById(slug)
     if (!record) {
@@ -100,7 +112,14 @@ export class EntityPersistence {
       this.dataRoot
     )
 
-    await this.importFiles([filePath])
+    // In database-only mode (no file path), insert directly
+    if (!filePath) {
+      // Cast to resolved type since slug is now guaranteed to exist
+      await this.services.recipe.upsert(slug, dataWithSlug as any)
+    } else {
+      // In filesystem mode, import the file
+      await this.importFiles([filePath])
+    }
 
     const record = await this.services.recipe.findById(slug, true)
     if (!record) {
@@ -140,7 +159,13 @@ export class EntityPersistence {
       existingPath || undefined
     )
 
-    await this.importFiles([filePath])
+    // In database-only mode (no file path), insert directly
+    if (!filePath) {
+      await this.services.supplier.upsert(slug, dataWithSlug)
+    } else {
+      // In filesystem mode, import the file
+      await this.importFiles([filePath])
+    }
 
     const record = await this.services.supplier.findById(slug)
     if (!record) {
@@ -180,7 +205,13 @@ export class EntityPersistence {
       existingPath || undefined
     )
 
-    await this.importFiles([filePath])
+    // In database-only mode (no file path), insert directly
+    if (!filePath) {
+      await this.services.ingredient.upsert(slug, dataWithSlug)
+    } else {
+      // In filesystem mode, import the file
+      await this.importFiles([filePath])
+    }
 
     const record = await this.services.ingredient.findById(slug)
     if (!record) {
@@ -220,7 +251,14 @@ export class EntityPersistence {
       existingPath || undefined
     )
 
-    await this.importFiles([filePath])
+    // In database-only mode (no file path), insert directly
+    if (!filePath) {
+      // Cast to resolved type since slug is now guaranteed to exist
+      await this.services.recipe.upsert(slug, dataWithSlug as any)
+    } else {
+      // In filesystem mode, import the file
+      await this.importFiles([filePath])
+    }
 
     const record = await this.services.recipe.findById(slug, true)
     if (!record) {
@@ -355,7 +393,12 @@ export class EntityPersistence {
   }
 
   private async importFiles(files: string[]) {
-    await this.runImport(files, false)
+    // Filter out empty paths (database-only mode returns '')
+    const validFiles = files.filter((f) => f.length > 0)
+    if (validFiles.length === 0) {
+      return // Skip import in database-only mode
+    }
+    await this.runImport(validFiles, false)
   }
 
   private async resolveExistingPath(

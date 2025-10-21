@@ -20,7 +20,7 @@ export class DatabaseOnlyStorage implements StorageService {
     _workingDir: string,
     _existingPath?: string
   ): Promise<string> {
-    log.silly(
+    log.verbose(
       'storage',
       `Database-only mode: Skipping file write for ${type} '${slug}'`
     )
@@ -28,7 +28,7 @@ export class DatabaseOnlyStorage implements StorageService {
   }
 
   async deleteFile(filePath: string): Promise<void> {
-    log.silly(
+    log.verbose(
       'storage',
       `Database-only mode: Skipping file deletion for '${filePath}'`
     )
