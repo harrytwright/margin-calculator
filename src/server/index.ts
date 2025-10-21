@@ -16,11 +16,14 @@ import { RecipeService } from '../services/recipe'
 import { SupplierService } from '../services/supplier'
 import { createApiRouter } from './routes/api'
 
+import type { StorageMode } from '../lib/storage'
+
 export interface ServerConfig {
   port: number
   database: Kysely<DB>
   locationDir: string
   workspaceDir: string
+  storageMode?: StorageMode
   openBrowser?: boolean
   watchFiles?: boolean
   events?: EventEmitter
