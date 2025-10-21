@@ -4,8 +4,8 @@ import path from 'path'
 
 import log from '@harrytwright/logger'
 
-import { FileWriter, type WriteObjectType } from '../../lib/file-writer'
 import { Importer } from '../../lib/importer'
+import type { StorageService, WriteObjectType } from '../../lib/storage'
 import type {
   IngredientImportData,
   RecipeImportData,
@@ -25,12 +25,12 @@ interface PersistenceServices {
 }
 
 export class EntityPersistence {
-  private readonly fileWriter = new FileWriter()
   private readonly dataRoot: string
 
   constructor(
     private readonly config: ServerConfig,
-    private readonly services: PersistenceServices
+    private readonly services: PersistenceServices,
+    private readonly storage: StorageService
   ) {
     this.dataRoot = config.workspaceDir
   }
@@ -43,7 +43,7 @@ export class EntityPersistence {
     }
 
     const dataWithSlug: SupplierImportData = { ...data, slug }
-    const filePath = await this.fileWriter.write(
+    const filePath = await this.storage.write(
       'supplier',
       slug,
       dataWithSlug,
@@ -68,7 +68,7 @@ export class EntityPersistence {
     }
 
     const dataWithSlug: IngredientImportData = { ...data, slug }
-    const filePath = await this.fileWriter.write(
+    const filePath = await this.storage.write(
       'ingredient',
       slug,
       dataWithSlug,
@@ -93,7 +93,7 @@ export class EntityPersistence {
     }
 
     const dataWithSlug: RecipeImportData = { ...data, slug }
-    const filePath = await this.fileWriter.write(
+    const filePath = await this.storage.write(
       'recipe',
       slug,
       dataWithSlug,
@@ -132,7 +132,7 @@ export class EntityPersistence {
     }
 
     const dataWithSlug: SupplierImportData = { ...data, slug }
-    const filePath = await this.fileWriter.write(
+    const filePath = await this.storage.write(
       'supplier',
       slug,
       dataWithSlug,
@@ -172,7 +172,7 @@ export class EntityPersistence {
     }
 
     const dataWithSlug: IngredientImportData = { ...data, slug }
-    const filePath = await this.fileWriter.write(
+    const filePath = await this.storage.write(
       'ingredient',
       slug,
       dataWithSlug,
@@ -212,7 +212,7 @@ export class EntityPersistence {
     }
 
     const dataWithSlug: RecipeImportData = { ...data, slug }
-    const filePath = await this.fileWriter.write(
+    const filePath = await this.storage.write(
       'recipe',
       slug,
       dataWithSlug,
@@ -238,7 +238,7 @@ export class EntityPersistence {
     const existingPath = await this.resolveExistingPath('supplier', slug)
     if (existingPath) {
       try {
-        await this.fileWriter.deleteFile(existingPath)
+        await this.storage.deleteFile(existingPath)
       } catch (error) {
         log.warn(
           'persistence',
@@ -268,7 +268,7 @@ export class EntityPersistence {
     const existingPath = await this.resolveExistingPath('ingredient', slug)
     if (existingPath) {
       try {
-        await this.fileWriter.deleteFile(existingPath)
+        await this.storage.deleteFile(existingPath)
       } catch (error) {
         log.warn(
           'persistence',
@@ -298,7 +298,7 @@ export class EntityPersistence {
     const existingPath = await this.resolveExistingPath('recipe', slug)
     if (existingPath) {
       try {
-        await this.fileWriter.deleteFile(existingPath)
+        await this.storage.deleteFile(existingPath)
       } catch (error) {
         log.warn('persistence', error as Error, 'Failed to delete recipe file')
       }

@@ -5,6 +5,7 @@ import * as path from 'path'
 import YAML from 'yaml'
 
 import { database, destroy, migrate, seed } from '../../../datastore/database'
+import { FileSystemStorage } from '../../../lib/storage/file-system-storage'
 import { IngredientService } from '../../../services/ingredient'
 import { RecipeService } from '../../../services/recipe'
 import { SupplierService } from '../../../services/supplier'
@@ -55,11 +56,17 @@ describe('EntityPersistence create flow', () => {
       openBrowser: false,
     }
 
-    persistence = new EntityPersistence(config, {
-      supplier,
-      ingredient,
-      recipe,
-    })
+    const storage = new FileSystemStorage()
+
+    persistence = new EntityPersistence(
+      config,
+      {
+        supplier,
+        ingredient,
+        recipe,
+      },
+      storage
+    )
   })
 
   afterEach(async () => {

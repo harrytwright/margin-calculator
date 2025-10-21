@@ -46,6 +46,11 @@ async function main() {
       DEFAULT_WORKING_DIR
     )
     .option(
+      '--storage <mode>',
+      'Storage backend: fs (filesystem) or database-only',
+      'fs'
+    )
+    .option(
       '-d, --database [name]',
       'Set the default database name. Memory can be used but should only be used for testing',
       'margin.sqlite3'

@@ -61,7 +61,7 @@ This is where the system gets flushed out a bit. UI tooling for non-technically 
 
 A complete and portable system.
 
-- `--standalone` mode for the UI. This would remove the dependency of the file system. Allowing the tool to be ran inside a docker container self contained from the outside world. Auto resolution of files. They should not be edited by the user at all.
+- `--standalone` mode for the UI. This would remove the dependency of the file system. Allowing the tool to be run inside a docker container, self-contained from the outside world.
 - `--api-only` to the `margin ui` command. This would allow the user to spin up a container without UI. So they could use their own dashbaord for linking the system together.
 - `margin.exe` progam. Allowing for portability to windows for use locally w/o the need for internet providers
 - `--storage <fs|s3|database-only>` Link with the standalone flag, allowing standalone to still save the files to the FS, could be used via a volume flag to access, or allow for linkage to a S3 style bucket, and a database only mode which would be `--standalone`'s default option

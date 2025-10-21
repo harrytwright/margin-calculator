@@ -2,6 +2,8 @@ import { Router, type Response } from 'express'
 import { ZodError } from 'zod'
 
 import { Calculator } from '../../lib/calculation/calculator'
+import { DatabaseOnlyStorage } from '../../lib/storage/database-only-storage'
+import { FileSystemStorage } from '../../lib/storage/file-system-storage'
 import {
   ingredientImportDataSchema,
   recipeImportDataSchema,
@@ -25,11 +27,23 @@ export function createApiRouter(config: ServerConfig): Router {
   const recipeService = new RecipeService(config.database, ingredient)
   const configService = new ConfigService(config.locationDir)
   const calculator = new Calculator(recipeService, ingredient, configService)
-  const persistence = new EntityPersistence(config, {
-    supplier,
-    ingredient,
-    recipe: recipeService,
-  })
+
+  // Initialize storage service based on mode
+  const storageMode = config.storageMode || 'fs'
+  const storage =
+    storageMode === 'database-only'
+      ? new DatabaseOnlyStorage()
+      : new FileSystemStorage()
+
+  const persistence = new EntityPersistence(
+    config,
+    {
+      supplier,
+      ingredient,
+      recipe: recipeService,
+    },
+    storage
+  )
   const validator = new Validator(config.database)
 
   router.get('/suppliers', async (_req, res) => {

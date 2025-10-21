@@ -21,6 +21,7 @@ export const ui = new Command()
       working,
       workspace,
       database: dbName,
+      storage: storageMode,
       port,
       open,
       watch: watchFlag,
@@ -32,6 +33,15 @@ export const ui = new Command()
     const workspaceDir = workspace || path.join(working, 'data')
 
     const watch = watchFlag !== false
+
+    // Validate storage mode
+    if (storageMode && !['fs', 'database-only'].includes(storageMode)) {
+      log.error(
+        'ui',
+        `Invalid storage mode '${storageMode}'. Must be 'fs' or 'database-only'`
+      )
+      process.exit(1)
+    }
 
     if (!(await isInitialised(locationDir))) {
       log.error(
@@ -49,6 +59,7 @@ export const ui = new Command()
         database: db,
         locationDir,
         workspaceDir,
+        storageMode,
         openBrowser: open,
         watchFiles: watch,
       })
