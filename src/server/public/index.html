@@ -2018,20 +2018,29 @@
         const query = state.filters.searchQuery.toLowerCase()
         const category = state.filters.category
         const recipeClass = state.filters.class
-        const list = document.getElementById('recipes-container')
-        const cards = list.querySelectorAll('[data-recipe-slug]')
 
-        cards.forEach((card) => {
-          const name = card.querySelector('h4')?.textContent.toLowerCase() || ''
-          const cardCategory = card.dataset.recipeCategory || ''
-          const cardClass = card.dataset.recipeClass || ''
+        // Filter both recipes in management view and margins view
+        const containers = ['recipes-container', 'recipe-manager-list']
 
-          const matchesSearch = !query || name.includes(query)
-          const matchesCategory = !category || cardCategory === category
-          const matchesClass = !recipeClass || cardClass === recipeClass
-          const matches = matchesSearch && matchesCategory && matchesClass
+        containers.forEach((containerId) => {
+          const list = document.getElementById(containerId)
+          if (!list) return
 
-          card.style.display = matches ? '' : 'none'
+          const cards = list.querySelectorAll('[data-recipe-slug]')
+
+          cards.forEach((card) => {
+            const name =
+              card.querySelector('h4')?.textContent.toLowerCase() || ''
+            const cardCategory = card.dataset.recipeCategory || ''
+            const cardClass = card.dataset.recipeClass || ''
+
+            const matchesSearch = !query || name.includes(query)
+            const matchesCategory = !category || cardCategory === category
+            const matchesClass = !recipeClass || cardClass === recipeClass
+            const matches = matchesSearch && matchesCategory && matchesClass
+
+            card.style.display = matches ? '' : 'none'
+          })
         })
       }
 
@@ -2158,13 +2167,13 @@
             )
           )
 
-        document
-          .querySelectorAll('[data-manager-switch]')
-          .forEach((button) =>
-            button.addEventListener('click', () =>
-              setActiveManager(button.dataset.managerSwitch)
-            )
-          )
+        document.querySelectorAll('[data-manager-switch]').forEach((button) =>
+          button.addEventListener('click', () => {
+            const manager = button.dataset.managerSwitch
+            switchView(manager) // Switch to the management view
+            setActiveManager(manager) // Set the active manager tab
+          })
+        )
       }
 
       function setActiveManager(key) {
@@ -2512,7 +2521,8 @@
         container.innerHTML = state.suppliers
           .map(
             (supplier) => `
-            <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <div class="border border-gray-200 rounded-lg p-4 bg-white"
+                 data-supplier-slug="${supplier.slug}">
               <h4 class="text-sm font-semibold text-gray-900">${supplier.name}</h4>
               <p class="text-xs text-gray-500 mt-1">slug: ${supplier.slug}</p>
               <div class="mt-3 flex gap-2">
@@ -2571,7 +2581,9 @@
         container.innerHTML = state.ingredients
           .map(
             (ingredient) => `
-            <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <div class="border border-gray-200 rounded-lg p-4 bg-white"
+                 data-ingredient-slug="${ingredient.slug}"
+                 data-ingredient-category="${ingredient.category || ''}">
               <h4 class="text-sm font-semibold text-gray-900">${ingredient.name}</h4>
               <p class="text-xs text-gray-500">Category: ${
                 ingredient.category || '—'
@@ -2635,7 +2647,10 @@
         container.innerHTML = state.recipes
           .map(
             (recipe) => `
-            <div class="border border-gray-200 rounded-lg p-4 bg-white">
+            <div class="border border-gray-200 rounded-lg p-4 bg-white"
+                 data-recipe-slug="${recipe.slug}"
+                 data-recipe-category="${recipe.category || ''}"
+                 data-recipe-class="${recipe.class || ''}">
               <h4 class="text-sm font-semibold text-gray-900">${recipe.name}</h4>
               <p class="text-xs text-gray-500">Slug: ${recipe.slug}</p>
               <div class="mt-3 flex gap-2">
