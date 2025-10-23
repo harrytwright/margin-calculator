@@ -1231,7 +1231,7 @@
               </div>
 
               <div id="recipe-list" class="hidden">
-                <div class="mb-6 flex items-center justify-between">
+                <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div>
                     <h2 class="text-xl font-semibold text-gray-900">
                       All Recipes
@@ -1240,7 +1240,21 @@
                       Click on a recipe to view detailed cost breakdown
                     </p>
                   </div>
-                  <div>
+                  <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                      <label for="sort-recipes" class="text-sm text-gray-600">Sort by:</label>
+                      <select
+                        id="sort-recipes"
+                        class="px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                        <option value="cost-asc">Cost (Low to High)</option>
+                        <option value="cost-desc">Cost (High to Low)</option>
+                        <option value="margin-asc">Margin (Low to High)</option>
+                        <option value="margin-desc">Margin (High to Low)</option>
+                      </select>
+                    </div>
                     <button
                       type="button"
                       data-manager-switch="recipes"
@@ -1428,12 +1442,22 @@
         }, 200)
       }
 
+      function bindSortDropdown() {
+        const sortSelect = document.getElementById('sort-recipes')
+        if (sortSelect) {
+          sortSelect.addEventListener('change', () => {
+            loadRecipeReport()
+          })
+        }
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         bindNavigation()
         bindSearchAndFilters()
         bindManagerNavigation()
         bindForms()
         bindModalTriggers()
+        bindSortDropdown()
         loadManagementData()
         loadRecipeReport()
         startEventStream()
@@ -2661,7 +2685,7 @@
               <div class="mt-3 flex gap-2">
                 <button
                   type="button"
-                  class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-600 bg-gray-50"
+                  class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-gray-600 bg-gray-50 hover:bg-gray-100"
                   data-action="edit-recipe"
                   data-slug="${recipe.slug}"
                 >
@@ -2669,7 +2693,15 @@
                 </button>
                 <button
                   type="button"
-                  class="px-3 py-1.5 text-xs rounded-md border border-gray-200 text-red-600 bg-red-50"
+                  class="px-3 py-1.5 text-xs rounded-md border border-gray-300 text-blue-600 bg-blue-50 hover:bg-blue-100"
+                  data-action="duplicate-recipe"
+                  data-slug="${recipe.slug}"
+                >
+                  Duplicate
+                </button>
+                <button
+                  type="button"
+                  class="px-3 py-1.5 text-xs rounded-md border border-gray-200 text-red-600 bg-red-50 hover:bg-red-100"
                   data-action="delete-recipe"
                   data-slug="${recipe.slug}"
                 >
@@ -2686,6 +2718,14 @@
           .forEach((button) =>
             button.addEventListener('click', () =>
               startEditRecipe(button.dataset.slug)
+            )
+          )
+
+        container
+          .querySelectorAll('[data-action="duplicate-recipe"]')
+          .forEach((button) =>
+            button.addEventListener('click', () =>
+              handleDuplicateRecipe(button.dataset.slug)
             )
           )
 
@@ -3047,10 +3087,19 @@
       }
 
       async function handleDeleteSupplier(slug) {
+        // Count ingredients using this supplier
+        const usageCount = state.ingredients.filter(
+          ing => ing.supplierSlug === slug
+        ).length
+
+        const warningMsg = usageCount > 0
+          ? `⚠️ This supplier is used by ${usageCount} ingredient${usageCount > 1 ? 's' : ''}. Are you sure you want to delete supplier "${slug}"? This action cannot be undone.`
+          : `Are you sure you want to delete supplier "${slug}"? This action cannot be undone.`
+
         await showDeleteModal(
           'Supplier',
           slug,
-          `Are you sure you want to delete supplier "${slug}"? This action cannot be undone.`,
+          warningMsg,
           async () => {
             await fetchJSON(`/suppliers/${slug}`, { method: 'DELETE' })
             if (state.editing.supplier === slug) {
@@ -3064,10 +3113,19 @@
       }
 
       async function handleDeleteIngredient(slug) {
+        // Count recipes using this ingredient
+        const usageCount = state.recipes.filter(recipe => {
+          return recipe.ingredients?.some(ing => ing.slug === slug && ing.type === 'ingredient')
+        }).length
+
+        const warningMsg = usageCount > 0
+          ? `⚠️ This ingredient is used in ${usageCount} recipe${usageCount > 1 ? 's' : ''}. Are you sure you want to delete ingredient "${slug}"? This action cannot be undone.`
+          : `Are you sure you want to delete ingredient "${slug}"? This action cannot be undone.`
+
         await showDeleteModal(
           'Ingredient',
           slug,
-          `Are you sure you want to delete ingredient "${slug}"? This may affect recipes using this ingredient.`,
+          warningMsg,
           async () => {
             await fetchJSON(`/ingredients/${slug}`, { method: 'DELETE' })
             if (state.editing.ingredient === slug) {
@@ -3078,6 +3136,51 @@
             await loadRecipeReport()
           }
         )
+      }
+
+      async function handleDuplicateRecipe(slug) {
+        setActiveManager('recipes')
+        try {
+          const recipe = await fetchJSON(`/recipes/${slug}`)
+          if (!recipe) return
+
+          // Clear editing state to create new recipe
+          state.editing.recipe = null
+
+          // Pre-fill form with recipe data
+          document.getElementById('recipe-name').value = `${recipe.name} (Copy)`
+          document.getElementById('recipe-category').value = recipe.category || ''
+          document.getElementById('recipe-class').value = recipe.class || 'menu_item'
+          document.getElementById('recipe-price').value = recipe.sellPrice / 100 || 0
+          document.getElementById('recipe-margin').value = recipe.targetMargin || 25
+          document.getElementById('recipe-vat').checked = !!recipe.includesVat
+
+          // Clear and repopulate ingredients
+          const ingredientsContainer = document.getElementById('recipe-ingredients-rows')
+          ingredientsContainer.innerHTML = ''
+
+          if (recipe.ingredients && recipe.ingredients.length > 0) {
+            recipe.ingredients.forEach((ing) => {
+              addIngredientRow(ingredientsContainer, {
+                type: ing.type || 'ingredient',
+                slug: ing.slug,
+                amount: ing.amount,
+                unit: ing.unit
+              })
+            })
+          } else {
+            addIngredientRow(ingredientsContainer)
+          }
+
+          populateIngredientSelectors()
+
+          document.querySelector('#recipe-form button[type="submit"]').textContent = 'Save Recipe'
+
+          // Open modal
+          openModal(`Duplicate Recipe: ${recipe.name}`, 'recipe-form')
+        } catch (error) {
+          showToast(`Unable to duplicate recipe: ${error.message}`, 'error')
+        }
       }
 
       async function handleDeleteRecipe(slug) {
@@ -3234,9 +3337,40 @@
         })
       }
 
+      function sortRecipes(recipes, sortValue) {
+        const sorted = [...recipes]
+        const [field, direction] = sortValue.split('-')
+
+        sorted.sort((a, b) => {
+          let aVal, bVal
+
+          if (field === 'name') {
+            aVal = (a.name || a.slug || '').toLowerCase()
+            bVal = (b.name || b.slug || '').toLowerCase()
+          } else if (field === 'cost') {
+            aVal = a.cost || 0
+            bVal = b.cost || 0
+          } else if (field === 'margin') {
+            aVal = a.margin?.actualMargin || 0
+            bVal = b.margin?.actualMargin || 0
+          }
+
+          if (aVal < bVal) return direction === 'asc' ? -1 : 1
+          if (aVal > bVal) return direction === 'asc' ? 1 : -1
+          return 0
+        })
+
+        return sorted
+      }
+
       async function loadRecipeReport() {
         try {
-          const recipes = await fetchJSON('/report')
+          let recipes = await fetchJSON('/report')
+
+          // Sort recipes based on selected option
+          const sortSelect = document.getElementById('sort-recipes')
+          const sortValue = sortSelect ? sortSelect.value : 'name-asc'
+          recipes = sortRecipes(recipes, sortValue)
 
           document.getElementById('loading').classList.add('hidden')
           document.getElementById('recipe-list').classList.remove('hidden')
@@ -3336,7 +3470,15 @@
 
           container.innerHTML = `
             <div class="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 class="text-2xl font-bold text-gray-900 mb-4">${data.recipe.name}</h2>
+              <div class="flex justify-between items-start mb-4">
+                <h2 class="text-2xl font-bold text-gray-900">${data.recipe.name}</h2>
+                <button
+                  onclick="switchView('recipes'); setActiveManager('recipes'); startEditRecipe('${slug}')"
+                  class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Edit Recipe
+                </button>
+              </div>
               <div class="mb-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-3">Cost Breakdown</h3>
                 <div class="bg-gray-50 rounded-lg p-4">
