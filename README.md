@@ -1,6 +1,8 @@
-# 🍽️ Margin Calculator
+# 📖 Menu Book
 
-A CLI tool for managing recipes, ingredients, and calculating profit margins for food service operations. Tracks ingredient costs from suppliers, calculates recipe costs including sub-recipes, and helps maintain target profit margins.
+A powerful tool for managing recipes, ingredients, and calculating profit margins for food service operations. Tracks ingredient costs from suppliers, calculates recipe costs including sub-recipes, and helps maintain target profit margins. Features both a beautiful web UI and powerful CLI.
+
+**Created by GoBowling Shipley Lanes**
 
 ## Features
 
