@@ -856,7 +856,7 @@
                         <select
                           id="ingredient-supplier"
                           name="supplier"
-                          class="block w-full px-4 py-2.5 pr-10 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150"
+                          class="block w-full px-4 py-2.5 pr-10 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm appearance-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-150 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                         >
                           <option value="">Select a supplier</option>
                         </select>
@@ -878,6 +878,9 @@
                           </svg>
                         </div>
                       </div>
+                      <p id="ingredient-supplier-help" class="mt-1.5 text-xs text-amber-600 hidden">
+                        ⚠️ Supplier cannot be changed after creation
+                      </p>
                     </div>
                   </div>
 
@@ -2730,6 +2733,9 @@
           populateIngredientSelectors()
           document.getElementById('ingredient-supplier').value =
             ingredient.supplierSlug || ''
+          // Disable supplier select when editing (immutable field)
+          document.getElementById('ingredient-supplier').disabled = true
+          document.getElementById('ingredient-supplier-help').classList.remove('hidden')
           document.getElementById('ingredient-conversion').value =
             ingredient.conversionRate || ''
           document.getElementById('ingredient-notes').value =
@@ -2821,6 +2827,9 @@
 
       function clearIngredientForm() {
         document.getElementById('ingredient-form').reset()
+        // Re-enable supplier select for new ingredients
+        document.getElementById('ingredient-supplier').disabled = false
+        document.getElementById('ingredient-supplier-help').classList.add('hidden')
         state.editing.ingredient = null
         document.querySelector(
           '#ingredient-form button[type="submit"]'

@@ -263,6 +263,20 @@ export function createApiRouter(config: ServerConfig): Router {
     try {
       const parsed = ingredientImportDataSchema.parse(req.body)
 
+      // Check if supplier is being changed (immutable field)
+      const existing = await ingredient.findById(req.params.slug)
+      if (existing && parsed.supplier?.uses) {
+        const newSupplierSlug = parsed.supplier.uses.replace('slug:', '')
+        if (existing.supplierSlug !== newSupplierSlug) {
+          validator.fail([
+            {
+              field: 'supplier',
+              message: `Cannot change supplier from '${existing.supplierSlug}' to '${newSupplierSlug}'. Supplier is immutable after creation.`,
+            },
+          ])
+        }
+      }
+
       // Validate supplier exists if provided
       if (parsed.supplier?.uses) {
         const supplierSlug = parsed.supplier.uses.replace('slug:', '')
