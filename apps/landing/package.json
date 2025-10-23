@@ -1,0 +1,24 @@
+{
+  "name": "@menu-book/landing",
+  "version": "1.0.0",
+  "description": "Menu Book marketing landing page",
+  "scripts": {
+    "dev": "parcel src/index.html --open",
+    "build": "parcel build src/index.html --public-url /",
+    "preview": "parcel serve dist/ --open"
+  },
+  "devDependencies": {
+    "@parcel/transformer-postcss": "^2.12.0",
+    "autoprefixer": "^10.4.21",
+    "parcel": "^2.12.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1"
+  },
+  "keywords": [
+    "menu-book",
+    "landing",
+    "marketing"
+  ],
+  "author": "GoBowling Shipley Lanes",
+  "license": "MIT"
+}

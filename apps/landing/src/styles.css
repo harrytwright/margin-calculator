@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .hero-gradient {
+    @apply bg-gradient-to-br from-blue-600 to-purple-600;
+  }
+
+  .feature-card {
+    @apply transition-transform duration-300;
+  }
+
+  .feature-card:hover {
+    @apply -translate-y-1;
+  }
+}
