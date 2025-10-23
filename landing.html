@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoBowling Margin Calculator - Master Your Food Service Profits</title>
+  <meta name="description" content="Calculate recipe costs, track margins, and maximize profits for your food service business. Built for bowling alleys, cafes, and restaurants.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .hero-gradient {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      transition: transform 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <span class="text-2xl">🍽️</span>
+          <span class="text-xl font-bold text-gray-900">GoBowling Margin Calculator</span>
+        </div>
+        <nav class="hidden md:flex space-x-8">
+          <a href="#features" class="text-gray-600 hover:text-gray-900">Features</a>
+          <a href="#benefits" class="text-gray-600 hover:text-gray-900">Benefits</a>
+          <a href="#pricing" class="text-gray-600 hover:text-gray-900">Pricing</a>
+        </nav>
+        <div>
+          <a href="#signup" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+            Get Early Access
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-gradient text-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6">
+          Stop Guessing.<br>Start Profiting.
+        </h1>
+        <p class="text-xl md:text-2xl mb-8 text-purple-100 max-w-3xl mx-auto">
+          The only margin calculator built specifically for food service operations.
+          Calculate recipe costs, track ingredients, and hit your target margins—every time.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="#signup" class="bg-white text-purple-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg">
+            Join the Waitlist
+          </a>
+          <a href="#demo" class="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-purple-600 transition-colors">
+            Watch Demo
+          </a>
+        </div>
+        <p class="mt-6 text-purple-200">
+          ✨ Launching Soon | 🎯 Built for Bowling Alleys, Cafes & Restaurants
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          Sound Familiar?
+        </h2>
+      </div>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="text-center p-6">
+          <div class="text-4xl mb-4">😓</div>
+          <h3 class="text-xl font-semibold mb-2">Pricing by Gut Feel</h3>
+          <p class="text-gray-600">
+            You're setting menu prices based on what "feels right" rather than actual costs and margins.
+          </p>
+        </div>
+        <div class="text-center p-6">
+          <div class="text-4xl mb-4">📊</div>
+          <h3 class="text-xl font-semibold mb-2">Spreadsheet Hell</h3>
+          <p class="text-gray-600">
+            Juggling multiple Excel files, manually calculating costs, and praying you didn't make a mistake.
+          </p>
+        </div>
+        <div class="text-center p-6">
+          <div class="text-4xl mb-4">💸</div>
+          <h3 class="text-xl font-semibold mb-2">Shrinking Margins</h3>
+          <p class="text-gray-600">
+            Ingredient costs keep rising, but you're not sure which recipes are actually profitable anymore.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">
+          Everything You Need to Master Your Margins
+        </h2>
+        <p class="text-xl text-gray-600">
+          Purpose-built for food service operators who care about profitability
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-2xl">🧮</span>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Recursive Costing</h3>
+          <p class="text-gray-600">
+            Calculate costs for recipes with sub-recipes. Your "Pizza Sauce" recipe automatically updates when ingredient prices change.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
+          <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-2xl">💷</span>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Smart VAT Handling</h3>
+          <p class="text-gray-600">
+            Handles VAT automatically for both ingredient purchases and customer pricing. No more manual calculations.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-2xl">📏</span>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Unit Conversion</h3>
+          <p class="text-gray-600">
+            Buy in bulk (2kg), use in grams (50g). Custom units supported (1 box = 24 bags). It just works.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
+          <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-2xl">🏪</span>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Supplier Tracking</h3>
+          <p class="text-gray-600">
+            Track which supplier each ingredient comes from. Compare costs and switch suppliers with confidence.
+          </p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
+          <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-2xl">📊</span>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Margin Reports</h3>
+          <p class="text-gray-600">
+            See at a glance which recipes meet your target margins and which need price adjustments.
+          </p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
+          <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+            <span class="text-2xl">📱</span>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Web & CLI</h3>
+          <p class="text-gray-600">
+            Beautiful web UI for your team, powerful CLI for batch operations. Import/export via YAML/JSON.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Benefits Section -->
+  <section id="benefits" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <h2 class="text-4xl font-bold text-gray-900 mb-6">
+            Built by Food Service Operators, For Food Service Operators
+          </h2>
+          <div class="space-y-4">
+            <div class="flex items-start">
+              <div class="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mt-1">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <h3 class="text-lg font-semibold">Stop Losing Money on "Popular" Items</h3>
+                <p class="text-gray-600">Discover which best-sellers are actually costing you money</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mt-1">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <h3 class="text-lg font-semibold">Price Changes in Seconds</h3>
+                <p class="text-gray-600">Update ingredient costs once, see impact across all recipes instantly</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mt-1">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <h3 class="text-lg font-semibold">Negotiate with Confidence</h3>
+                <p class="text-gray-600">Know exactly how much a supplier price increase affects your bottom line</p>
+              </div>
+            </div>
+            <div class="flex items-start">
+              <div class="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mt-1">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <h3 class="text-lg font-semibold">Version Control Your Recipes</h3>
+                <p class="text-gray-600">Store recipes in git, track changes over time, collaborate with your team</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-50 to-blue-50 p-8 rounded-2xl">
+          <div class="space-y-6">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h4 class="font-semibold text-lg">Cheese Sandwich</h4>
+                  <p class="text-sm text-gray-500">Cost: £0.37 | Price: £3.50</p>
+                </div>
+                <span class="text-2xl font-bold text-green-600">89.4%</span>
+              </div>
+              <div class="text-sm text-gray-600">
+                <div class="flex justify-between mb-1">
+                  <span>Bread (2 slices)</span>
+                  <span>£0.12</span>
+                </div>
+                <div class="flex justify-between mb-1">
+                  <span>Cheese (30g)</span>
+                  <span>£0.25</span>
+                </div>
+                <div class="border-t pt-2 flex justify-between font-semibold">
+                  <span>Profit</span>
+                  <span class="text-green-600">£3.13</span>
+                </div>
+              </div>
+            </div>
+            <p class="text-center text-gray-600 italic">
+              "We discovered 3 recipes were losing money. Fixed our pricing and increased profits by 18%."
+              <br><span class="font-semibold">— Sarah, Cafe Owner</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">
+          Simple, Transparent Pricing
+        </h2>
+        <p class="text-xl text-gray-600">
+          Choose the plan that's right for your business
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <!-- Free Tier -->
+        <div class="bg-white p-8 rounded-xl shadow-lg">
+          <h3 class="text-2xl font-bold mb-4">Free</h3>
+          <div class="mb-6">
+            <span class="text-4xl font-bold">£0</span>
+            <span class="text-gray-600">/month</span>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Up to 50 recipes
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Unlimited ingredients
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Web UI access
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              CLI tool
+            </li>
+          </ul>
+          <a href="#signup" class="block text-center bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+            Get Started
+          </a>
+        </div>
+
+        <!-- Pro Tier -->
+        <div class="bg-gradient-to-br from-blue-600 to-purple-600 text-white p-8 rounded-xl shadow-2xl transform scale-105">
+          <div class="absolute top-4 right-4 bg-yellow-400 text-gray-900 text-xs font-bold px-3 py-1 rounded-full">
+            POPULAR
+          </div>
+          <h3 class="text-2xl font-bold mb-4">Pro</h3>
+          <div class="mb-6">
+            <span class="text-4xl font-bold">£29</span>
+            <span class="text-purple-200">/month</span>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-yellow-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Unlimited recipes
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-yellow-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Multiple locations
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-yellow-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Historical tracking
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-yellow-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              CSV/Excel export
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-yellow-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Priority support
+            </li>
+          </ul>
+          <a href="#signup" class="block text-center bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+            Start Free Trial
+          </a>
+        </div>
+
+        <!-- Enterprise Tier -->
+        <div class="bg-white p-8 rounded-xl shadow-lg">
+          <h3 class="text-2xl font-bold mb-4">Enterprise</h3>
+          <div class="mb-6">
+            <span class="text-4xl font-bold">Custom</span>
+          </div>
+          <ul class="space-y-3 mb-8">
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Everything in Pro
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              SSO & SAML
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              API access
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Dedicated support
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Custom integrations
+            </li>
+          </ul>
+          <a href="#signup" class="block text-center bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+            Contact Sales
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signup Section -->
+  <section id="signup" class="py-20 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-4xl font-bold mb-6">
+        Get Early Access
+      </h2>
+      <p class="text-xl mb-8 text-purple-100">
+        Join the waitlist and be among the first to get access when we launch.
+        Early users get 3 months of Pro for free!
+      </p>
+      <form class="max-w-md mx-auto" id="signup-form">
+        <div class="flex flex-col sm:flex-row gap-4">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            placeholder="Enter your email"
+            class="flex-1 px-6 py-4 rounded-lg text-gray-900 focus:outline-none focus:ring-4 focus:ring-purple-300"
+          >
+          <button
+            type="submit"
+            class="bg-white text-purple-600 px-8 py-4 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-lg"
+          >
+            Join Waitlist
+          </button>
+        </div>
+        <p class="mt-4 text-sm text-purple-200">
+          No spam. Unsubscribe anytime. We respect your privacy.
+        </p>
+      </form>
+      <div id="signup-message" class="mt-6 hidden"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-gray-400 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <span class="text-2xl">🍽️</span>
+            <span class="text-white font-bold">GoBowling Margin Calculator</span>
+          </div>
+          <p class="text-sm">
+            Master your food service margins with confidence.
+          </p>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-4">Product</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#features" class="hover:text-white">Features</a></li>
+            <li><a href="#pricing" class="hover:text-white">Pricing</a></li>
+            <li><a href="#demo" class="hover:text-white">Demo</a></li>
+            <li><a href="https://github.com/anthropics/claude-code" class="hover:text-white">Documentation</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-4">Company</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-white">About</a></li>
+            <li><a href="#" class="hover:text-white">Blog</a></li>
+            <li><a href="#" class="hover:text-white">Careers</a></li>
+            <li><a href="#" class="hover:text-white">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-white font-semibold mb-4">Legal</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+            <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+            <li><a href="#" class="hover:text-white">Cookie Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
+        <p>&copy; 2025 GoBowling Margin Calculator. All rights reserved.</p>
+        <p class="mt-2">Built with ❤️ for food service operators</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Form submission handler
+    document.getElementById('signup-form').addEventListener('submit', function(e) {
+      e.preventDefault()
+
+      const email = document.getElementById('email').value
+      const messageDiv = document.getElementById('signup-message')
+
+      // In production, send to your backend
+      console.log('Email signup:', email)
+
+      // Show success message
+      messageDiv.className = 'mt-6 p-4 bg-white text-purple-900 rounded-lg'
+      messageDiv.textContent = '🎉 Success! Check your email for confirmation.'
+      messageDiv.classList.remove('hidden')
+
+      // Reset form
+      document.getElementById('signup-form').reset()
+
+      // Hide message after 5 seconds
+      setTimeout(() => {
+        messageDiv.classList.add('hidden')
+      }, 5000)
+    })
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault()
+        const target = document.querySelector(this.getAttribute('href'))
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      })
+    })
+  </script>
+</body>
+</html>
