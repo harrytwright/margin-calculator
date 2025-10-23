@@ -3,13 +3,17 @@
   "version": "0.2.0",
   "description": "",
   "main": "dist/index.js",
+  "bin": {
+    "margin": "dist/index.js"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "postbuild": "cp -r src/server/public dist/server/ && cp -r src/server/middleware dist/server",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "generate:database": "npx prisma generate && node ./scripts/generate.js"
+    "generate:database": "npx prisma generate && node ./scripts/generate.js",
+    "link": "npm run build && npm link"
   },
   "dependencies": {
     "@harrytwright/logger": "^3.2.0-beta.2",
