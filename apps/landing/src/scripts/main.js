@@ -5,6 +5,7 @@
 
 import { initPostHog } from './analytics'
 import { hasAnalyticsConsent, showConsentBanner } from './consent'
+import { initDemo } from './demo'
 import { setupWaitlistForm } from './forms'
 import { setupSmoothScroll } from './navigation'
 
@@ -34,4 +35,5 @@ initializeAnalytics()
 document.addEventListener('DOMContentLoaded', () => {
   setupWaitlistForm()
   setupSmoothScroll()
+  initDemo()
 })
