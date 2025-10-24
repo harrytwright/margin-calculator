@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Menu Book Blog</title>
+    <link>https://getmenubook.com/blog</link>
+    <description>Building in public: Follow our journey building Menu Book</description>
+    <language>en-gb</language>
+    <atom:link href="https://getmenubook.com/blog/rss.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Building Menu Book: Our Journey Begins</title>
+      <link>https://getmenubook.com/blog/building-menu-book</link>
+      <guid>https://getmenubook.com/blog/building-menu-book</guid>
+      <pubDate>Fri, 24 Oct 2025 00:00:00 GMT</pubDate>
+      <description>Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches.</description>
+      <author>Harry Wright</author>
+    </item>
+  
+  </channel>
+</rss>

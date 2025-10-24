@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "Menu Book marketing landing page",
   "scripts": {
-    "dev": "parcel src/index.html --open",
-    "build": "parcel build src/index.html --public-url /",
+    "predev": "node scripts/build-blog.js",
+    "dev": "parcel src/index.html src/blog/index.html src/blog/*.html --open",
+    "dev:watch": "node scripts/watch-blog.js & npm run dev",
+    "prebuild": "node scripts/build-blog.js",
+    "build": "parcel build src/index.html src/blog/index.html src/blog/*.html --public-url /",
     "preview": "parcel serve dist/ --open"
   },
   "devDependencies": {
@@ -13,6 +16,9 @@
     "@parcel/transformer-postcss": "^2.12.0",
     "@parcel/transformer-webmanifest": "^2.16.0",
     "autoprefixer": "^10.4.21",
+    "chokidar": "^3.6.0",
+    "gray-matter": "^4.0.3",
+    "marked": "^11.2.0",
     "parcel": "^2.12.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1"
@@ -23,5 +29,6 @@
     "marketing"
   ],
   "author": "GoBowling Shipley Lanes",
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module"
 }
