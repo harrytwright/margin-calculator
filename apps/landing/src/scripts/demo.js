@@ -8,11 +8,11 @@ const demoData = {
   ingredients: {
     bread: {
       name: 'Bread',
-      purchasePrice: 2.5, // £2.50
-      purchaseAmount: 800,
-      purchaseUnit: 'g',
+      purchasePrice: 1.5, // £2.50
+      purchaseAmount: 1,
+      purchaseUnit: ' loaf',
       displayUnit: 'slices',
-      conversionFactor: 30, // 1 slice = 30g
+      conversionFactor: 0.06, // 1 slice = 30g
     },
     cheese: {
       name: 'Cheddar Cheese',
@@ -80,6 +80,26 @@ function calculateIngredientCost(ingredientId, amount, unit) {
 
   // Total cost for this ingredient
   return baseAmount * costPerUnit
+}
+
+/**
+ * Get default amount for an ingredient
+ */
+function getDefaultAmount(ingredientId) {
+  const defaults = {
+    bread: { amount: 2, unit: 'slices' },
+    cheese: { amount: 30, unit: 'g' },
+    butter: { amount: 10, unit: 'g' },
+  }
+  return defaults[ingredientId] || { amount: 1, unit: 'g' }
+}
+
+/**
+ * Get available ingredients (not in recipe)
+ */
+function getAvailableIngredients() {
+  const usedIds = new Set(demoData.recipe.ingredients.map((i) => i.id))
+  return Object.keys(demoData.ingredients).filter((id) => !usedIds.has(id))
 }
 
 /**
@@ -254,6 +274,37 @@ function renderRecipe() {
           <span class="font-bold ${marginColor} text-2xl">${formatPercent(result.margin)}</span>
         </div>
       </div>
+
+      ${
+        getAvailableIngredients().length > 0
+          ? `
+      <!-- Available Ingredients -->
+      <div class="border-t border-gray-200 pt-4 mt-4">
+        <h4 class="text-sm font-semibold text-gray-700 mb-2">Available Ingredients:</h4>
+        <div class="space-y-2">
+          ${getAvailableIngredients()
+            .map(
+              (id) => `
+            <button
+              data-ingredient-id="${id}"
+              class="demo-add-btn w-full flex items-center justify-between bg-blue-50 hover:bg-blue-100 p-3 rounded-lg transition-colors"
+            >
+              <span class="text-gray-900">${demoData.ingredients[id].name}</span>
+              <span class="text-blue-600 font-medium flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add
+              </span>
+            </button>
+          `
+            )
+            .join('')}
+        </div>
+      </div>
+      `
+          : ''
+      }
     </div>
   `
 
@@ -281,6 +332,19 @@ function renderRecipe() {
     button.addEventListener('click', (e) => {
       const index = parseInt(e.currentTarget.dataset.index)
       demoData.recipe.ingredients.splice(index, 1)
+      renderRecipe()
+    })
+  })
+
+  // Add event listeners for add buttons
+  container.querySelectorAll('.demo-add-btn').forEach((button) => {
+    button.addEventListener('click', (e) => {
+      const ingredientId = e.currentTarget.dataset.ingredientId
+      const defaultAmount = getDefaultAmount(ingredientId)
+      demoData.recipe.ingredients.push({
+        id: ingredientId,
+        ...defaultAmount,
+      })
       renderRecipe()
     })
   })
