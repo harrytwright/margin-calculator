@@ -135,6 +135,18 @@ function calculateRecipe() {
 }
 
 /**
+ * Track demo event in PostHog (if available)
+ */
+function trackDemoEvent(eventName, properties = {}) {
+  if (window.posthog) {
+    window.posthog.capture(`demo_${eventName}`, {
+      ...properties,
+      source: 'landing_page_demo',
+    })
+  }
+}
+
+/**
  * Format currency
  */
 function formatCurrency(amount) {
@@ -185,6 +197,10 @@ function renderIngredients() {
       const ingredientId = e.target.dataset.ingredientId
       const newPrice = parseFloat(e.target.value) || 0
       demoData.ingredients[ingredientId].purchasePrice = newPrice
+      trackDemoEvent('ingredient_price_changed', {
+        ingredient: demoData.ingredients[ingredientId].name,
+        new_price: newPrice,
+      })
       renderRecipe()
     })
   })
@@ -312,7 +328,11 @@ function renderRecipe() {
   const sellPriceInput = document.getElementById('demo-sell-price')
   if (sellPriceInput) {
     sellPriceInput.addEventListener('input', (e) => {
-      demoData.recipe.sellPrice = parseFloat(e.target.value) || 0
+      const newSellPrice = parseFloat(e.target.value) || 0
+      demoData.recipe.sellPrice = newSellPrice
+      trackDemoEvent('sell_price_changed', {
+        new_sell_price: newSellPrice,
+      })
       renderRecipe()
     })
   }
@@ -322,7 +342,13 @@ function renderRecipe() {
     input.addEventListener('input', (e) => {
       const index = parseInt(e.target.dataset.index)
       const newAmount = parseFloat(e.target.value) || 0
+      const ingredient = demoData.recipe.ingredients[index]
       demoData.recipe.ingredients[index].amount = newAmount
+      trackDemoEvent('ingredient_amount_changed', {
+        ingredient: demoData.ingredients[ingredient.id]?.name,
+        new_amount: newAmount,
+        unit: ingredient.unit,
+      })
       renderRecipe()
     })
   })
@@ -331,6 +357,11 @@ function renderRecipe() {
   container.querySelectorAll('.demo-remove-btn').forEach((button) => {
     button.addEventListener('click', (e) => {
       const index = parseInt(e.currentTarget.dataset.index)
+      const ingredient = demoData.recipe.ingredients[index]
+      trackDemoEvent('ingredient_removed', {
+        ingredient: demoData.ingredients[ingredient.id]?.name,
+        ingredients_remaining: demoData.recipe.ingredients.length - 1,
+      })
       demoData.recipe.ingredients.splice(index, 1)
       renderRecipe()
     })
@@ -341,6 +372,12 @@ function renderRecipe() {
     button.addEventListener('click', (e) => {
       const ingredientId = e.currentTarget.dataset.ingredientId
       const defaultAmount = getDefaultAmount(ingredientId)
+      trackDemoEvent('ingredient_added', {
+        ingredient: demoData.ingredients[ingredientId]?.name,
+        amount: defaultAmount.amount,
+        unit: defaultAmount.unit,
+        ingredients_total: demoData.recipe.ingredients.length + 1,
+      })
       demoData.recipe.ingredients.push({
         id: ingredientId,
         ...defaultAmount,
@@ -354,6 +391,7 @@ function renderRecipe() {
  * Initialize demo
  */
 export function initDemo() {
+  trackDemoEvent('demo_loaded')
   renderIngredients()
   renderRecipe()
 }
