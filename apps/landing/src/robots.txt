@@ -1,0 +1,8 @@
+# robots.txt for Menu Book
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://getmenubook.com/sitemap.xml

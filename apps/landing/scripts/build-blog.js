@@ -6,10 +6,10 @@
  */
 
 import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import matter from 'gray-matter'
 import { marked } from 'marked'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -311,6 +311,52 @@ function generateRSS(posts) {
 }
 
 /**
+ * Generate sitemap.xml
+ */
+function generateSitemap(posts) {
+  const now = new Date().toISOString()
+
+  // Static pages
+  const staticPages = [
+    { url: '', priority: '1.0', changefreq: 'weekly' }, // Homepage
+    { url: 'privacy.html', priority: '0.3', changefreq: 'monthly' },
+    { url: 'terms.html', priority: '0.3', changefreq: 'monthly' },
+    { url: 'cookies.html', priority: '0.3', changefreq: 'monthly' },
+    { url: 'blog', priority: '0.8', changefreq: 'daily' }, // Blog index
+  ]
+
+  const staticUrls = staticPages
+    .map(
+      (page) => `
+  <url>
+    <loc>${SITE_URL}/${page.url}</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`
+    )
+    .join('')
+
+  // Blog post URLs
+  const postUrls = posts
+    .map(
+      (post) => `
+  <url>
+    <loc>${SITE_URL}/blog/${post.slug}</loc>
+    <lastmod>${new Date(post.date).toISOString()}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`
+    )
+    .join('')
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${staticUrls}${postUrls}
+</urlset>`
+}
+
+/**
  * Main build function
  */
 async function buildBlog() {
@@ -364,6 +410,12 @@ async function buildBlog() {
   const rss = generateRSS(posts)
   fs.writeFileSync(path.join(BLOG_DIR, 'rss.xml'), rss)
   console.log('✓ Generated rss.xml')
+
+  // Generate sitemap (at root level)
+  const sitemap = generateSitemap(posts)
+  const sitemapPath = path.join(__dirname, '../src/sitemap.xml')
+  fs.writeFileSync(sitemapPath, sitemap)
+  console.log('✓ Generated sitemap.xml')
 
   console.log(`\n✨ Built ${posts.length} blog post(s)`)
 }

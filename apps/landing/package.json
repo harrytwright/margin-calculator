@@ -8,6 +8,7 @@
     "dev:watch": "node scripts/watch-blog.js & npm run dev",
     "prebuild": "node scripts/build-blog.js",
     "build": "parcel build src/index.html src/blog/index.html src/blog/*.html --public-url /",
+    "postbuild": "cp src/robots.txt dist/ && cp src/sitemap.xml dist/",
     "preview": "parcel serve dist/ --open"
   },
   "devDependencies": {
