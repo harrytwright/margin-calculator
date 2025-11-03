@@ -2835,18 +2835,24 @@
           container.innerHTML = ''
           if (ingredients.length > 0) {
             ingredients.forEach((item) =>
-              addIngredientRow(container, {
-                type: item.type || 'ingredient',
-                slug: item.slug,
-                unit: item.unit || item.with?.unit || '',
-              })
+              addIngredientRow(
+                container,
+                {
+                  type: item.type || 'ingredient',
+                  slug: item.slug,
+                  unit: item.unit || item.with?.unit || '',
+                },
+                true // Skip populate for each row
+              )
             )
           } else {
             addIngredientRow(container)
           }
 
+          // Populate all selectors once after all rows are added
           populateIngredientSelectors()
 
+          // Values should already be set by addIngredientRow, but ensure they're set correctly
           container
             .querySelectorAll('.ingredient-slug')
             .forEach((select, index) => {
@@ -3174,17 +3180,22 @@
 
           if (recipe.ingredients && recipe.ingredients.length > 0) {
             recipe.ingredients.forEach((ing) => {
-              addIngredientRow(ingredientsContainer, {
-                type: ing.type || 'ingredient',
-                slug: ing.slug,
-                amount: ing.amount,
-                unit: ing.unit,
-              })
+              addIngredientRow(
+                ingredientsContainer,
+                {
+                  type: ing.type || 'ingredient',
+                  slug: ing.slug,
+                  amount: ing.amount,
+                  unit: ing.unit,
+                },
+                true // Skip populate for each row
+              )
             })
           } else {
             addIngredientRow(ingredientsContainer)
           }
 
+          // Populate all selectors once after all rows are added
           populateIngredientSelectors()
 
           document.querySelector(
@@ -3215,7 +3226,7 @@
         )
       }
 
-      function addIngredientRow(container, initial) {
+      function addIngredientRow(container, initial, skipPopulate = false) {
         const row = document.createElement('div')
         row.className =
           'ingredient-row overflow-y-scroll flex flex-col md:flex-row md:items-center gap-3 border border-gray-200 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow duration-150'
@@ -3262,7 +3273,10 @@
           row.querySelector('.ingredient-unit').value = initial.unit || ''
         }
 
-        populateIngredientSelectors()
+        // Only populate if not skipped (allows batch operations to populate once after all rows added)
+        if (!skipPopulate) {
+          populateIngredientSelectors()
+        }
 
         if (initial && initial.slug) {
           row.querySelector('.ingredient-slug').value = initial.slug
