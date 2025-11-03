@@ -1,6 +1,6 @@
 {
   "name": "menu-book",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Calculate recipe costs, track margins, and maximize profits for food service operations",
   "main": "dist/index.js",
   "bin": {
