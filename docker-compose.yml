@@ -8,7 +8,7 @@ services:
     image: margin-calculator:latest
     container_name: margin-calculator
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       # Mount data directory for persistent storage (optional)
       # Uncomment to persist database between container restarts
@@ -21,7 +21,13 @@ services:
       - PORT=3000
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/suppliers', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:3000/api/suppliers', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})",
+        ]
       interval: 30s
       timeout: 3s
       retries: 3

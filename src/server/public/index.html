@@ -878,7 +878,10 @@
                           </svg>
                         </div>
                       </div>
-                      <p id="ingredient-supplier-help" class="mt-1.5 text-xs text-amber-600 hidden">
+                      <p
+                        id="ingredient-supplier-help"
+                        class="mt-1.5 text-xs text-amber-600 hidden"
+                      >
                         ⚠️ Supplier cannot be changed after creation
                       </p>
                     </div>
@@ -1231,7 +1234,9 @@
               </div>
 
               <div id="recipe-list" class="hidden">
-                <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div
+                  class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                >
                   <div>
                     <h2 class="text-xl font-semibold text-gray-900">
                       All Recipes
@@ -1242,7 +1247,9 @@
                   </div>
                   <div class="flex items-center gap-3">
                     <div class="flex items-center gap-2">
-                      <label for="sort-recipes" class="text-sm text-gray-600">Sort by:</label>
+                      <label for="sort-recipes" class="text-sm text-gray-600"
+                        >Sort by:</label
+                      >
                       <select
                         id="sort-recipes"
                         class="px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1252,7 +1259,9 @@
                         <option value="cost-asc">Cost (Low to High)</option>
                         <option value="cost-desc">Cost (High to Low)</option>
                         <option value="margin-asc">Margin (Low to High)</option>
-                        <option value="margin-desc">Margin (High to Low)</option>
+                        <option value="margin-desc">
+                          Margin (High to Low)
+                        </option>
                       </select>
                     </div>
                     <button
@@ -2775,7 +2784,9 @@
             ingredient.supplierSlug || ''
           // Disable supplier select when editing (immutable field)
           document.getElementById('ingredient-supplier').disabled = true
-          document.getElementById('ingredient-supplier-help').classList.remove('hidden')
+          document
+            .getElementById('ingredient-supplier-help')
+            .classList.remove('hidden')
           document.getElementById('ingredient-conversion').value =
             ingredient.conversionRate || ''
           document.getElementById('ingredient-notes').value =
@@ -2869,7 +2880,9 @@
         document.getElementById('ingredient-form').reset()
         // Re-enable supplier select for new ingredients
         document.getElementById('ingredient-supplier').disabled = false
-        document.getElementById('ingredient-supplier-help').classList.add('hidden')
+        document
+          .getElementById('ingredient-supplier-help')
+          .classList.add('hidden')
         state.editing.ingredient = null
         document.querySelector(
           '#ingredient-form button[type="submit"]'
@@ -3089,53 +3102,47 @@
       async function handleDeleteSupplier(slug) {
         // Count ingredients using this supplier
         const usageCount = state.ingredients.filter(
-          ing => ing.supplierSlug === slug
+          (ing) => ing.supplierSlug === slug
         ).length
 
-        const warningMsg = usageCount > 0
-          ? `⚠️ This supplier is used by ${usageCount} ingredient${usageCount > 1 ? 's' : ''}. Are you sure you want to delete supplier "${slug}"? This action cannot be undone.`
-          : `Are you sure you want to delete supplier "${slug}"? This action cannot be undone.`
+        const warningMsg =
+          usageCount > 0
+            ? `⚠️ This supplier is used by ${usageCount} ingredient${usageCount > 1 ? 's' : ''}. Are you sure you want to delete supplier "${slug}"? This action cannot be undone.`
+            : `Are you sure you want to delete supplier "${slug}"? This action cannot be undone.`
 
-        await showDeleteModal(
-          'Supplier',
-          slug,
-          warningMsg,
-          async () => {
-            await fetchJSON(`/suppliers/${slug}`, { method: 'DELETE' })
-            if (state.editing.supplier === slug) {
-              clearSupplierForm()
-            }
-            showToast(`Supplier "${slug}" deleted successfully`, 'success')
-            await loadManagementData()
-            await loadRecipeReport()
+        await showDeleteModal('Supplier', slug, warningMsg, async () => {
+          await fetchJSON(`/suppliers/${slug}`, { method: 'DELETE' })
+          if (state.editing.supplier === slug) {
+            clearSupplierForm()
           }
-        )
+          showToast(`Supplier "${slug}" deleted successfully`, 'success')
+          await loadManagementData()
+          await loadRecipeReport()
+        })
       }
 
       async function handleDeleteIngredient(slug) {
         // Count recipes using this ingredient
-        const usageCount = state.recipes.filter(recipe => {
-          return recipe.ingredients?.some(ing => ing.slug === slug && ing.type === 'ingredient')
+        const usageCount = state.recipes.filter((recipe) => {
+          return recipe.ingredients?.some(
+            (ing) => ing.slug === slug && ing.type === 'ingredient'
+          )
         }).length
 
-        const warningMsg = usageCount > 0
-          ? `⚠️ This ingredient is used in ${usageCount} recipe${usageCount > 1 ? 's' : ''}. Are you sure you want to delete ingredient "${slug}"? This action cannot be undone.`
-          : `Are you sure you want to delete ingredient "${slug}"? This action cannot be undone.`
+        const warningMsg =
+          usageCount > 0
+            ? `⚠️ This ingredient is used in ${usageCount} recipe${usageCount > 1 ? 's' : ''}. Are you sure you want to delete ingredient "${slug}"? This action cannot be undone.`
+            : `Are you sure you want to delete ingredient "${slug}"? This action cannot be undone.`
 
-        await showDeleteModal(
-          'Ingredient',
-          slug,
-          warningMsg,
-          async () => {
-            await fetchJSON(`/ingredients/${slug}`, { method: 'DELETE' })
-            if (state.editing.ingredient === slug) {
-              clearIngredientForm()
-            }
-            showToast(`Ingredient "${slug}" deleted successfully`, 'success')
-            await loadManagementData()
-            await loadRecipeReport()
+        await showDeleteModal('Ingredient', slug, warningMsg, async () => {
+          await fetchJSON(`/ingredients/${slug}`, { method: 'DELETE' })
+          if (state.editing.ingredient === slug) {
+            clearIngredientForm()
           }
-        )
+          showToast(`Ingredient "${slug}" deleted successfully`, 'success')
+          await loadManagementData()
+          await loadRecipeReport()
+        })
       }
 
       async function handleDuplicateRecipe(slug) {
@@ -3149,14 +3156,20 @@
 
           // Pre-fill form with recipe data
           document.getElementById('recipe-name').value = `${recipe.name} (Copy)`
-          document.getElementById('recipe-category').value = recipe.category || ''
-          document.getElementById('recipe-class').value = recipe.class || 'menu_item'
-          document.getElementById('recipe-price').value = recipe.sellPrice / 100 || 0
-          document.getElementById('recipe-margin').value = recipe.targetMargin || 25
+          document.getElementById('recipe-category').value =
+            recipe.category || ''
+          document.getElementById('recipe-class').value =
+            recipe.class || 'menu_item'
+          document.getElementById('recipe-price').value =
+            recipe.sellPrice / 100 || 0
+          document.getElementById('recipe-margin').value =
+            recipe.targetMargin || 25
           document.getElementById('recipe-vat').checked = !!recipe.includesVat
 
           // Clear and repopulate ingredients
-          const ingredientsContainer = document.getElementById('recipe-ingredients-rows')
+          const ingredientsContainer = document.getElementById(
+            'recipe-ingredients-rows'
+          )
           ingredientsContainer.innerHTML = ''
 
           if (recipe.ingredients && recipe.ingredients.length > 0) {
@@ -3165,7 +3178,7 @@
                 type: ing.type || 'ingredient',
                 slug: ing.slug,
                 amount: ing.amount,
-                unit: ing.unit
+                unit: ing.unit,
               })
             })
           } else {
@@ -3174,7 +3187,9 @@
 
           populateIngredientSelectors()
 
-          document.querySelector('#recipe-form button[type="submit"]').textContent = 'Save Recipe'
+          document.querySelector(
+            '#recipe-form button[type="submit"]'
+          ).textContent = 'Save Recipe'
 
           // Open modal
           openModal(`Duplicate Recipe: ${recipe.name}`, 'recipe-form')

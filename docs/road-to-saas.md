@@ -10,9 +10,9 @@
 
 ## Success Criteria
 
-- [ ]  Every F&B item has cost, price, margin % calculated
-- [ ]  Can identify top 5 most/least profitable items
-- [ ]  Shared with business partner for review
+- [ ] Every F&B item has cost, price, margin % calculated
+- [ ] Can identify top 5 most/least profitable items
+- [ ] Shared with business partner for review
 
 ---
 
@@ -43,17 +43,17 @@ This is where the system gets flushed out a bit. UI tooling for non-technically 
 - HashService. Speeding up the phase 1 concepts, linking with addtional tools built for phase 2 to allow for a seamless UI, and CLI.
 - FileWriter. Allow the API server to create files upon POST requests.
 - (Optional) Complete UI to a polished level. This is more for vanity, meaning it can ignored later on.
-    - Basic Modal Forms. 
-    - Toasts: Let the user know what is happening
-    - Searchbar, allowing for looking up items
-    - Filtering. When we have 100+ recipes, 200+ ingredients, we will need filtering
-    - Validation, both server level and front end level.
-    - Dashboard style page.
-        - Sidebar Navigation.
-            - **Dashboard**: Simple charts for viewing.
-            - **Mangement**: Expandable, allow the user to manage their data.
-            - **Margin Viewer**: Display the recipes w/ their relevant calculated data.
-        - Content
+  - Basic Modal Forms.
+  - Toasts: Let the user know what is happening
+  - Searchbar, allowing for looking up items
+  - Filtering. When we have 100+ recipes, 200+ ingredients, we will need filtering
+  - Validation, both server level and front end level.
+  - Dashboard style page.
+    - Sidebar Navigation.
+      - **Dashboard**: Simple charts for viewing.
+      - **Mangement**: Expandable, allow the user to manage their data.
+      - **Margin Viewer**: Display the recipes w/ their relevant calculated data.
+    - Content
 
 ### Phase 3
 

@@ -51,7 +51,10 @@ export const ui = new Command()
     }
 
     // Validate storage mode
-    if (finalStorageMode && !['fs', 'database-only'].includes(finalStorageMode)) {
+    if (
+      finalStorageMode &&
+      !['fs', 'database-only'].includes(finalStorageMode)
+    ) {
       log.error(
         'ui',
         `Invalid storage mode '${finalStorageMode}'. Must be 'fs' or 'database-only'`

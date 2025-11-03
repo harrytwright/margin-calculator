@@ -38,6 +38,7 @@
 This release introduces comprehensive CRUD functionality for the web UI, live file watching with SSE integration, and a cleaner separation between system data and user workspace. The UI now supports modal-based forms for creating, editing, and deleting entities, with toast notifications and real-time validation. The new `--workspace` flag enables git-friendly recipe management separate from the system database.
 
 **Key improvements:**
+
 - Full entity management through web UI
 - Live file watching with automatic database sync
 - Location/workspace directory separation

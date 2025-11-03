@@ -152,7 +152,7 @@ export class RecipeService {
               .select('Recipe.sellPrice')
               .where('Recipe.slug', '=', data.parentSlug!)
           : data.costing!.price!,
-        includesVat: data.costing?.vat ? 1 : 0,
+        includesVat: data.costing?.vat !== false ? 1 : 0,
         targetMargin: data.costing?.margin,
         yieldAmount:
           canUseParentData && data.yieldAmount === undefined
@@ -188,7 +188,7 @@ export class RecipeService {
                 .select('Recipe.sellPrice')
                 .where('Recipe.slug', '=', data.parentSlug!)
             : data.costing!.price!,
-          includesVat: data.costing?.vat ? 1 : 0,
+          includesVat: data.costing?.vat !== false ? 1 : 0,
           targetMargin: data.costing?.margin,
           yieldAmount: data.yieldAmount,
           yieldUnit: data.yieldUnit,
@@ -282,7 +282,7 @@ export class RecipeService {
         class: 'class',
         category: 'category',
         sellPrice: (data) => data.costing?.price,
-        includesVat: (data) => (data.costing?.vat ? 1 : 0),
+        includesVat: (data) => (data.costing?.vat !== false ? 1 : 0),
         targetMargin: (data) => data.costing?.margin,
         yieldAmount: 'yieldAmount',
         yieldUnit: 'yieldUnit',

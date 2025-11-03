@@ -123,8 +123,17 @@ export class Calculator {
   async margin(recipe: RecipeResult) {
     const { totalCost, recipe: recipeData } = recipe
 
-    // Sell price is always stored ex-VAT (in pence)
-    const sellPriceExVat = recipeData.sellPrice / 100
+    const vatRate = await this.config.getVatRate()
+    const vatApplicable = recipeData.includesVat === 1
+
+    // If includesVat is true, sellPrice is VAT-inclusive (what customer pays)
+    // Strip VAT to get the ex-VAT sell price for margin calculations
+    const sellPriceInPence = recipeData.sellPrice
+    const customerPrice = sellPriceInPence / 100
+
+    const sellPriceExVat = vatApplicable
+      ? customerPrice / (1 + vatRate) // Strip VAT from customer price
+      : customerPrice // Already ex-VAT
 
     // Margin calculated ex-VAT
     const profit = sellPriceExVat - totalCost
@@ -132,11 +141,8 @@ export class Calculator {
     const targetMargin = recipeData.targetMargin || 0
     const marginDelta = actualMargin - targetMargin
 
-    // Customer pays VAT on top if eligible
-    const vatApplicable = recipeData.includesVat === 1
-    const vatRate = await this.config.getVatRate()
-    const vatAmount = vatApplicable ? sellPriceExVat * vatRate : 0
-    const customerPrice = sellPriceExVat + vatAmount
+    // Calculate VAT amount
+    const vatAmount = vatApplicable ? customerPrice - sellPriceExVat : 0
 
     return {
       cost: Math.ceil(totalCost * 100) / 100,

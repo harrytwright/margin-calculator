@@ -320,11 +320,26 @@ VAT is handled at multiple levels in the system:
 - If `Ingredient.includesVat = 1`, VAT is stripped: `purchaseCost / (1 + vatRate)`
 - All recipe calculations use ex-VAT ingredient costs
 
-**Recipe Pricing:**
+**Recipe Pricing (Default: VAT-Inclusive):**
 
-- Recipes store `sellPrice` in pence (ex-VAT)
-- `Recipe.includesVat` indicates VAT eligibility (not "price includes VAT")
-- Customer price calculated as: `sellPrice + (sellPrice * vatRate)` for eligible items
+- **By default**, recipes store `sellPrice` as **VAT-inclusive** (what the customer pays)
+- `Recipe.includesVat` defaults to `true` (1 in database)
+- The calculator automatically strips VAT to get ex-VAT price: `customerPrice / (1 + vatRate)`
+- Set `costing.vat: false` in YAML to use ex-VAT pricing instead
+
+**Example:**
+
+```yaml
+costing:
+  price: 600 # £6.00 - what customer pays (VAT-inclusive by default)
+  margin: 50
+  # vat field omitted → defaults to true
+# Results in:
+# - Customer Price: £6.00
+# - Sell Price (ex-VAT): £5.00
+# - VAT Amount: £1.00
+# - Margin calculated on £5.00
+```
 
 **Configuration:**
 
@@ -334,8 +349,9 @@ VAT is handled at multiple levels in the system:
 
 **Margin Calculation:**
 
-- All margins calculated ex-VAT: `(sellPrice - cost) / sellPrice * 100`
-- Profit calculated ex-VAT: `sellPrice - cost`
+- All margins calculated ex-VAT: `(sellPriceExVat - cost) / sellPriceExVat * 100`
+- Profit calculated ex-VAT: `sellPriceExVat - cost`
+- VAT is stripped from customer price before margin calculation
 
 ### Reporter Pattern
 
