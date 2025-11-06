@@ -23,6 +23,47 @@
       input, select, textarea {
         transition: border-color 0.2s, box-shadow 0.2s;
       }
+
+      /* Guided Tour Styles */
+      #tour-overlay {
+        pointer-events: none;
+      }
+
+      #tour-overlay.active {
+        pointer-events: auto;
+      }
+
+      .tour-spotlight {
+        box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.7);
+        position: relative;
+        z-index: 60;
+        border-radius: 8px;
+        transition: all 0.3s ease-in-out;
+      }
+
+      @keyframes tour-pulse {
+        0%, 100% { box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.7); }
+        50% { box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.75); }
+      }
+
+      .tour-spotlight {
+        animation: tour-pulse 2s infinite;
+      }
+
+      @keyframes tour-fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      #tour-tooltip {
+        animation: tour-fade-in 0.3s ease-out;
+      }
     </style>
   </head>
   <body class="bg-gray-50">
@@ -130,6 +171,71 @@
             class="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
           >
             Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guided Tour Overlay -->
+    <div
+      id="tour-overlay"
+      class="fixed inset-0 z-50 hidden"
+    >
+      <!-- Tour Tooltip -->
+      <div
+        id="tour-tooltip"
+        class="absolute bg-white rounded-lg shadow-2xl max-w-md w-full p-6 pointer-events-auto hidden"
+        style="z-index: 70"
+      >
+        <!-- Progress Bar -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between text-xs font-medium text-gray-500 mb-2">
+            <span id="tour-progress-text">Step 1 of 8</span>
+            <button
+              id="tour-skip-btn"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Skip Tour
+            </button>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-1.5">
+            <div
+              id="tour-progress-bar"
+              class="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+              style="width: 12.5%"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div class="mb-6">
+          <h3 id="tour-title" class="text-lg font-semibold text-gray-900 mb-2">
+            Welcome to Menu Book!
+          </h3>
+          <p id="tour-description" class="text-sm text-gray-600">
+            Let's take a quick tour to help you get started with managing your recipes and margins.
+          </p>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between gap-3">
+          <button
+            id="tour-prev-btn"
+            class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Previous
+          </button>
+          <button
+            id="tour-next-btn"
+            class="inline-flex items-center px-6 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all"
+          >
+            <span id="tour-next-text">Next</span>
+            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
       </div>
@@ -1608,7 +1714,36 @@
                           <h3 class="font-semibold text-gray-900 mb-2">Step 3: Create Recipes</h3>
                           <p class="text-sm text-gray-700">Go to <strong>Management → Recipes</strong> and create your menu items by adding ingredients with quantities.</p>
                         </div>
+                      </div>
 
+                      <!-- Guided Tour Button -->
+                      <div class="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
+                        <div class="flex items-start gap-4">
+                          <div class="flex-shrink-0">
+                            <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center">
+                              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                              </svg>
+                            </div>
+                          </div>
+                          <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">New to Menu Book?</h3>
+                            <p class="text-sm text-gray-700 mb-4">Take an interactive guided tour to learn about all the features and how to use them effectively.</p>
+                            <button
+                              id="start-tour-btn"
+                              onclick="startGuidedTour()"
+                              class="inline-flex items-center px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                            >
+                              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                              </svg>
+                              Start Guided Tour
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="space-y-4 mt-4">
                         <div class="bg-gray-50 border-l-4 border-blue-500 p-4">
                           <h3 class="font-semibold text-gray-900 mb-2">Step 4: View Margins</h3>
                           <p class="text-sm text-gray-700">Click <strong>Margins</strong> in the sidebar to see cost breakdowns and profit margins for all your recipes.</p>
@@ -1835,6 +1970,225 @@
           margin: '',
         },
       }
+
+      // Guided Tour Configuration
+      const tourSteps = [
+        {
+          title: 'Welcome to Menu Book! 👋',
+          description: 'Let\'s take a quick tour to help you get started with managing your recipes and calculating profit margins. This will only take a minute!',
+          target: null, // No highlight for welcome
+          view: 'dashboard',
+        },
+        {
+          title: 'Dashboard Overview 📊',
+          description: 'This is your dashboard. Here you\'ll see summary statistics, charts, and quick actions once you have recipes set up.',
+          target: '[data-view="dashboard"]',
+          view: 'dashboard',
+        },
+        {
+          title: 'Navigation Menu 🧭',
+          description: 'Use this sidebar to navigate between different sections. Management contains Suppliers, Ingredients, and Recipes.',
+          target: '#management-toggle',
+          view: 'dashboard',
+        },
+        {
+          title: 'Step 1: Add Suppliers 🏪',
+          description: 'Start by adding your suppliers - the places where you buy ingredients. This helps you track costs and pricing changes.',
+          target: '[data-view="suppliers"]',
+          view: 'suppliers',
+        },
+        {
+          title: 'Step 2: Create Ingredients 🥕',
+          description: 'Next, add ingredients with their purchase costs and units. These are the building blocks of your recipes.',
+          target: '[data-view="ingredients"]',
+          view: 'ingredients',
+        },
+        {
+          title: 'Step 3: Build Recipes 📖',
+          description: 'Combine ingredients to create recipes. Set your sell price and target margin - we\'ll calculate the rest automatically!',
+          target: '[data-view="recipes"]',
+          view: 'recipes',
+        },
+        {
+          title: 'View Margins & Profitability 💰',
+          description: 'Once you have recipes, check this section to see cost breakdowns, actual margins, and identify your most profitable items.',
+          target: '[data-view="margins"]',
+          view: 'margins',
+        },
+        {
+          title: 'You\'re All Set! 🎉',
+          description: 'That\'s it! You\'re ready to start tracking your menu costs and margins. Need help? Check the Help section anytime.',
+          target: '[data-view="help"]',
+          view: 'dashboard',
+        },
+      ]
+
+      let currentTourStep = 0
+      let tourActive = false
+
+      // Guided Tour Functions
+      function startGuidedTour() {
+        currentTourStep = 0
+        tourActive = true
+        localStorage.setItem('tourCompleted', 'false')
+        showTourStep(0)
+      }
+
+      function showTourStep(stepIndex) {
+        if (stepIndex < 0 || stepIndex >= tourSteps.length) return
+
+        currentTourStep = stepIndex
+        const step = tourSteps[stepIndex]
+
+        // Remove existing spotlight
+        document.querySelectorAll('.tour-spotlight').forEach(el => {
+          el.classList.remove('tour-spotlight')
+          el.style.position = ''
+          el.style.zIndex = ''
+        })
+
+        // Switch to required view
+        if (step.view) {
+          switchView(step.view)
+        }
+
+        // Show overlay
+        const overlay = document.getElementById('tour-overlay')
+        overlay.classList.remove('hidden')
+        overlay.classList.add('active')
+
+        // Update tooltip content
+        document.getElementById('tour-title').textContent = step.title
+        document.getElementById('tour-description').textContent = step.description
+        document.getElementById('tour-progress-text').textContent = `Step ${stepIndex + 1} of ${tourSteps.length}`
+
+        // Update progress bar
+        const progress = ((stepIndex + 1) / tourSteps.length) * 100
+        document.getElementById('tour-progress-bar').style.width = `${progress}%`
+
+        // Update buttons
+        document.getElementById('tour-prev-btn').disabled = stepIndex === 0
+        const nextBtn = document.getElementById('tour-next-btn')
+        const nextText = document.getElementById('tour-next-text')
+        if (stepIndex === tourSteps.length - 1) {
+          nextText.textContent = 'Finish'
+          nextBtn.querySelector('svg').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>'
+        } else {
+          nextText.textContent = 'Next'
+          nextBtn.querySelector('svg').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>'
+        }
+
+        // Position and show tooltip
+        setTimeout(() => {
+          const tooltip = document.getElementById('tour-tooltip')
+          tooltip.classList.remove('hidden')
+
+          if (step.target) {
+            const targetEl = document.querySelector(step.target)
+            if (targetEl) {
+              // Add spotlight
+              const origPos = targetEl.style.position
+              const origZIndex = targetEl.style.zIndex
+              if (window.getComputedStyle(targetEl).position === 'static') {
+                targetEl.style.position = 'relative'
+              }
+              targetEl.style.zIndex = '60'
+              targetEl.classList.add('tour-spotlight')
+
+              // Position tooltip near target
+              const rect = targetEl.getBoundingClientRect()
+              const tooltipRect = tooltip.getBoundingClientRect()
+
+              let top = rect.bottom + 20
+              let left = rect.left
+
+              // Adjust if tooltip goes off screen
+              if (top + tooltipRect.height > window.innerHeight) {
+                top = rect.top - tooltipRect.height - 20
+              }
+              if (left + tooltipRect.width > window.innerWidth) {
+                left = window.innerWidth - tooltipRect.width - 20
+              }
+              if (left < 20) {
+                left = 20
+              }
+
+              tooltip.style.top = `${top}px`
+              tooltip.style.left = `${left}px`
+
+              // Scroll target into view
+              targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            } else {
+              // Center tooltip if target not found
+              tooltip.style.top = '50%'
+              tooltip.style.left = '50%'
+              tooltip.style.transform = 'translate(-50%, -50%)'
+            }
+          } else {
+            // Center tooltip for non-targeted steps
+            tooltip.style.top = '50%'
+            tooltip.style.left = '50%'
+            tooltip.style.transform = 'translate(-50%, -50%)'
+          }
+        }, 100)
+      }
+
+      function nextTourStep() {
+        if (currentTourStep < tourSteps.length - 1) {
+          showTourStep(currentTourStep + 1)
+        } else {
+          endTour()
+        }
+      }
+
+      function prevTourStep() {
+        if (currentTourStep > 0) {
+          showTourStep(currentTourStep - 1)
+        }
+      }
+
+      function endTour() {
+        tourActive = false
+        localStorage.setItem('tourCompleted', 'true')
+
+        // Remove spotlight
+        document.querySelectorAll('.tour-spotlight').forEach(el => {
+          el.classList.remove('tour-spotlight')
+          el.style.position = ''
+          el.style.zIndex = ''
+        })
+
+        // Hide overlay and tooltip
+        const overlay = document.getElementById('tour-overlay')
+        overlay.classList.add('hidden')
+        overlay.classList.remove('active')
+        document.getElementById('tour-tooltip').classList.add('hidden')
+
+        showToast('Tour completed! You\'re ready to start using Menu Book.', 'success')
+      }
+
+      // Tour Event Listeners
+      document.getElementById('tour-next-btn').addEventListener('click', nextTourStep)
+      document.getElementById('tour-prev-btn').addEventListener('click', prevTourStep)
+      document.getElementById('tour-skip-btn').addEventListener('click', endTour)
+
+      // ESC key to exit tour
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && tourActive) {
+          endTour()
+        }
+      })
+
+      // Auto-start tour for first-time visitors
+      window.addEventListener('load', () => {
+        const hasSeenTour = localStorage.getItem('tourCompleted')
+        // Only auto-start if they haven't seen it AND there are no recipes yet
+        // (Checking for empty state to avoid annoying existing users)
+        if (hasSeenTour === null) {
+          // Set a flag but don't auto-start - let user choose via Help page
+          localStorage.setItem('tourCompleted', 'false')
+        }
+      })
 
       // Modal functionality
       function openModal(title, formId) {
@@ -3090,8 +3444,23 @@
 
         if (state.suppliers.length === 0) {
           container.innerHTML = `
-            <div class="col-span-full text-sm text-gray-500">
-              No suppliers yet. Use the form above to add one.
+            <div class="col-span-full">
+              <div class="text-center py-12 px-4">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+                  <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Let's add your first supplier!</h3>
+                <p class="text-sm text-gray-600 max-w-md mx-auto mb-6">
+                  Suppliers are the foundation of your menu costing. They help you track where ingredients come from and manage pricing updates.
+                </p>
+                <div class="inline-flex items-center px-4 py-2 rounded-lg bg-blue-50 text-sm text-blue-700 mb-4">
+                  <span class="font-medium">💡 Tip:</span>
+                  <span class="ml-2">Start with your most-used suppliers like wholesalers or local markets</span>
+                </div>
+                <p class="text-xs text-gray-500">Use the form above to create your first supplier</p>
+              </div>
             </div>
           `
           return
@@ -3149,9 +3518,39 @@
         if (!container) return
 
         if (state.ingredients.length === 0) {
+          const hasSuppliers = state.suppliers.length > 0
           container.innerHTML = `
-            <div class="col-span-full text-sm text-gray-500">
-              No ingredients yet. Use the form above to add one.
+            <div class="col-span-full">
+              <div class="text-center py-12 px-4">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+                  <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Time to add ingredients!</h3>
+                <p class="text-sm text-gray-600 max-w-md mx-auto mb-6">
+                  Ingredients are the building blocks of your recipes. Add items like flour, cheese, vegetables, or any raw materials you use.
+                </p>
+                ${hasSuppliers ? `
+                  <div class="flex items-center justify-center gap-2 mb-4 text-sm text-green-700">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="font-medium">Great! You have ${state.suppliers.length} supplier${state.suppliers.length > 1 ? 's' : ''} ready</span>
+                  </div>
+                ` : `
+                  <div class="inline-flex items-center px-4 py-2 rounded-lg bg-amber-50 text-sm text-amber-800 mb-4">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Optional: Link ingredients to suppliers for better tracking</span>
+                  </div>
+                `}
+                <div class="inline-flex items-center px-4 py-2 rounded-lg bg-green-50 text-sm text-green-700">
+                  <span class="font-medium">💡 Tip:</span>
+                  <span class="ml-2">Include purchase unit and cost to calculate recipe margins accurately</span>
+                </div>
+              </div>
             </div>
           `
           return
@@ -3215,9 +3614,78 @@
         if (!container) return
 
         if (state.recipes.length === 0) {
+          const hasIngredients = state.ingredients.length > 0
+          const hasSuppliers = state.suppliers.length > 0
           container.innerHTML = `
-            <div class="col-span-full text-sm text-gray-500">
-              No recipes yet. Use the form above to add one.
+            <div class="col-span-full">
+              <div class="text-center py-12 px-4">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mb-4">
+                  <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Ready to create your first recipe!</h3>
+                <p class="text-sm text-gray-600 max-w-md mx-auto mb-6">
+                  Recipes are menu items made from ingredients. Define costs, set prices, and track profit margins automatically.
+                </p>
+
+                <!-- Progress Checklist -->
+                <div class="max-w-sm mx-auto mb-6">
+                  <div class="bg-gray-50 rounded-lg p-4 text-left space-y-2">
+                    <p class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">Quick Start Checklist</p>
+                    <div class="flex items-start gap-2 text-sm">
+                      ${hasSuppliers ? `
+                        <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-gray-700"><span class="font-medium">Suppliers added</span> (${state.suppliers.length})</span>
+                      ` : `
+                        <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <span class="text-gray-500">Add suppliers first (optional)</span>
+                      `}
+                    </div>
+                    <div class="flex items-start gap-2 text-sm">
+                      ${hasIngredients ? `
+                        <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-gray-700"><span class="font-medium">Ingredients added</span> (${state.ingredients.length})</span>
+                      ` : `
+                        <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <span class="text-gray-500">Add ingredients first</span>
+                      `}
+                    </div>
+                    <div class="flex items-start gap-2 text-sm">
+                      <svg class="w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                      </svg>
+                      <span class="text-gray-500">Create your first recipe</span>
+                    </div>
+                  </div>
+                </div>
+
+                ${!hasIngredients ? `
+                  <button
+                    onclick="switchView('ingredients')"
+                    class="inline-flex items-center px-5 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors mb-2"
+                  >
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Add Ingredients First
+                  </button>
+                  <p class="text-xs text-gray-500">You'll need ingredients before creating recipes</p>
+                ` : `
+                  <div class="inline-flex items-center px-4 py-2 rounded-lg bg-purple-50 text-sm text-purple-700">
+                    <span class="font-medium">💡 Tip:</span>
+                    <span class="ml-2">Use the form above to create your first recipe</span>
+                  </div>
+                `}
+              </div>
             </div>
           `
           return
@@ -3997,23 +4465,62 @@
           // Show empty state if no recipes
           if (recipes.length === 0) {
             container.innerHTML = `
-              <div class="col-span-full text-center py-12">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">No recipes yet</h3>
-                <p class="mt-1 text-sm text-gray-500">Get started by creating a recipe in the Management section.</p>
-                <div class="mt-6">
+              <div class="col-span-full text-center py-16 px-4">
+                <div class="max-w-2xl mx-auto">
+                  <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 mb-6">
+                    <svg class="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h3 class="text-2xl font-bold text-gray-900 mb-3">Welcome to Menu Book!</h3>
+                  <p class="text-base text-gray-600 mb-8 max-w-lg mx-auto">
+                    Track ingredient costs, calculate recipe prices, and monitor profit margins - all in one place. Let's get your menu set up!
+                  </p>
+
+                  <!-- Getting Started Steps -->
+                  <div class="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-8 mb-8 text-left">
+                    <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-6 text-center">Getting Started in 3 Steps</h4>
+                    <div class="space-y-6">
+                      <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+                        <div>
+                          <h5 class="font-semibold text-gray-900 mb-1">Add Suppliers</h5>
+                          <p class="text-sm text-gray-600">Track where you source your ingredients (e.g., wholesalers, markets)</p>
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+                        <div>
+                          <h5 class="font-semibold text-gray-900 mb-1">Create Ingredients</h5>
+                          <p class="text-sm text-gray-600">Add raw materials with purchase costs and units (e.g., flour, cheese, oil)</p>
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">3</div>
+                        <div>
+                          <h5 class="font-semibold text-gray-900 mb-1">Build Recipes</h5>
+                          <p class="text-sm text-gray-600">Combine ingredients, set prices, and calculate profit margins automatically</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <button
                     type="button"
-                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                    onclick="switchView('recipes'); setActiveManager('recipes')"
+                    class="inline-flex items-center px-6 py-3 border border-transparent shadow-lg text-base font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105"
+                    onclick="switchView('suppliers')"
                   >
-                    <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    <svg class="-ml-1 mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    Add Your First Recipe
+                    Get Started
                   </button>
+                  <p class="mt-4 text-sm text-gray-500">
+                    <a href="#" onclick="switchView('help'); return false" class="text-blue-600 hover:text-blue-700 font-medium">
+                      Need help?
+                    </a>
+                    Check out our documentation
+                  </p>
                 </div>
               </div>
             `
