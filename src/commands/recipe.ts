@@ -6,6 +6,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { database } from '../datastore/database'
 import { Importer } from '../lib/importer'
+import { ConfigService } from '../services/config'
 import { IngredientService } from '../services/ingredient'
 import { RecipeService } from '../services/recipe'
 import { SupplierService } from '../services/supplier'
@@ -60,9 +61,10 @@ const importer = new Command()
     const db = database(path.join(locationDir, dbName))
 
     // Initialize services
+    const config = new ConfigService(locationDir)
     const supplier = new SupplierService(db)
     const ingredient = new IngredientService(db, supplier)
-    const recipe = new RecipeService(db, ingredient)
+    const recipe = new RecipeService(db, ingredient, config)
 
     const importer = new Importer(db, {
       failFast,
@@ -123,17 +125,14 @@ const calculate = new Command()
     const db = database(path.join(locationDir, dbName))
 
     // Initialize services
+    const config = new ConfigService(locationDir)
     const supplier = new SupplierService(db)
     const ingredient = new IngredientService(db, supplier)
-    const recipeService = new RecipeService(db, ingredient)
+    const recipeService = new RecipeService(db, ingredient, config)
 
     // Import Calculator and runner
     const { Calculator } = await import('../lib/calculation/calculator.js')
-    const { ConfigService } = await import('../services/config.js')
     const { runCalculations } = await import('../lib/runner.js')
-
-    // Initialize calculator with config
-    const config = new ConfigService(locationDir)
     const calculator = new Calculator(recipeService, ingredient, config)
 
     // Choose reporter based on --json flag
@@ -192,9 +191,10 @@ const report = new Command()
     const db = database(path.join(locationDir, dbName))
 
     // Initialize services
+    const config = new ConfigService(locationDir)
     const supplier = new SupplierService(db)
     const ingredient = new IngredientService(db, supplier)
-    const recipeService = new RecipeService(db, ingredient)
+    const recipeService = new RecipeService(db, ingredient, config)
 
     // Get all recipe slugs
     const allRecipes = await db.selectFrom('Recipe').select('slug').execute()
@@ -208,11 +208,7 @@ const report = new Command()
 
     // Import Calculator and runner
     const { Calculator } = await import('../lib/calculation/calculator.js')
-    const { ConfigService } = await import('../services/config.js')
     const { runCalculations } = await import('../lib/runner.js')
-
-    // Initialize calculator with config
-    const config = new ConfigService(locationDir)
     const calculator = new Calculator(recipeService, ingredient, config)
 
     // Choose reporter based on --json flag

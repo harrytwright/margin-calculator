@@ -12,6 +12,7 @@ import {
   RecipeResolvedImportData,
   SupplierResolvedImportData,
 } from '../../schema'
+import { ConfigService } from '../../services/config'
 import { IngredientService } from '../../services/ingredient'
 import { RecipeService } from '../../services/recipe'
 import { SupplierService } from '../../services/supplier'
@@ -31,6 +32,17 @@ jest.mock('../../utils/slugify', () => ({
     )
   ),
 }))
+
+// Mock ConfigService
+jest.mock('../../services/config', () => {
+  return {
+    ConfigService: jest.fn().mockImplementation(() => ({
+      getVatRate: jest.fn().mockResolvedValue(0.2),
+      getMarginTarget: jest.fn().mockResolvedValue(20),
+      getDefaultPriceIncludesVat: jest.fn().mockResolvedValue(true),
+    })),
+  }
+})
 
 describe('Import Command (CLI Integration)', () => {
   let tmpDir: string
@@ -86,9 +98,10 @@ data:
 
       // Run import logic (same as command action)
       const importer = new Importer(db, { failFast: false })
+      const config = new ConfigService('')
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
-      const recipe = new RecipeService(db, ingredient)
+      const recipe = new RecipeService(db, ingredient, config)
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
@@ -140,9 +153,10 @@ data:
       )
 
       const importer = new Importer(db, { failFast: false })
+      const config = new ConfigService('')
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
-      const recipe = new RecipeService(db, ingredient)
+      const recipe = new RecipeService(db, ingredient, config)
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
@@ -204,9 +218,10 @@ data:
       )
 
       const importer = new Importer(db, { failFast: false })
+      const config = new ConfigService('')
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
-      const recipe = new RecipeService(db, ingredient)
+      const recipe = new RecipeService(db, ingredient, config)
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
@@ -272,9 +287,10 @@ data:
         failFast: false,
         dataDir: tmpDir,
       })
+      const config = new ConfigService('')
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
-      const recipe = new RecipeService(db, ingredient)
+      const recipe = new RecipeService(db, ingredient, config)
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
@@ -369,9 +385,10 @@ data:
         failFast: false,
         dataDir: tmpDir,
       })
+      const config = new ConfigService('')
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
-      const recipe = new RecipeService(db, ingredient)
+      const recipe = new RecipeService(db, ingredient, config)
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
@@ -413,9 +430,10 @@ data:
       )
 
       const importer = new Importer(db, { failFast: false, importOnly: true })
+      const config = new ConfigService('')
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
-      const recipe = new RecipeService(db, ingredient)
+      const recipe = new RecipeService(db, ingredient, config)
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
@@ -464,9 +482,10 @@ data:
       )
 
       const importer = new Importer(db, { failFast: false })
+      const config = new ConfigService('')
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
-      const recipe = new RecipeService(db, ingredient)
+      const recipe = new RecipeService(db, ingredient, config)
 
       // Register processor that throws for testing
       importer.addProcessor<SupplierResolvedImportData>(
@@ -504,9 +523,10 @@ data:
       await fs.writeFile(invalidFile, `invalid yaml: [}`)
 
       const importer = new Importer(db, { failFast: true })
+      const config = new ConfigService('')
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
-      const recipe = new RecipeService(db, ingredient)
+      const recipe = new RecipeService(db, ingredient, config)
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
@@ -543,9 +563,10 @@ data:
       )
 
       const importer = new Importer(db, { failFast: false })
+      const config = new ConfigService('')
       const supplier = new SupplierService(db)
       const ingredient = new IngredientService(db, supplier)
-      const recipe = new RecipeService(db, ingredient)
+      const recipe = new RecipeService(db, ingredient, config)
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',

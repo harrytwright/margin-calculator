@@ -10,6 +10,7 @@ import { FileWatcher } from '../lib/file-watcher'
 import { HashService } from '../lib/hash-service'
 import type { ImportStats } from '../lib/importer'
 import { Importer } from '../lib/importer'
+import { ConfigService } from '../services/config'
 import { IngredientService } from '../services/ingredient'
 import { RecipeService } from '../services/recipe'
 import { SupplierService } from '../services/supplier'
@@ -67,9 +68,10 @@ export const importCommand = new Command()
     const db = database(path.join(locationDir, dbName))
 
     // Initialize services
+    const config = new ConfigService(locationDir)
     const supplier = new SupplierService(db)
     const ingredient = new IngredientService(db, supplier)
-    const recipe = new RecipeService(db, ingredient)
+    const recipe = new RecipeService(db, ingredient, config)
 
     const dataDir = path.resolve(process.cwd(), workspaceDir)
 

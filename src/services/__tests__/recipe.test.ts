@@ -7,15 +7,28 @@ import { migrate } from '../../datastore/database'
 import { DB } from '../../datastore/types'
 import { Importer } from '../../lib/importer'
 import { RecipeResolvedImportData } from '../../schema'
+import { ConfigService } from '../config'
 import { IngredientService } from '../ingredient'
 import { RecipeService } from '../recipe'
 import { SupplierService } from '../supplier'
+
+// Mock ConfigService
+jest.mock('../config', () => {
+  return {
+    ConfigService: jest.fn().mockImplementation(() => ({
+      getVatRate: jest.fn().mockResolvedValue(0.2),
+      getMarginTarget: jest.fn().mockResolvedValue(20),
+      getDefaultPriceIncludesVat: jest.fn().mockResolvedValue(true),
+    })),
+  }
+})
 
 describe('RecipeService', () => {
   let db: Kysely<DB>
   let service: RecipeService
   let ingredientService: IngredientService
   let supplierService: SupplierService
+  let configService: ConfigService
   let supplierId: number
   let hamId: number
   let cheeseId: number
@@ -33,9 +46,10 @@ describe('RecipeService', () => {
       path.join(__dirname, '../../datastore/migrations')
     )
 
+    configService = new ConfigService('')
     supplierService = new SupplierService(db)
     ingredientService = new IngredientService(db, supplierService)
-    service = new RecipeService(db, ingredientService)
+    service = new RecipeService(db, ingredientService, configService)
 
     // Create test supplier and ingredients
     const supplier = await db

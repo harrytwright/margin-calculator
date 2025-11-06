@@ -6,6 +6,7 @@ import YAML from 'yaml'
 
 import { database, destroy, migrate, seed } from '../../../datastore/database'
 import { FileSystemStorage } from '../../../lib/storage/file-system-storage'
+import { ConfigService } from '../../../services/config'
 import { IngredientService } from '../../../services/ingredient'
 import { RecipeService } from '../../../services/recipe'
 import { SupplierService } from '../../../services/supplier'
@@ -23,6 +24,17 @@ jest.mock('../../../utils/slugify', () => ({
     )
   ),
 }))
+
+// Mock ConfigService
+jest.mock('../../../services/config', () => {
+  return {
+    ConfigService: jest.fn().mockImplementation(() => ({
+      getVatRate: jest.fn().mockResolvedValue(0.2),
+      getMarginTarget: jest.fn().mockResolvedValue(20),
+      getDefaultPriceIncludesVat: jest.fn().mockResolvedValue(true),
+    })),
+  }
+})
 
 describe('EntityPersistence create flow', () => {
   let tempDir: string
@@ -44,9 +56,10 @@ describe('EntityPersistence create flow', () => {
     )
     await seed.call(db)
 
+    const configService = new ConfigService(tempDir)
     const supplier = new SupplierService(db)
     const ingredient = new IngredientService(db, supplier)
-    const recipe = new RecipeService(db, ingredient)
+    const recipe = new RecipeService(db, ingredient, configService)
 
     const config: ServerConfig = {
       port: 0,

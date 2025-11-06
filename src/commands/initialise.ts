@@ -45,8 +45,33 @@ export const initialise = new Command()
       successText: 'Created workspace directories',
     })
 
-    // Create the config file
-    await writeDefaultConfiguration(locationBase, force)
+    // Ask user about pricing preference
+    const pricingPreference = await prompt({
+      type: 'select',
+      name: 'priceIncludesVat',
+      message: 'How are your product prices typically displayed?',
+      hint: 'This setting affects how VAT is handled in recipe pricing',
+      choices: [
+        {
+          value: true,
+          title: 'Prices include VAT/tax (UK/EU standard)',
+          description:
+            'Prices shown to customers already include VAT. Example: £6.00 includes VAT',
+        },
+        {
+          value: false,
+          title: 'Prices exclude tax (US standard)',
+          description:
+            'Sales tax is added at point of sale. Example: $6.00 + tax',
+        },
+      ],
+      initial: 0, // Default to VAT-inclusive (UK/EU)
+    })
+
+    // Create the config file with user's preference
+    await writeDefaultConfiguration(locationBase, force, {
+      defaultPriceIncludesVat: pricingPreference.priceIncludesVat,
+    })
 
     // Delete the old database if force is enabled
     if (force) {
@@ -122,11 +147,15 @@ async function createWorkspaceDirectory(dir: PathLike) {
 }
 
 // Use `force` for overwriting the previous configuration. Clean the slate as you will.
-function writeDefaultConfiguration(dir: string, force: boolean) {
+function writeDefaultConfiguration(
+  dir: string,
+  force: boolean,
+  overrides: any = {}
+) {
   return spin(
     async () => {
       const conf = new ConfigService(dir)
-      return conf.initialise(force)
+      return conf.initialise(force, overrides)
       // // If the file exists and we have force enabled just return early.
       // let prev: {} = {}
       // try {

@@ -11,6 +11,7 @@ import type { DB } from '../datastore/types'
 import { FileWatcher } from '../lib/file-watcher'
 import { HashService } from '../lib/hash-service'
 import { Importer } from '../lib/importer'
+import { ConfigService } from '../services/config'
 import { IngredientService } from '../services/ingredient'
 import { RecipeService } from '../services/recipe'
 import { SupplierService } from '../services/supplier'
@@ -98,12 +99,17 @@ async function startFileWatcher(config: ServerConfig): Promise<FileWatcher> {
     path.join(dataRoot, 'recipes'),
   ])
 
+  const configService = new ConfigService(config.locationDir)
   const supplierService = new SupplierService(config.database)
   const ingredientService = new IngredientService(
     config.database,
     supplierService
   )
-  const recipeService = new RecipeService(config.database, ingredientService)
+  const recipeService = new RecipeService(
+    config.database,
+    ingredientService,
+    configService
+  )
 
   const watcher = new FileWatcher({
     roots: [dataRoot],

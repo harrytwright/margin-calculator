@@ -6,6 +6,7 @@ import { Recipe, RecipeIngredients } from '../interfaces/database'
 import { Importer, type ImportOutcome } from '../lib/importer'
 import type { RecipeResolvedImportData } from '../schema'
 import { hasChanges } from '../utils/has-changes'
+import { ConfigService } from './config'
 import { IngredientService } from './ingredient'
 
 export type RecipeIngredientsLookup = Pick<
@@ -27,7 +28,8 @@ export type RecipeWithIngredients<WithIngredients extends boolean> = Omit<
 export class RecipeService {
   constructor(
     private database: Kysely<DB>,
-    private readonly ingredient: IngredientService
+    private readonly ingredient: IngredientService,
+    private readonly config: ConfigService
   ) {}
 
   async exists(slug: string) {
@@ -127,7 +129,11 @@ export class RecipeService {
       .executeTakeFirst()
   }
 
-  async upsert(slug: string, data: RecipeResolvedImportData) {
+  async upsert(
+    slug: string,
+    data: RecipeResolvedImportData,
+    defaultPriceIncludesVat: boolean = true
+  ) {
     const canUseParentData = !!data.parentSlug
 
     // In theory, we should not get here, but a last resort
@@ -137,6 +143,16 @@ export class RecipeService {
           `If you forgot to add a parent value, use 'extends' to inherit from a parent recipe instead.`
       )
     }
+
+    // Determine includesVat value: explicit value, or use default
+    const includesVat =
+      data.costing?.vat !== undefined
+        ? data.costing.vat
+          ? 1
+          : 0
+        : defaultPriceIncludesVat
+          ? 1
+          : 0
 
     const result = await this.database
       .insertInto('Recipe')
@@ -152,7 +168,7 @@ export class RecipeService {
               .select('Recipe.sellPrice')
               .where('Recipe.slug', '=', data.parentSlug!)
           : data.costing!.price!,
-        includesVat: data.costing?.vat !== false ? 1 : 0,
+        includesVat,
         targetMargin: data.costing?.margin,
         yieldAmount:
           canUseParentData && data.yieldAmount === undefined
@@ -188,7 +204,7 @@ export class RecipeService {
                 .select('Recipe.sellPrice')
                 .where('Recipe.slug', '=', data.parentSlug!)
             : data.costing!.price!,
-          includesVat: data.costing?.vat !== false ? 1 : 0,
+          includesVat,
           targetMargin: data.costing?.margin,
           yieldAmount: data.yieldAmount,
           yieldUnit: data.yieldUnit,
@@ -266,6 +282,20 @@ export class RecipeService {
       )
     }
 
+    // Get default VAT setting from config
+    const defaultPriceIncludesVat =
+      await this.config.getDefaultPriceIncludesVat()
+
+    // Determine includesVat value: explicit value, or use default
+    const includesVat =
+      data.costing?.vat !== undefined
+        ? data.costing.vat
+          ? 1
+          : 0
+        : defaultPriceIncludesVat
+          ? 1
+          : 0
+
     // Normalize ingredients for comparison
     const prevIngredients =
       typeof prev?.ingredients === 'string'
@@ -282,7 +312,7 @@ export class RecipeService {
         class: 'class',
         category: 'category',
         sellPrice: (data) => data.costing?.price,
-        includesVat: (data) => (data.costing?.vat !== false ? 1 : 0),
+        includesVat: () => includesVat,
         targetMargin: (data) => data.costing?.margin,
         yieldAmount: 'yieldAmount',
         yieldUnit: 'yieldUnit',
@@ -292,7 +322,7 @@ export class RecipeService {
       return 'ignored'
     }
 
-    const recipeId = await this.upsert(data.slug, data)
+    const recipeId = await this.upsert(data.slug, data, defaultPriceIncludesVat)
 
     if (!recipeId) throw new Error('Failed to get recipe ID after upsert')
 
