@@ -8,9 +8,23 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
       @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-        20%, 40%, 60%, 80% { transform: translateX(4px); }
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-4px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(4px);
+        }
       }
 
       /* Highlight required fields */
@@ -20,8 +34,12 @@
       }
 
       /* Smooth transitions for validation states */
-      input, select, textarea {
-        transition: border-color 0.2s, box-shadow 0.2s;
+      input,
+      select,
+      textarea {
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
       }
     </style>
   </head>
@@ -1531,20 +1549,37 @@
                 </div>
 
                 <div class="px-6 py-6">
-                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div
+                    class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4"
+                  >
                     <div class="flex items-start gap-3">
-                      <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg
+                        class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                       <div class="text-sm text-blue-800">
-                        <p class="font-medium mb-1">What's included in the backup?</p>
-                        <ul class="list-disc list-inside space-y-1 text-blue-700">
+                        <p class="font-medium mb-1">
+                          What's included in the backup?
+                        </p>
+                        <ul
+                          class="list-disc list-inside space-y-1 text-blue-700"
+                        >
                           <li>All suppliers, ingredients, and recipes</li>
                           <li>Cost calculations and margin data</li>
                           <li>Configuration settings</li>
                         </ul>
                         <p class="mt-2 text-xs">
-                          The backup is a complete SQLite database file that can be restored by replacing your current database file.
+                          The backup is a complete SQLite database file that can
+                          be restored by replacing your current database file.
                         </p>
                       </div>
                     </div>
@@ -1552,8 +1587,13 @@
 
                   <div class="flex items-center justify-between">
                     <div class="text-sm text-gray-600">
-                      <p class="font-medium text-gray-900 mb-1">Regular backups recommended</p>
-                      <p>Keep your data safe by backing up regularly, especially before making bulk changes.</p>
+                      <p class="font-medium text-gray-900 mb-1">
+                        Regular backups recommended
+                      </p>
+                      <p>
+                        Keep your data safe by backing up regularly, especially
+                        before making bulk changes.
+                      </p>
                     </div>
                     <a
                       href="${API_BASE}/backup/database"
@@ -1561,11 +1601,270 @@
                       class="inline-flex items-center px-6 py-3 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                       onclick="showToast('Database backup started...', 'success')"
                     >
-                      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      <svg
+                        class="w-5 h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
                       </svg>
                       Download Backup
                     </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Data Export Section -->
+              <div class="bg-white shadow rounded-lg mt-6">
+                <div class="px-6 py-5 border-b border-gray-200">
+                  <h2 class="text-xl font-semibold text-gray-900">
+                    Data Export
+                  </h2>
+                  <p class="mt-1 text-sm text-gray-600">
+                    Export your data in various formats for analysis or
+                    migration
+                  </p>
+                </div>
+
+                <div class="px-6 py-6 space-y-6">
+                  <!-- YAML Exports -->
+                  <div>
+                    <h3 class="text-sm font-semibold text-gray-900 mb-3">
+                      Export as YAML
+                    </h3>
+                    <p class="text-xs text-gray-600 mb-4">
+                      Export data in YAML format for version control, sharing,
+                      or re-importing
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <a
+                        href="${API_BASE}/export/suppliers"
+                        download
+                        class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        onclick="showToast('Exporting suppliers...', 'success')"
+                      >
+                        <svg
+                          class="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
+                        All Suppliers
+                      </a>
+                      <a
+                        href="${API_BASE}/export/ingredients"
+                        download
+                        class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        onclick="showToast('Exporting ingredients...', 'success')"
+                      >
+                        <svg
+                          class="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
+                        All Ingredients
+                      </a>
+                      <a
+                        href="${API_BASE}/export/recipes"
+                        download
+                        class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        onclick="showToast('Exporting recipes...', 'success')"
+                      >
+                        <svg
+                          class="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
+                        All Recipes
+                      </a>
+                      <a
+                        href="${API_BASE}/export/all"
+                        download
+                        class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        onclick="showToast('Exporting complete dataset...', 'success')"
+                      >
+                        <svg
+                          class="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
+                        Complete Dataset (ZIP)
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- CSV Exports -->
+                  <div class="pt-6 border-t border-gray-200">
+                    <h3 class="text-sm font-semibold text-gray-900 mb-3">
+                      Export as CSV
+                    </h3>
+                    <p class="text-xs text-gray-600 mb-4">
+                      Export data as CSV for spreadsheet analysis in Excel,
+                      Google Sheets, etc.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <a
+                        href="${API_BASE}/export/csv/suppliers"
+                        download
+                        class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        onclick="showToast('Exporting suppliers CSV...', 'success')"
+                      >
+                        <svg
+                          class="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        Suppliers
+                      </a>
+                      <a
+                        href="${API_BASE}/export/csv/ingredients"
+                        download
+                        class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        onclick="showToast('Exporting ingredients CSV...', 'success')"
+                      >
+                        <svg
+                          class="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        Ingredients
+                      </a>
+                      <a
+                        href="${API_BASE}/export/csv/recipes"
+                        download
+                        class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        onclick="showToast('Exporting recipes CSV...', 'success')"
+                      >
+                        <svg
+                          class="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        Recipes
+                      </a>
+                      <a
+                        href="${API_BASE}/export/csv/recipes-with-costs"
+                        download
+                        class="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        onclick="showToast('Calculating and exporting recipe costs...', 'success')"
+                      >
+                        <svg
+                          class="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        Recipes with Costs & Margins
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- Export Info -->
+                  <div class="pt-6 border-t border-gray-200">
+                    <div
+                      class="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                    >
+                      <div class="flex items-start gap-3">
+                        <svg
+                          class="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <div class="text-xs text-gray-700">
+                          <p class="font-medium mb-2">Export Format Guide:</p>
+                          <ul class="list-disc list-inside space-y-1">
+                            <li>
+                              <strong>YAML:</strong> Best for version control
+                              and re-importing data
+                            </li>
+                            <li>
+                              <strong>CSV:</strong> Best for spreadsheet
+                              analysis and reporting
+                            </li>
+                            <li>
+                              <strong>ZIP (Complete Dataset):</strong> Includes
+                              all data organized in folders
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1578,198 +1877,395 @@
               <div class="bg-white shadow rounded-lg overflow-hidden">
                 <!-- Help Header -->
                 <div class="bg-blue-600 px-6 py-8 text-white">
-                  <h1 class="text-3xl font-bold mb-2">📖 Menu Book Help & Documentation</h1>
-                  <p class="text-blue-100">Everything you need to know about managing recipes and margins</p>
+                  <h1 class="text-3xl font-bold mb-2">
+                    📖 Menu Book Help & Documentation
+                  </h1>
+                  <p class="text-blue-100">
+                    Everything you need to know about managing recipes and
+                    margins
+                  </p>
                 </div>
 
                 <!-- Help Content -->
                 <div class="p-6 space-y-8">
                   <!-- Quick Start -->
                   <section id="help-quick-start">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                      <span class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold">1</span>
+                    <h2
+                      class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
+                    >
+                      <span
+                        class="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold"
+                        >1</span
+                      >
                       Quick Start Guide
                     </h2>
                     <div class="prose max-w-none">
-                      <p class="text-gray-700 mb-4">Follow these steps to get started with Menu Book:</p>
+                      <p class="text-gray-700 mb-4">
+                        Follow these steps to get started with Menu Book:
+                      </p>
 
                       <div class="space-y-4">
                         <div class="bg-gray-50 border-l-4 border-blue-500 p-4">
-                          <h3 class="font-semibold text-gray-900 mb-2">Step 1: Add Suppliers</h3>
-                          <p class="text-sm text-gray-700">Go to <strong>Management → Suppliers</strong> and add your ingredient suppliers (e.g., wholesalers, markets).</p>
+                          <h3 class="font-semibold text-gray-900 mb-2">
+                            Step 1: Add Suppliers
+                          </h3>
+                          <p class="text-sm text-gray-700">
+                            Go to <strong>Management → Suppliers</strong> and
+                            add your ingredient suppliers (e.g., wholesalers,
+                            markets).
+                          </p>
                         </div>
 
                         <div class="bg-gray-50 border-l-4 border-blue-500 p-4">
-                          <h3 class="font-semibold text-gray-900 mb-2">Step 2: Add Ingredients</h3>
-                          <p class="text-sm text-gray-700">Navigate to <strong>Management → Ingredients</strong> and add your ingredients with purchase costs, units, and supplier information.</p>
+                          <h3 class="font-semibold text-gray-900 mb-2">
+                            Step 2: Add Ingredients
+                          </h3>
+                          <p class="text-sm text-gray-700">
+                            Navigate to
+                            <strong>Management → Ingredients</strong> and add
+                            your ingredients with purchase costs, units, and
+                            supplier information.
+                          </p>
                         </div>
 
                         <div class="bg-gray-50 border-l-4 border-blue-500 p-4">
-                          <h3 class="font-semibold text-gray-900 mb-2">Step 3: Create Recipes</h3>
-                          <p class="text-sm text-gray-700">Go to <strong>Management → Recipes</strong> and create your menu items by adding ingredients with quantities.</p>
+                          <h3 class="font-semibold text-gray-900 mb-2">
+                            Step 3: Create Recipes
+                          </h3>
+                          <p class="text-sm text-gray-700">
+                            Go to <strong>Management → Recipes</strong> and
+                            create your menu items by adding ingredients with
+                            quantities.
+                          </p>
                         </div>
 
                         <div class="bg-gray-50 border-l-4 border-blue-500 p-4">
-                          <h3 class="font-semibold text-gray-900 mb-2">Step 4: View Margins</h3>
-                          <p class="text-sm text-gray-700">Click <strong>Margins</strong> in the sidebar to see cost breakdowns and profit margins for all your recipes.</p>
+                          <h3 class="font-semibold text-gray-900 mb-2">
+                            Step 4: View Margins
+                          </h3>
+                          <p class="text-sm text-gray-700">
+                            Click <strong>Margins</strong> in the sidebar to see
+                            cost breakdowns and profit margins for all your
+                            recipes.
+                          </p>
                         </div>
                       </div>
                     </div>
                   </section>
 
-                  <hr class="border-gray-200">
+                  <hr class="border-gray-200" />
 
                   <!-- Understanding Calculations -->
                   <section id="help-calculations">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                      <span class="bg-green-100 text-green-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold">2</span>
+                    <h2
+                      class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
+                    >
+                      <span
+                        class="bg-green-100 text-green-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold"
+                        >2</span
+                      >
                       Understanding Margin Calculations
                     </h2>
                     <div class="prose max-w-none">
-                      <p class="text-gray-700 mb-4">Menu Book calculates profit margins using industry-standard formulas:</p>
+                      <p class="text-gray-700 mb-4">
+                        Menu Book calculates profit margins using
+                        industry-standard formulas:
+                      </p>
 
-                      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                        <h3 class="font-semibold text-gray-900 mb-3">Formula</h3>
-                        <div class="font-mono text-sm bg-white p-3 rounded border border-blue-300">
-                          <div class="mb-2"><strong>Total Cost</strong> = Sum of all ingredient costs (including sub-recipes)</div>
-                          <div class="mb-2"><strong>Sell Price (ex-VAT)</strong> = Customer price ÷ (1 + VAT rate)</div>
-                          <div class="mb-2"><strong>Profit</strong> = Sell Price (ex-VAT) − Total Cost</div>
-                          <div><strong>Margin %</strong> = (Profit ÷ Sell Price (ex-VAT)) × 100</div>
+                      <div
+                        class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4"
+                      >
+                        <h3 class="font-semibold text-gray-900 mb-3">
+                          Formula
+                        </h3>
+                        <div
+                          class="font-mono text-sm bg-white p-3 rounded border border-blue-300"
+                        >
+                          <div class="mb-2">
+                            <strong>Total Cost</strong> = Sum of all ingredient
+                            costs (including sub-recipes)
+                          </div>
+                          <div class="mb-2">
+                            <strong>Sell Price (ex-VAT)</strong> = Customer
+                            price ÷ (1 + VAT rate)
+                          </div>
+                          <div class="mb-2">
+                            <strong>Profit</strong> = Sell Price (ex-VAT) −
+                            Total Cost
+                          </div>
+                          <div>
+                            <strong>Margin %</strong> = (Profit ÷ Sell Price
+                            (ex-VAT)) × 100
+                          </div>
                         </div>
                       </div>
 
-                      <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                        <p class="text-sm text-gray-800"><strong>💡 Tip:</strong> All margins are calculated ex-VAT to give you accurate profit percentages before tax.</p>
+                      <div
+                        class="bg-yellow-50 border-l-4 border-yellow-400 p-4"
+                      >
+                        <p class="text-sm text-gray-800">
+                          <strong>💡 Tip:</strong> All margins are calculated
+                          ex-VAT to give you accurate profit percentages before
+                          tax.
+                        </p>
                       </div>
 
-                      <h3 class="font-semibold text-gray-900 mt-6 mb-3">Example Calculation</h3>
-                      <div class="bg-gray-50 p-4 rounded-lg space-y-2 text-sm font-mono">
+                      <h3 class="font-semibold text-gray-900 mt-6 mb-3">
+                        Example Calculation
+                      </h3>
+                      <div
+                        class="bg-gray-50 p-4 rounded-lg space-y-2 text-sm font-mono"
+                      >
                         <div>Customer Price: £6.00 (includes VAT)</div>
                         <div>VAT Rate: 20% (0.2)</div>
                         <div>Sell Price (ex-VAT): £6.00 ÷ 1.2 = £5.00</div>
                         <div>Total Cost: £2.00</div>
                         <div>Profit: £5.00 − £2.00 = £3.00</div>
-                        <div class="text-green-600 font-bold">Margin: (£3.00 ÷ £5.00) × 100 = 60%</div>
-                      </div>
-                    </div>
-                  </section>
-
-                  <hr class="border-gray-200">
-
-                  <!-- VAT Handling -->
-                  <section id="help-vat">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                      <span class="bg-purple-100 text-purple-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold">3</span>
-                      VAT/Tax Handling
-                    </h2>
-                    <div class="prose max-w-none">
-                      <p class="text-gray-700 mb-4">Menu Book supports both UK/EU (VAT-inclusive) and US (tax-exclusive) pricing models.</p>
-
-                      <h3 class="font-semibold text-gray-900 mb-3">Configuration</h3>
-                      <p class="text-sm text-gray-700 mb-3">Go to <strong>Settings</strong> to configure:</p>
-                      <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 mb-4">
-                        <li><strong>VAT Rate:</strong> Your local tax rate (e.g., 0.2 for 20%, 0.0625 for 6.25%)</li>
-                        <li><strong>Default Pricing Model:</strong> VAT-inclusive (UK/EU) or tax-exclusive (US)</li>
-                      </ul>
-
-                      <h3 class="font-semibold text-gray-900 mb-3">Ingredient Purchase Costs</h3>
-                      <p class="text-sm text-gray-700 mb-3">When adding ingredients, specify if the purchase cost includes VAT:</p>
-                      <div class="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
-                        <div>✅ <strong>Includes VAT:</strong> The system will strip VAT to calculate true cost</div>
-                        <div>❌ <strong>Excludes VAT:</strong> The purchase cost is used as-is</div>
-                      </div>
-
-                      <h3 class="font-semibold text-gray-900 mt-6 mb-3">Recipe Pricing</h3>
-                      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p class="text-sm text-gray-800 mb-2"><strong>Default Setting (configurable in Settings):</strong></p>
-                        <div class="space-y-2 text-sm text-gray-700">
-                          <div>• <strong>UK/EU:</strong> Recipe prices include VAT by default</div>
-                          <div>• <strong>US:</strong> Recipe prices exclude tax by default</div>
-                          <div class="mt-3 pt-3 border-t border-blue-300 text-xs">You can override this per-recipe in the YAML file using <code class="bg-white px-1 py-0.5 rounded">costing.vat: true/false</code></div>
+                        <div class="text-green-600 font-bold">
+                          Margin: (£3.00 ÷ £5.00) × 100 = 60%
                         </div>
                       </div>
                     </div>
                   </section>
 
-                  <hr class="border-gray-200">
+                  <hr class="border-gray-200" />
 
-                  <!-- Sub-Recipes -->
-                  <section id="help-subrecipes">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                      <span class="bg-orange-100 text-orange-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold">4</span>
-                      Using Sub-Recipes
+                  <!-- VAT Handling -->
+                  <section id="help-vat">
+                    <h2
+                      class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
+                    >
+                      <span
+                        class="bg-purple-100 text-purple-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold"
+                        >3</span
+                      >
+                      VAT/Tax Handling
                     </h2>
                     <div class="prose max-w-none">
-                      <p class="text-gray-700 mb-4">Sub-recipes let you create reusable components (like sauces or doughs) that can be used in multiple menu items.</p>
+                      <p class="text-gray-700 mb-4">
+                        Menu Book supports both UK/EU (VAT-inclusive) and US
+                        (tax-exclusive) pricing models.
+                      </p>
 
-                      <h3 class="font-semibold text-gray-900 mb-3">Creating Sub-Recipes</h3>
-                      <ol class="list-decimal list-inside text-sm text-gray-700 space-y-2 mb-4">
-                        <li>Create a recipe with <code class="bg-gray-100 px-2 py-0.5 rounded text-xs">class: sub_recipe</code></li>
-                        <li>Specify the yield amount and unit (e.g., "1L" of sauce)</li>
-                        <li>Add it as an ingredient to your main recipes</li>
-                      </ol>
+                      <h3 class="font-semibold text-gray-900 mb-3">
+                        Configuration
+                      </h3>
+                      <p class="text-sm text-gray-700 mb-3">
+                        Go to <strong>Settings</strong> to configure:
+                      </p>
+                      <ul
+                        class="list-disc list-inside text-sm text-gray-700 space-y-1 mb-4"
+                      >
+                        <li>
+                          <strong>VAT Rate:</strong> Your local tax rate (e.g.,
+                          0.2 for 20%, 0.0625 for 6.25%)
+                        </li>
+                        <li>
+                          <strong>Default Pricing Model:</strong> VAT-inclusive
+                          (UK/EU) or tax-exclusive (US)
+                        </li>
+                      </ul>
 
-                      <div class="bg-green-50 border-l-4 border-green-400 p-4">
-                        <p class="text-sm text-gray-800"><strong>Example:</strong> Create "Pizza Sauce" with yield "1L", then use "250ml" of it in your "Margherita Pizza" recipe. The system automatically calculates the cost as 25% of the sauce recipe's total cost.</p>
+                      <h3 class="font-semibold text-gray-900 mb-3">
+                        Ingredient Purchase Costs
+                      </h3>
+                      <p class="text-sm text-gray-700 mb-3">
+                        When adding ingredients, specify if the purchase cost
+                        includes VAT:
+                      </p>
+                      <div class="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
+                        <div>
+                          ✅ <strong>Includes VAT:</strong> The system will
+                          strip VAT to calculate true cost
+                        </div>
+                        <div>
+                          ❌ <strong>Excludes VAT:</strong> The purchase cost is
+                          used as-is
+                        </div>
+                      </div>
+
+                      <h3 class="font-semibold text-gray-900 mt-6 mb-3">
+                        Recipe Pricing
+                      </h3>
+                      <div
+                        class="bg-blue-50 border border-blue-200 rounded-lg p-4"
+                      >
+                        <p class="text-sm text-gray-800 mb-2">
+                          <strong
+                            >Default Setting (configurable in Settings):</strong
+                          >
+                        </p>
+                        <div class="space-y-2 text-sm text-gray-700">
+                          <div>
+                            • <strong>UK/EU:</strong> Recipe prices include VAT
+                            by default
+                          </div>
+                          <div>
+                            • <strong>US:</strong> Recipe prices exclude tax by
+                            default
+                          </div>
+                          <div
+                            class="mt-3 pt-3 border-t border-blue-300 text-xs"
+                          >
+                            You can override this per-recipe in the YAML file
+                            using
+                            <code class="bg-white px-1 py-0.5 rounded"
+                              >costing.vat: true/false</code
+                            >
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </section>
 
-                  <hr class="border-gray-200">
+                  <hr class="border-gray-200" />
+
+                  <!-- Sub-Recipes -->
+                  <section id="help-subrecipes">
+                    <h2
+                      class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
+                    >
+                      <span
+                        class="bg-orange-100 text-orange-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold"
+                        >4</span
+                      >
+                      Using Sub-Recipes
+                    </h2>
+                    <div class="prose max-w-none">
+                      <p class="text-gray-700 mb-4">
+                        Sub-recipes let you create reusable components (like
+                        sauces or doughs) that can be used in multiple menu
+                        items.
+                      </p>
+
+                      <h3 class="font-semibold text-gray-900 mb-3">
+                        Creating Sub-Recipes
+                      </h3>
+                      <ol
+                        class="list-decimal list-inside text-sm text-gray-700 space-y-2 mb-4"
+                      >
+                        <li>
+                          Create a recipe with
+                          <code class="bg-gray-100 px-2 py-0.5 rounded text-xs"
+                            >class: sub_recipe</code
+                          >
+                        </li>
+                        <li>
+                          Specify the yield amount and unit (e.g., "1L" of
+                          sauce)
+                        </li>
+                        <li>Add it as an ingredient to your main recipes</li>
+                      </ol>
+
+                      <div class="bg-green-50 border-l-4 border-green-400 p-4">
+                        <p class="text-sm text-gray-800">
+                          <strong>Example:</strong> Create "Pizza Sauce" with
+                          yield "1L", then use "250ml" of it in your "Margherita
+                          Pizza" recipe. The system automatically calculates the
+                          cost as 25% of the sauce recipe's total cost.
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <hr class="border-gray-200" />
 
                   <!-- Troubleshooting -->
                   <section id="help-troubleshooting">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-                      <span class="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold">5</span>
+                    <h2
+                      class="text-2xl font-bold text-gray-900 mb-4 flex items-center"
+                    >
+                      <span
+                        class="bg-red-100 text-red-600 w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm font-bold"
+                        >5</span
+                      >
                       Troubleshooting
                     </h2>
                     <div class="prose max-w-none">
                       <div class="space-y-4">
-                        <details class="bg-gray-50 rounded-lg p-4 cursor-pointer">
-                          <summary class="font-semibold text-gray-900">Recipe shows "Error calculating cost"</summary>
+                        <details
+                          class="bg-gray-50 rounded-lg p-4 cursor-pointer"
+                        >
+                          <summary class="font-semibold text-gray-900">
+                            Recipe shows "Error calculating cost"
+                          </summary>
                           <div class="mt-3 text-sm text-gray-700 space-y-2">
                             <p><strong>Possible causes:</strong></p>
                             <ul class="list-disc list-inside ml-4">
                               <li>Missing ingredient in the database</li>
                               <li>Sub-recipe hasn't been created yet</li>
-                              <li>Circular dependency (Recipe A uses Recipe B, which uses Recipe A)</li>
+                              <li>
+                                Circular dependency (Recipe A uses Recipe B,
+                                which uses Recipe A)
+                              </li>
                             </ul>
-                            <p class="mt-2"><strong>Solution:</strong> Ensure all ingredients and sub-recipes exist before using them.</p>
+                            <p class="mt-2">
+                              <strong>Solution:</strong> Ensure all ingredients
+                              and sub-recipes exist before using them.
+                            </p>
                           </div>
                         </details>
 
-                        <details class="bg-gray-50 rounded-lg p-4 cursor-pointer">
-                          <summary class="font-semibold text-gray-900">Margin calculation seems wrong</summary>
+                        <details
+                          class="bg-gray-50 rounded-lg p-4 cursor-pointer"
+                        >
+                          <summary class="font-semibold text-gray-900">
+                            Margin calculation seems wrong
+                          </summary>
                           <div class="mt-3 text-sm text-gray-700 space-y-2">
                             <p><strong>Check these settings:</strong></p>
                             <ul class="list-disc list-inside ml-4">
                               <li>VAT rate is correct in Settings</li>
-                              <li>Ingredient purchase costs have correct "Includes VAT" setting</li>
-                              <li>Recipe price has correct VAT setting (inclusive vs exclusive)</li>
+                              <li>
+                                Ingredient purchase costs have correct "Includes
+                                VAT" setting
+                              </li>
+                              <li>
+                                Recipe price has correct VAT setting (inclusive
+                                vs exclusive)
+                              </li>
                             </ul>
-                            <p class="mt-2"><strong>Remember:</strong> All margins are calculated ex-VAT for accuracy.</p>
+                            <p class="mt-2">
+                              <strong>Remember:</strong> All margins are
+                              calculated ex-VAT for accuracy.
+                            </p>
                           </div>
                         </details>
 
-                        <details class="bg-gray-50 rounded-lg p-4 cursor-pointer">
-                          <summary class="font-semibold text-gray-900">Cannot add ingredients to recipe</summary>
+                        <details
+                          class="bg-gray-50 rounded-lg p-4 cursor-pointer"
+                        >
+                          <summary class="font-semibold text-gray-900">
+                            Cannot add ingredients to recipe
+                          </summary>
                           <div class="mt-3 text-sm text-gray-700 space-y-2">
                             <p><strong>Possible causes:</strong></p>
                             <ul class="list-disc list-inside ml-4">
-                              <li>No ingredients created yet - add ingredients first</li>
+                              <li>
+                                No ingredients created yet - add ingredients
+                                first
+                              </li>
                               <li>Browser issue - try refreshing the page</li>
                             </ul>
                           </div>
                         </details>
 
-                        <details class="bg-gray-50 rounded-lg p-4 cursor-pointer">
-                          <summary class="font-semibold text-gray-900">Changes not saving</summary>
+                        <details
+                          class="bg-gray-50 rounded-lg p-4 cursor-pointer"
+                        >
+                          <summary class="font-semibold text-gray-900">
+                            Changes not saving
+                          </summary>
                           <div class="mt-3 text-sm text-gray-700 space-y-2">
                             <p><strong>Try these steps:</strong></p>
                             <ol class="list-decimal list-inside ml-4 space-y-1">
-                              <li>Check for error messages at the top of the page</li>
+                              <li>
+                                Check for error messages at the top of the page
+                              </li>
                               <li>Ensure all required fields are filled in</li>
-                              <li>Check the browser console for errors (F12 key)</li>
+                              <li>
+                                Check the browser console for errors (F12 key)
+                              </li>
                               <li>Refresh the page and try again</li>
                             </ol>
                           </div>
@@ -1778,31 +2274,70 @@
                     </div>
                   </section>
 
-                  <hr class="border-gray-200">
+                  <hr class="border-gray-200" />
 
                   <!-- Additional Resources -->
                   <section id="help-resources">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Additional Resources</h2>
-                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
-                      <h3 class="font-semibold text-gray-900 mb-3">Need More Help?</h3>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                      Additional Resources
+                    </h2>
+                    <div
+                      class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6"
+                    >
+                      <h3 class="font-semibold text-gray-900 mb-3">
+                        Need More Help?
+                      </h3>
                       <div class="space-y-3 text-sm">
                         <div class="flex items-start gap-3">
-                          <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          <svg
+                            class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
                           </svg>
                           <div>
-                            <strong class="text-gray-900">GitHub Repository:</strong>
-                            <p class="text-gray-600">Report issues and contribute at <a href="https://github.com/harrytwright/margin-calculator/issues" target="_blank" class="text-blue-600 hover:underline">github.com/harrytwright/margin-calculator</a></p>
+                            <strong class="text-gray-900"
+                              >GitHub Repository:</strong
+                            >
+                            <p class="text-gray-600">
+                              Report issues and contribute at
+                              <a
+                                href="https://github.com/harrytwright/margin-calculator/issues"
+                                target="_blank"
+                                class="text-blue-600 hover:underline"
+                                >github.com/harrytwright/margin-calculator</a
+                              >
+                            </p>
                           </div>
                         </div>
 
                         <div class="flex items-start gap-3">
-                          <svg class="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                          <svg
+                            class="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                            />
                           </svg>
                           <div>
                             <strong class="text-gray-900">Pro Tip:</strong>
-                            <p class="text-gray-600">Use YAML files to bulk import recipes and keep them version-controlled with Git!</p>
+                            <p class="text-gray-600">
+                              Use YAML files to bulk import recipes and keep
+                              them version-controlled with Git!
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -2004,7 +2539,9 @@
         } catch (error) {
           // Handle network errors
           if (error instanceof TypeError && error.message.includes('fetch')) {
-            const networkError = new Error('Unable to connect to the server. Please check your connection.')
+            const networkError = new Error(
+              'Unable to connect to the server. Please check your connection.'
+            )
             networkError.isNetworkError = true
             throw networkError
           }
@@ -2297,7 +2834,10 @@
           renderCategoryBreakdownChart(successfulRecipes)
         } catch (error) {
           console.error('Error rendering charts:', error)
-          showToast('Unable to render dashboard charts. Data may be incomplete.', 'error')
+          showToast(
+            'Unable to render dashboard charts. Data may be incomplete.',
+            'error'
+          )
         }
       }
 
@@ -2924,7 +3464,8 @@
 
               // Create error message element with icon
               const errorEl = document.createElement('div')
-              errorEl.className = 'validation-error flex items-start gap-2 text-red-600 text-sm mt-2 p-2 bg-red-50 rounded-lg border border-red-200'
+              errorEl.className =
+                'validation-error flex items-start gap-2 text-red-600 text-sm mt-2 p-2 bg-red-50 rounded-lg border border-red-200'
               errorEl.innerHTML = `
                 <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -2954,7 +3495,12 @@
       function clearValidationErrors(form) {
         form.querySelectorAll('.validation-error').forEach((el) => el.remove())
         form.querySelectorAll('.border-red-300').forEach((el) => {
-          el.classList.remove('border-red-300', 'border-2', 'ring-2', 'ring-red-100')
+          el.classList.remove(
+            'border-red-300',
+            'border-2',
+            'ring-2',
+            'ring-red-100'
+          )
         })
       }
 
@@ -3080,7 +3626,10 @@
           populateIngredientSelectors()
         } catch (error) {
           console.error('Failed to load management data', error)
-          showToast('Unable to load management data. Please refresh the page.', 'error')
+          showToast(
+            'Unable to load management data. Please refresh the page.',
+            'error'
+          )
         }
       }
 
@@ -3386,7 +3935,9 @@
           // Now populate ingredients in the ACTIVE (cloned) form
           setTimeout(() => {
             const activeForm = document.getElementById('recipe-form-active')
-            const container = activeForm.querySelector('[id="recipe-ingredients-rows"]')
+            const container = activeForm.querySelector(
+              '[id="recipe-ingredients-rows"]'
+            )
             container.innerHTML = ''
 
             if (ingredientsToPopulate.length > 0) {
@@ -3495,7 +4046,10 @@
             showValidationErrors(form, error.validationErrors)
             showToast('Please fix the validation errors below', 'error')
           } else if (error.isNetworkError) {
-            showToast('Network error: Unable to save supplier. Please check your connection.', 'error')
+            showToast(
+              'Network error: Unable to save supplier. Please check your connection.',
+              'error'
+            )
           } else if (error.statusCode === 409) {
             showToast('A supplier with this name already exists', 'error')
           } else {
@@ -3566,11 +4120,20 @@
             showValidationErrors(form, error.validationErrors)
             showToast('Please fix the validation errors below', 'error')
           } else if (error.isNetworkError) {
-            showToast('Network error: Unable to save ingredient. Please check your connection.', 'error')
+            showToast(
+              'Network error: Unable to save ingredient. Please check your connection.',
+              'error'
+            )
           } else if (error.statusCode === 409) {
             showToast('An ingredient with this name already exists', 'error')
-          } else if (error.statusCode === 404 && error.message.includes('Supplier')) {
-            showToast('Selected supplier not found. Please choose a different supplier.', 'error')
+          } else if (
+            error.statusCode === 404 &&
+            error.message.includes('Supplier')
+          ) {
+            showToast(
+              'Selected supplier not found. Please choose a different supplier.',
+              'error'
+            )
           } else {
             showToast(`Failed to save ingredient: ${error.message}`, 'error')
           }
@@ -3655,11 +4218,20 @@
             showValidationErrors(form, error.validationErrors)
             showToast('Please fix the validation errors below', 'error')
           } else if (error.isNetworkError) {
-            showToast('Network error: Unable to save recipe. Please check your connection.', 'error')
+            showToast(
+              'Network error: Unable to save recipe. Please check your connection.',
+              'error'
+            )
           } else if (error.statusCode === 409) {
             showToast('A recipe with this name already exists', 'error')
-          } else if (error.statusCode === 404 && error.message.includes('ingredient')) {
-            showToast('One or more selected ingredients not found. Please review your ingredients.', 'error')
+          } else if (
+            error.statusCode === 404 &&
+            error.message.includes('ingredient')
+          ) {
+            showToast(
+              'One or more selected ingredients not found. Please review your ingredients.',
+              'error'
+            )
           } else if (ingredients.length === 0) {
             showToast('Recipe must have at least one ingredient', 'error')
           } else {
@@ -3944,7 +4516,10 @@
             loadRecipeReport()
           } catch (error) {
             console.error('Failed to parse event payload', error)
-            showToast('Live update failed. Please refresh to see latest changes.', 'error')
+            showToast(
+              'Live update failed. Please refresh to see latest changes.',
+              'error'
+            )
           }
         })
 
@@ -4208,7 +4783,8 @@
 
           // Populate form
           document.getElementById('setting-vat').value = settings.vat
-          document.getElementById('setting-margin').value = settings.marginTarget
+          document.getElementById('setting-margin').value =
+            settings.marginTarget
 
           // Set default price includes VAT radio
           const vatRadio = document.querySelector(
@@ -4270,7 +4846,9 @@
 
             // Client-side validation
             if (isNaN(vat) || vat < 0 || vat > 1) {
-              throw new Error('VAT rate must be between 0 and 1 (e.g., 0.2 for 20%)')
+              throw new Error(
+                'VAT rate must be between 0 and 1 (e.g., 0.2 for 20%)'
+              )
             }
             if (isNaN(marginTarget) || marginTarget < 0 || marginTarget > 100) {
               throw new Error('Margin target must be between 0 and 100')
@@ -4310,7 +4888,10 @@
           } catch (error) {
             status.innerHTML = `<span class="text-red-600 font-medium">✗ ${error.message}</span>`
             if (error.message.includes('Failed to fetch')) {
-              showToast('Network error: Unable to save settings. Please check your connection.', 'error')
+              showToast(
+                'Network error: Unable to save settings. Please check your connection.',
+                'error'
+              )
             } else if (error.message.includes('between')) {
               showToast(`Validation error: ${error.message}`, 'error')
             } else {
