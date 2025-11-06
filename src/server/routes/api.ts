@@ -10,6 +10,7 @@ import {
   supplierImportDataSchema,
 } from '../../schema'
 import { ConfigService } from '../../services/config'
+import { ExportService } from '../../services/export'
 import { IngredientService } from '../../services/ingredient'
 import { RecipeService } from '../../services/recipe'
 import { SupplierService } from '../../services/supplier'
@@ -31,6 +32,13 @@ export function createApiRouter(config: ServerConfig): Router {
     configService
   )
   const calculator = new Calculator(recipeService, ingredient, configService)
+  const exportService = new ExportService(
+    config.database,
+    supplier,
+    ingredient,
+    recipeService,
+    calculator
+  )
 
   // Initialize storage service based on mode
   const storageMode = config.storageMode || 'fs'
@@ -555,63 +563,240 @@ export function createApiRouter(config: ServerConfig): Router {
   })
 
   // Export endpoints
+
+  // Export single recipe
   router.get('/export/recipe/:slug', async (req, res) => {
     try {
       const slug = req.params.slug
-      const recipe = await recipeService.findById(slug, true)
+      const includeDependencies = req.query.dependencies === 'true'
 
-      if (!recipe) {
-        return res.status(404).json({ error: 'Recipe not found' })
+      const result = await exportService.exportRecipe(slug, {
+        includeDependencies,
+      })
+
+      if (typeof result === 'string') {
+        // Single file export
+        res.setHeader('Content-Type', 'text/yaml')
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${slug}.yaml"`
+        )
+        res.send(result)
+      } else {
+        // Multi-file export with dependencies (will be handled by ZIP endpoint)
+        res.status(400).json({
+          error:
+            'Use /export/recipe/:slug/zip endpoint for exports with dependencies',
+        })
       }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
 
-      // Convert to YAML-compatible format
-      const yamlData: any = {
-        object: 'recipe',
-        data: {
-          name: recipe.name,
-          stage: recipe.stage,
-          class: recipe.class,
-          category: recipe.category || undefined,
-        },
-      }
-
-      // Add parent if exists
-      if (recipe.parent) {
-        yamlData.data.extends = `slug:${recipe.parent}`
-      }
-
-      // Add costing
-      yamlData.data.costing = {
-        price: recipe.sellPrice,
-        margin: recipe.targetMargin || undefined,
-        vat: recipe.includesVat === 1,
-      }
-
-      // Add yield
-      if (recipe.yieldAmount && recipe.yieldUnit) {
-        yamlData.data.yieldAmount = recipe.yieldAmount
-        yamlData.data.yieldUnit = recipe.yieldUnit
-      }
-
-      // Add ingredients
-      yamlData.data.ingredients = recipe.ingredients.map((ing) => ({
-        uses: `slug:${ing.slug}`,
-        with: {
-          unit: ing.unit,
-          notes: ing.notes || undefined,
-        },
-      }))
-
-      // Convert to YAML string
-      const YAML = require('yaml')
-      const yamlString = YAML.stringify(yamlData)
+  // Export single ingredient
+  router.get('/export/ingredient/:slug', async (req, res) => {
+    try {
+      const slug = req.params.slug
+      const result = await exportService.exportIngredient(slug, {
+        includeDependencies: false,
+      })
 
       res.setHeader('Content-Type', 'text/yaml')
       res.setHeader(
         'Content-Disposition',
         `attachment; filename="${slug}.yaml"`
       )
-      res.send(yamlString)
+      res.send(result)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // Export single supplier
+  router.get('/export/supplier/:slug', async (req, res) => {
+    try {
+      const slug = req.params.slug
+      const result = await exportService.exportSupplier(slug)
+
+      res.setHeader('Content-Type', 'text/yaml')
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${slug}.yaml"`
+      )
+      res.send(result)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // Bulk export all recipes
+  router.get('/export/recipes', async (_req, res) => {
+    try {
+      const yaml = await exportService.exportAllRecipes()
+
+      res.setHeader('Content-Type', 'text/yaml')
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="recipes.yaml"'
+      )
+      res.send(yaml)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // Bulk export all ingredients
+  router.get('/export/ingredients', async (_req, res) => {
+    try {
+      const yaml = await exportService.exportAllIngredients()
+
+      res.setHeader('Content-Type', 'text/yaml')
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="ingredients.yaml"'
+      )
+      res.send(yaml)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // Bulk export all suppliers
+  router.get('/export/suppliers', async (_req, res) => {
+    try {
+      const yaml = await exportService.exportAllSuppliers()
+
+      res.setHeader('Content-Type', 'text/yaml')
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="suppliers.yaml"'
+      )
+      res.send(yaml)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // ZIP export endpoints
+  router.get('/export/recipe/:slug/zip', async (req, res) => {
+    try {
+      const slug = req.params.slug
+      const archiver = require('archiver')
+
+      const result = await exportService.exportRecipe(slug, {
+        includeDependencies: true,
+      })
+
+      if (typeof result === 'string') {
+        return res
+          .status(400)
+          .json({ error: 'Recipe has no dependencies to export' })
+      }
+
+      const archive = archiver('zip', { zlib: { level: 9 } })
+
+      res.setHeader('Content-Type', 'application/zip')
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${slug}-with-dependencies.zip"`
+      )
+
+      archive.pipe(res)
+
+      // Add all files to the archive
+      for (const [path, content] of result.files) {
+        archive.append(content, { name: path })
+      }
+
+      await archive.finalize()
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // Export complete dataset as ZIP
+  router.get('/export/all', async (_req, res) => {
+    try {
+      const archiver = require('archiver')
+
+      const result = await exportService.exportAll()
+
+      const archive = archiver('zip', { zlib: { level: 9 } })
+
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+      res.setHeader('Content-Type', 'application/zip')
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="margin-data-${timestamp}.zip"`
+      )
+
+      archive.pipe(res)
+
+      // Add all files to the archive
+      for (const [path, content] of result.files) {
+        archive.append(content, { name: path })
+      }
+
+      await archive.finalize()
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // CSV export endpoints
+  router.get('/export/csv/suppliers', async (_req, res) => {
+    try {
+      const csv = await exportService.exportSuppliersCSV()
+
+      res.setHeader('Content-Type', 'text/csv')
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="suppliers.csv"'
+      )
+      res.send(csv)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.get('/export/csv/ingredients', async (_req, res) => {
+    try {
+      const csv = await exportService.exportIngredientsCSV()
+
+      res.setHeader('Content-Type', 'text/csv')
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="ingredients.csv"'
+      )
+      res.send(csv)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.get('/export/csv/recipes', async (_req, res) => {
+    try {
+      const csv = await exportService.exportRecipesCSV()
+
+      res.setHeader('Content-Type', 'text/csv')
+      res.setHeader('Content-Disposition', 'attachment; filename="recipes.csv"')
+      res.send(csv)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.get('/export/csv/recipes-with-costs', async (_req, res) => {
+    try {
+      const csv = await exportService.exportRecipesWithCostsCSV()
+
+      res.setHeader('Content-Type', 'text/csv')
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="recipes-with-costs.csv"'
+      )
+      res.send(csv)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
     }
