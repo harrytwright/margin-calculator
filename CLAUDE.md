@@ -320,12 +320,14 @@ VAT is handled at multiple levels in the system:
 - If `Ingredient.includesVat = 1`, VAT is stripped: `purchaseCost / (1 + vatRate)`
 - All recipe calculations use ex-VAT ingredient costs
 
-**Recipe Pricing (Default: VAT-Inclusive):**
+**Recipe Pricing (Configurable Default):**
 
 - **By default**, recipes store `sellPrice` as **VAT-inclusive** (what the customer pays)
-- `Recipe.includesVat` defaults to `true` (1 in database)
+- `Recipe.includesVat` defaults based on the `defaultPriceIncludesVat` config setting
+- UK/EU users typically set `defaultPriceIncludesVat: true` (VAT-inclusive pricing)
+- US users typically set `defaultPriceIncludesVat: false` (tax-exclusive pricing)
 - The calculator automatically strips VAT to get ex-VAT price: `customerPrice / (1 + vatRate)`
-- Set `costing.vat: false` in YAML to use ex-VAT pricing instead
+- Override per-recipe by setting `costing.vat: true/false` in YAML
 
 **Example:**
 
@@ -343,9 +345,11 @@ costing:
 
 **Configuration:**
 
-- VAT rate stored in `data/conf/margin.toml`
-- Default: 20% (0.2)
-- Accessed via `ConfigService.getVatRate()`
+- VAT rate and pricing defaults stored in `data/conf/margin.toml`
+- VAT rate default: 20% (0.2)
+- Price includes VAT default: true (UK/EU standard)
+- Accessed via `ConfigService.getVatRate()` and `ConfigService.getDefaultPriceIncludesVat()`
+- Users are prompted to select their region during `margin initialise`
 
 **Margin Calculation:**
 
@@ -417,14 +421,17 @@ class ConfigService {
 
   async getVatRate(): Promise<number> // Default: 0.2 (20%)
   async getDefaultMargin(): Promise<number> // Default target margin
+  async getDefaultPriceIncludesVat(): Promise<boolean> // Default: true (UK/EU)
 }
 ```
 
 **Configuration File** (`data/conf/margin.toml`):
 
 ```toml
-vat = 0.2              # 20% VAT rate
-default_margin = 65    # Default target margin percentage
+vat = 0.2                        # 20% VAT rate
+default_margin = 65              # Default target margin percentage
+defaultPriceIncludesVat = true   # Prices include VAT by default (UK/EU standard)
+                                 # Set to false for US-style tax-exclusive pricing
 ```
 
 **Features:**
@@ -432,6 +439,7 @@ default_margin = 65    # Default target margin percentage
 - File-based configuration (not database)
 - Caching for performance
 - Default values if file missing or fields undefined
+- Interactive setup during `margin initialise` prompts for pricing preference
 
 ### Web UI Architecture
 
