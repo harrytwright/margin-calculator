@@ -58,6 +58,7 @@ wrangler pages deploy dist --project-name=menu-book-landing
 ### PostHog
 
 PostHog is already configured and tracking:
+
 - Page views (automatic)
 - Waitlist signups (custom event)
 

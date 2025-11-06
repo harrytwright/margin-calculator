@@ -1,8 +1,8 @@
 ---
-title: "Building Menu Book: Our Journey Begins"
+title: 'Building Menu Book: Our Journey Begins'
 date: 2025-10-24
-author: "Harry Wright"
-slug: "building-menu-book"
+author: 'Harry Wright'
+slug: 'building-menu-book'
 excerpt: "Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches."
 ---
 
@@ -31,18 +31,23 @@ After one too many pricing mistakes, we decided there had to be a better way.
 We're building Menu Book to solve the problems we actually face:
 
 ### 1. **Recursive Cost Calculation**
+
 Your pizza sauce is a recipe. Your margherita pizza uses that sauce. When the cost of tomatoes goes up, Menu Book automatically recalculates the sauce cost, then the pizza cost. No manual updates.
 
 ### 2. **Smart VAT Handling**
+
 Menu Book knows that ingredient purchase prices might include VAT, but margins should be calculated ex-VAT. Sell prices can be VAT-eligible or not. It handles all the complexity so you don't have to think about it.
 
 ### 3. **Unit Conversion That Just Works**
+
 Buy flour in 16kg bags, use it in 250g portions. Buy milk in litres, use it in millilitres. Menu Book converts everything automatically using standard units.
 
 ### 4. **Git-Friendly Data**
+
 Your recipes are stored as YAML files, not locked in a database. Version control them with git, share them with your team, back them up anywhere.
 
 ### 5. **CLI + Web UI**
+
 Power users get a fast CLI for bulk operations. Everyone else gets a beautiful web interface. Same data, different interfaces.
 
 ## Building in Public
@@ -73,4 +78,4 @@ Email us at [info@getmenubook.com](mailto:info@getmenubook.com) or [sales@getmen
 
 ---
 
-*This is post #1 in our "Building in Public" series. Follow along as we build Menu Book from the ground up.*
+_This is post #1 in our "Building in Public" series. Follow along as we build Menu Book from the ground up._

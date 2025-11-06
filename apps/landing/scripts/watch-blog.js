@@ -5,8 +5,8 @@
  * Watches markdown files and rebuilds blog on changes
  */
 
-import chokidar from 'chokidar'
 import { execSync } from 'child_process'
+import chokidar from 'chokidar'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
