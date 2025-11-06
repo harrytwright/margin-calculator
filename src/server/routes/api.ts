@@ -22,10 +22,14 @@ export function createApiRouter(config: ServerConfig): Router {
   const router = Router()
 
   // Initialize services
+  const configService = new ConfigService(config.locationDir)
   const supplier = new SupplierService(config.database)
   const ingredient = new IngredientService(config.database, supplier)
-  const recipeService = new RecipeService(config.database, ingredient)
-  const configService = new ConfigService(config.locationDir)
+  const recipeService = new RecipeService(
+    config.database,
+    ingredient,
+    configService
+  )
   const calculator = new Calculator(recipeService, ingredient, configService)
 
   // Initialize storage service based on mode
@@ -495,6 +499,155 @@ export function createApiRouter(config: ServerConfig): Router {
       }
 
       res.json(results)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // Settings endpoints
+  router.get('/settings', async (_req, res) => {
+    try {
+      const settings = await configService.getAll()
+      res.json(settings)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  router.put('/settings', async (req, res) => {
+    try {
+      const updates = req.body
+
+      // Validate input
+      if (updates.vat !== undefined) {
+        const vat = Number(updates.vat)
+        if (isNaN(vat) || vat < 0 || vat > 1) {
+          return res.status(400).json({
+            error: 'VAT rate must be a number between 0 and 1',
+          })
+        }
+        updates.vat = vat
+      }
+
+      if (updates.marginTarget !== undefined) {
+        const margin = Number(updates.marginTarget)
+        if (isNaN(margin) || margin < 0 || margin > 100) {
+          return res.status(400).json({
+            error: 'Margin target must be a number between 0 and 100',
+          })
+        }
+        updates.marginTarget = margin
+      }
+
+      if (updates.defaultPriceIncludesVat !== undefined) {
+        if (typeof updates.defaultPriceIncludesVat !== 'boolean') {
+          return res.status(400).json({
+            error: 'defaultPriceIncludesVat must be a boolean',
+          })
+        }
+      }
+
+      const updated = await configService.update(updates)
+      res.json(updated)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // Export endpoints
+  router.get('/export/recipe/:slug', async (req, res) => {
+    try {
+      const slug = req.params.slug
+      const recipe = await recipeService.findById(slug, true)
+
+      if (!recipe) {
+        return res.status(404).json({ error: 'Recipe not found' })
+      }
+
+      // Convert to YAML-compatible format
+      const yamlData: any = {
+        object: 'recipe',
+        data: {
+          name: recipe.name,
+          stage: recipe.stage,
+          class: recipe.class,
+          category: recipe.category || undefined,
+        },
+      }
+
+      // Add parent if exists
+      if (recipe.parent) {
+        yamlData.data.extends = `slug:${recipe.parent}`
+      }
+
+      // Add costing
+      yamlData.data.costing = {
+        price: recipe.sellPrice,
+        margin: recipe.targetMargin || undefined,
+        vat: recipe.includesVat === 1,
+      }
+
+      // Add yield
+      if (recipe.yieldAmount && recipe.yieldUnit) {
+        yamlData.data.yieldAmount = recipe.yieldAmount
+        yamlData.data.yieldUnit = recipe.yieldUnit
+      }
+
+      // Add ingredients
+      yamlData.data.ingredients = recipe.ingredients.map((ing) => ({
+        uses: `slug:${ing.slug}`,
+        with: {
+          unit: ing.unit,
+          notes: ing.notes || undefined,
+        },
+      }))
+
+      // Convert to YAML string
+      const YAML = require('yaml')
+      const yamlString = YAML.stringify(yamlData)
+
+      res.setHeader('Content-Type', 'text/yaml')
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${slug}.yaml"`
+      )
+      res.send(yamlString)
+    } catch (error: any) {
+      res.status(500).json({ error: error.message })
+    }
+  })
+
+  // Database backup endpoint
+  router.get('/backup/database', async (_req, res) => {
+    try {
+      const fs = require('fs')
+      const path = require('path')
+
+      // Get the database file path from config
+      const dbPath = path.join(config.locationDir, 'margin.sqlite3')
+
+      // Check if file exists
+      if (!fs.existsSync(dbPath)) {
+        return res.status(404).json({ error: 'Database file not found' })
+      }
+
+      // Get file stats for size
+      const stats = fs.statSync(dbPath)
+
+      // Generate backup filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+      const backupFilename = `margin-backup-${timestamp}.sqlite3`
+
+      res.setHeader('Content-Type', 'application/x-sqlite3')
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${backupFilename}"`
+      )
+      res.setHeader('Content-Length', stats.size)
+
+      // Stream the file
+      const fileStream = fs.createReadStream(dbPath)
+      fileStream.pipe(res)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
     }

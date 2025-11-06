@@ -9,11 +9,13 @@ import { tomlWriter } from '../utils/toml-writer'
 interface MarginConfig {
   vat?: number
   marginTarget?: number
+  defaultPriceIncludesVat?: boolean
 }
 
 const defaultConfig: Required<MarginConfig> = {
   vat: 0.2,
   marginTarget: 20,
+  defaultPriceIncludesVat: true, // UK/EU default: prices include VAT
 }
 
 export class ConfigService {
@@ -25,7 +27,7 @@ export class ConfigService {
     this.configPath = path.join(workingDir, 'conf', 'margin.toml')
   }
 
-  async initialise(force: boolean) {
+  async initialise(force: boolean, overrides: Partial<MarginConfig> = {}) {
     this.invalidate()
 
     const prev = await this.read()
@@ -33,11 +35,13 @@ export class ConfigService {
     if (force) {
       await this.save({
         ...prev,
+        ...overrides,
       })
     } else {
       await this.save({
         ...defaultConfig,
         ...prev,
+        ...overrides,
       })
     }
   }
@@ -97,8 +101,40 @@ export class ConfigService {
     return config.marginTarget ?? defaultConfig.marginTarget // Default 20%
   }
 
+  async getDefaultPriceIncludesVat(): Promise<boolean> {
+    const config = await this.load()
+    return (
+      config.defaultPriceIncludesVat ?? defaultConfig.defaultPriceIncludesVat
+    )
+  }
+
+  // Get all config settings at once (useful for settings page)
+  async getAll(): Promise<Required<MarginConfig>> {
+    const config = await this.load()
+    return {
+      vat: config.vat ?? defaultConfig.vat,
+      marginTarget: config.marginTarget ?? defaultConfig.marginTarget,
+      defaultPriceIncludesVat:
+        config.defaultPriceIncludesVat ?? defaultConfig.defaultPriceIncludesVat,
+    }
+  }
+
+  // Update config settings
+  async update(
+    updates: Partial<MarginConfig>
+  ): Promise<Required<MarginConfig>> {
+    const current = await this.load()
+    const updated = {
+      ...current,
+      ...updates,
+    }
+    await this.save(updated)
+    return this.getAll()
+  }
+
   // Force reload from disk (useful after config changes)
   invalidate(): void {
     this.cache = null
   }
 }
+
