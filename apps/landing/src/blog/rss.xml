@@ -8,6 +8,15 @@
     <atom:link href="https://getmenubook.com/blog/rss.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>Building Menu Book: Preparing for release</title>
+      <link>https://getmenubook.com/blog/preparing-for-release</link>
+      <guid>https://getmenubook.com/blog/preparing-for-release</guid>
+      <pubDate>Fri, 07 Nov 2025 00:00:00 GMT</pubDate>
+      <description>Features, and why we think they are important.</description>
+      <author>Harry Wright</author>
+    </item>
+  
+    <item>
       <title>Building Menu Book: Our Journey Begins</title>
       <link>https://getmenubook.com/blog/building-menu-book</link>
       <guid>https://getmenubook.com/blog/building-menu-book</guid>
