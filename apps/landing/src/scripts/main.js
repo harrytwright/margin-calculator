@@ -11,20 +11,18 @@ import { setupSmoothScroll } from './navigation'
 
 // Initialize analytics only with consent
 function initializeAnalytics() {
-  if (hasAnalyticsConsent()) {
-    initPostHog()
-  } else {
+  initPostHog()
+
+  console.log(hasAnalyticsConsent())
+
+  if (!hasAnalyticsConsent()) {
     // Show consent banner and init on acceptance
     showConsentBanner(
-      () => {
-        // User accepted - initialize PostHog
-        initPostHog()
-      },
-      () => {
-        // User declined - do nothing (no analytics)
-        console.log('Analytics cookies declined')
-      }
+      () => posthog?.opt_in_capturing(),
+      () => posthog?.opt_out_capturing()
     )
+  } else {
+    posthog?.opt_in_capturing()
   }
 }
 

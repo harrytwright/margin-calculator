@@ -3,7 +3,7 @@ title: 'Building Menu Book: Preparing for release'
 date: 2025-11-07
 author: 'Harry Wright'
 slug: 'preparing-for-release'
-excerpt: "Features, and why we think they are important."
+excerpt: 'Features, and why we think they are important.'
 ---
 
 # Building Menu Book: Preparing for release
@@ -22,7 +22,7 @@ These are what we as a business deemed were important to us, and why we built th
 
 Since I built this for my own business, [GoBowling Shipley](https://www.gobowling.co.uk/?utm_source=getmenubook&utm_medium=blog&utm_campaign=preparing-for-release), we initially did not use any system. I had started implementing this via a spreadsheet, but hit a simple hurdle: a loaf of bread. We always get the same loaf from the local supermarket; they do not offer the easiest nutritional data or serving sizes; everything is 100g.
 
-This is okay. I could weigh a single slice and use that as my slice weight. So I get the scales, weigh one —it was around 42g. That seemed fine until you divided the 800g loaf, which gave you around 19 slices, which seemed more than the eye test showed, so I weighed another 53g. I thought that was strange. We could try to work out an average? So I counted each slice, got 16, which would leave 50g per slice, give or take. But I counted two more loaves and each time got 16 slices, so my head is now thinking `1 loaf = 16 slices`, which I thought would be cool to write as a conversion rule visually. Still, the spreadsheet would not allow it; it would require things like regex to understand that in a *Ham and Cheese Sandwich* we would use two slices, which Excel fails at.
+This is okay. I could weigh a single slice and use that as my slice weight. So I get the scales, weigh one —it was around 42g. That seemed fine until you divided the 800g loaf, which gave you around 19 slices, which seemed more than the eye test showed, so I weighed another 53g. I thought that was strange. We could try to work out an average? So I counted each slice, got 16, which would leave 50g per slice, give or take. But I counted two more loaves and each time got 16 slices, so my head is now thinking `1 loaf = 16 slices`, which I thought would be cool to write as a conversion rule visually. Still, the spreadsheet would not allow it; it would require things like regex to understand that in a _Ham and Cheese Sandwich_ we would use two slices, which Excel fails at.
 
 Whilst this example could be written as 50g per slice, and still work. Take our pizzas bases, we order them in a case, they arrive as 16 bases per case, I could weigh them as before and store them as say 200g per base, but it seems more logical to write `1 case = 16 bases`, then use `1 base` inside the recipe so that the calculation engine can figure out the correct conversion rate to calculate your cost per ingredient.
 
