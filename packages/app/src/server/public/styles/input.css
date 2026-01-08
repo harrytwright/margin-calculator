@@ -4,9 +4,23 @@
 
 /* Custom animations and styles */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-  20%, 40%, 60%, 80% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
 }
 
 /* Guided Tour Styles */
@@ -28,8 +42,13 @@
 }
 
 @keyframes tour-pulse {
-  0%, 100% { box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.7); }
-  50% { box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.75); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.75);
+  }
 }
 
 @keyframes tour-fade-in {
