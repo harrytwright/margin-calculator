@@ -12,9 +12,13 @@ yarn-error.log*
 
 .env
 .idea
-app
 dist
 coverage
 
 # Parcel build cache
 .parcel-cache
+
+### Turbo template
+# Turborepo task cache
+.turbo
+
