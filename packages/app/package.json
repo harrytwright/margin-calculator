@@ -1,0 +1,48 @@
+{
+  "name": "@menubook/app",
+  "version": "0.1.0",
+  "description": "Web server and API for Menu Book",
+  "main": "dist/server/index.js",
+  "types": "dist/server/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/server/index.d.ts",
+      "default": "./dist/server/index.js"
+    }
+  },
+  "scripts": {
+    "build": "npm run build:css && tsc -p tsconfig.build.json && npm run postbuild",
+    "build:css": "tailwindcss -i ./src/server/public/styles/input.css -o ./src/server/public/styles/output.css --minify",
+    "postbuild": "cp -r src/server/public dist/server/ && cp -r src/server/views dist/server/",
+    "dev": "concurrently \"npm run build:css:watch\" \"tsc -w -p tsconfig.build.json\"",
+    "build:css:watch": "tailwindcss -i ./src/server/public/styles/input.css -o ./src/server/public/styles/output.css --watch",
+    "test": "jest",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@menubook/core": "workspace:*",
+    "@harrytwright/logger": "^3.2.0-beta.2",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "htmx.org": "^2.0.8",
+    "kysely": "^0.28.7",
+    "open": "^10.2.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.7.0",
+    "concurrently": "^9.1.2",
+    "daisyui": "^4.12.24",
+    "jest": "^30.2.0",
+    "tailwindcss": "^3.4.18",
+    "ts-jest": "^29.4.4",
+    "typescript": "^5.9.3",
+    "yaml": "^2.8.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

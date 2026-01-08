@@ -1,0 +1,37 @@
+{
+  "name": "@menubook/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for Menu Book",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "margin": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -w -p tsconfig.build.json",
+    "test": "jest --passWithNoTests",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@menubook/app": "workspace:*",
+    "@menubook/core": "workspace:*",
+    "@harrytwright/logger": "^3.2.0-beta.2",
+    "chalk": "4.1.2",
+    "ci-info": "^4.2.0",
+    "commander": "^14.0.1",
+    "ora": "^5.4.1",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.7.0",
+    "@types/prompts": "^2.4.9",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.4",
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "dist"
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "name": "@menubook/core",
+  "version": "0.1.0",
+  "description": "Core business logic for Menu Book - database, services, calculation engine",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./database": {
+      "types": "./dist/datastore/database.d.ts",
+      "default": "./dist/datastore/database.js"
+    },
+    "./services": {
+      "types": "./dist/services/index.d.ts",
+      "default": "./dist/services/index.js"
+    },
+    "./calculator": {
+      "types": "./dist/lib/calculation/calculator.d.ts",
+      "default": "./dist/lib/calculation/calculator.js"
+    },
+    "./schema": {
+      "types": "./dist/schema.d.ts",
+      "default": "./dist/schema.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "clean": "rm -rf dist",
+    "generate": "prisma-kysely"
+  },
+  "dependencies": {
+    "@harrytwright/logger": "^3.2.0-beta.2",
+    "@isaacs/ttlcache": "^1.4.1",
+    "@sindresorhus/slugify": "^2.2.1",
+    "archiver": "^7.0.1",
+    "better-sqlite3": "^12.4.1",
+    "chokidar": "^4.0.3",
+    "convert-units": "^3.0.0-beta.8",
+    "csv-stringify": "^6.6.0",
+    "kysely": "^0.28.7",
+    "lodash.get": "^4.4.2",
+    "lodash.isdate": "^4.0.1",
+    "lodash.isempty": "^4.4.0",
+    "lodash.isplainobject": "^4.0.6",
+    "pluralize": "^8.0.0",
+    "strftime": "^0.10.3",
+    "toml": "^3.0.0",
+    "yaml": "^2.8.1",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/archiver": "^7.0.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/jest": "^30.0.0",
+    "@types/lodash.get": "^4.4.9",
+    "@types/lodash.isdate": "^4.0.9",
+    "@types/lodash.isempty": "^4.4.9",
+    "@types/lodash.isplainobject": "^4.0.9",
+    "@types/node": "^24.7.0",
+    "@types/pluralize": "^0.0.33",
+    "@types/strftime": "^0.9.8",
+    "jest": "^30.2.0",
+    "prisma": "^6.16.3",
+    "prisma-kysely": "^2.2.0",
+    "ts-jest": "^29.4.4",
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "dist",
+    "prisma"
+  ]
+}

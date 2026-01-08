@@ -1,8 +1,0 @@
-object: ingredient
-data:
-  name: Test Ingredient
-  category: test-category
-  purchase:
-    unit: 1kg
-    cost: 5.99
-    vat: false
