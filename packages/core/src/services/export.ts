@@ -1,8 +1,7 @@
 import { stringify } from 'csv-stringify/sync'
-import { Kysely } from 'kysely'
 import YAML from 'yaml'
 
-import type { DB } from '../datastore/types'
+import type { DatabaseContext } from '../datastore/context'
 import { Calculator } from '../lib/calculation/calculator'
 import { IngredientService } from './ingredient'
 import { RecipeService } from './recipe'
@@ -14,12 +13,16 @@ export interface ExportOptions {
 
 export class ExportService {
   constructor(
-    private database: Kysely<DB>,
+    private context: DatabaseContext,
     private supplier: SupplierService,
     private ingredient: IngredientService,
     private recipe: RecipeService,
     private calculator: Calculator
   ) {}
+
+  private get database() {
+    return this.context.db
+  }
 
   /**
    * Export a single supplier to YAML format

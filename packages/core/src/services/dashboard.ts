@@ -1,5 +1,4 @@
-import type { Kysely } from 'kysely'
-import type { DB } from '../datastore/types'
+import type { DatabaseContext } from '../datastore/context'
 import { Calculator } from '../lib/calculation/calculator'
 import type { ConfigService } from './config'
 import type { IngredientService } from './ingredient'
@@ -31,11 +30,15 @@ export class DashboardService {
   private readonly CACHE_TTL = 5 * 60 * 1000 // 5 minutes in milliseconds
 
   constructor(
-    private database: Kysely<DB>,
+    private context: DatabaseContext,
     private recipeService: RecipeService,
     private ingredientService: IngredientService,
     private configService: ConfigService
   ) {}
+
+  private get database() {
+    return this.context.db
+  }
 
   /**
    * Invalidate the cache to force recalculation on next request

@@ -2,35 +2,34 @@ import * as fs from 'fs/promises'
 import * as os from 'os'
 import * as path from 'path'
 
-import Database from 'better-sqlite3'
-import { Kysely, SqliteDialect } from 'kysely'
+import {
+  createDatabase,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+} from '@menubook/sqlite'
 
-import { migrate } from '../../datastore/database'
-import { DB } from '../../datastore/types'
+import type { DatabaseContext } from '../../datastore/context'
 import { FileWriter } from '../file-writer'
 import { Importer } from '../importer'
 
 describe('FileWriter integration', () => {
   let tempDir: string
-  let db: Kysely<DB>
+  let context: DatabaseContext
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'file-writer-int-'))
-    db = new Kysely<DB>({
-      dialect: new SqliteDialect({
-        database: new Database(':memory:'),
-      }),
-    })
+    const db = createDatabase(':memory:')
+    await migrate(db)
 
-    await migrate.call(
+    context = {
       db,
-      'up',
-      path.join(__dirname, '../../datastore/migrations')
-    )
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
   })
 
   afterEach(async () => {
-    await db.destroy()
+    await context.db.destroy()
     await fs.rm(tempDir, { recursive: true, force: true })
   })
 
@@ -47,7 +46,7 @@ describe('FileWriter integration', () => {
       tempDir
     )
 
-    const importer = new Importer(db, {
+    const importer = new Importer(context, {
       importOnly: true,
       dataDir: tempDir,
     })

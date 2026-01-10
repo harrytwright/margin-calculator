@@ -56,11 +56,11 @@ export function createApiRouter(config: ServerConfig): Router {
     },
     storage
   )
-  const validator = new Validator(config.database)
+  const validator = new Validator(config.database.db)
 
   router.get('/suppliers', async (_req, res) => {
     try {
-      const suppliers = await config.database
+      const suppliers = await config.database.db
         .selectFrom('Supplier')
         .select(['slug', 'name'])
         .orderBy('name')
@@ -114,7 +114,7 @@ export function createApiRouter(config: ServerConfig): Router {
 
   router.get('/ingredients', async (_req, res) => {
     try {
-      const ingredients = await config.database
+      const ingredients = await config.database.db
         .selectFrom('Ingredient')
         .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
         .select((eb) => [
@@ -408,7 +408,7 @@ export function createApiRouter(config: ServerConfig): Router {
   // GET /api/recipes - List all recipes
   router.get('/recipes', async (req, res) => {
     try {
-      const recipes = await config.database
+      const recipes = await config.database.db
         .selectFrom('Recipe')
         .select([
           'id',
@@ -473,7 +473,7 @@ export function createApiRouter(config: ServerConfig): Router {
   // GET /api/report - Calculate all recipes
   router.get('/report', async (req, res) => {
     try {
-      const allRecipes = await config.database
+      const allRecipes = await config.database.db
         .selectFrom('Recipe')
         .select('slug')
         .execute()

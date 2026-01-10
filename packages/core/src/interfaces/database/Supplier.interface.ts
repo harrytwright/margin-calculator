@@ -10,7 +10,7 @@
  * */
 
 import type { Insertable, Selectable, Updateable } from 'kysely'
-import type { Supplier as supplier } from '../../datastore/types.ts'
+import type { Supplier as supplier } from '@menubook/types'
 
 export type Supplier = Selectable<supplier>
 export type NewSupplier = Insertable<supplier>

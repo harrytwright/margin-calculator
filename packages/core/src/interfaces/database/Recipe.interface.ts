@@ -10,7 +10,7 @@
  * */
 
 import type { Insertable, Selectable, Updateable } from 'kysely'
-import type { Recipe as recipe } from '../../datastore/types.ts'
+import type { Recipe as recipe } from '@menubook/types'
 
 export type Recipe = Selectable<recipe>
 export type NewRecipe = Insertable<recipe>

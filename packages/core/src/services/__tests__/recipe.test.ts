@@ -1,10 +1,11 @@
-import path from 'path'
+import {
+  createDatabase,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+} from '@menubook/sqlite'
 
-import Database from 'better-sqlite3'
-import { Kysely, SqliteDialect } from 'kysely'
-
-import { migrate } from '../../datastore/database'
-import { DB } from '../../datastore/types'
+import type { DatabaseContext } from '../../datastore/context'
 import { Importer } from '../../lib/importer'
 import { RecipeResolvedImportData } from '../../schema'
 import { ConfigService } from '../config'
@@ -24,7 +25,7 @@ jest.mock('../config', () => {
 })
 
 describe('RecipeService', () => {
-  let db: Kysely<DB>
+  let context: DatabaseContext
   let service: RecipeService
   let ingredientService: IngredientService
   let supplierService: SupplierService
@@ -34,32 +35,28 @@ describe('RecipeService', () => {
   let cheeseId: number
 
   beforeEach(async () => {
-    db = new Kysely<DB>({
-      dialect: new SqliteDialect({
-        database: new Database(':memory:'),
-      }),
-    })
+    const db = createDatabase(':memory:')
+    await migrate(db)
 
-    await migrate.call(
+    context = {
       db,
-      'up',
-      path.join(__dirname, '../../datastore/migrations')
-    )
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
     configService = new ConfigService('')
-    supplierService = new SupplierService(db)
-    ingredientService = new IngredientService(db, supplierService)
-    service = new RecipeService(db, ingredientService, configService)
+    supplierService = new SupplierService(context)
+    ingredientService = new IngredientService(context, supplierService)
+    service = new RecipeService(context, ingredientService, configService)
 
     // Create test supplier and ingredients
-    const supplier = await db
+    const supplier = await context.db
       .insertInto('Supplier')
       .values({ slug: 'asda', name: 'Asda' })
       .returning('id')
       .executeTakeFirst()
     supplierId = supplier!.id
 
-    const ham = await db
+    const ham = await context.db
       .insertInto('Ingredient')
       .values({
         slug: 'ham',
@@ -74,7 +71,7 @@ describe('RecipeService', () => {
       .executeTakeFirst()
     hamId = ham!.id
 
-    const cheese = await db
+    const cheese = await context.db
       .insertInto('Ingredient')
       .values({
         slug: 'cheese',
@@ -91,7 +88,7 @@ describe('RecipeService', () => {
   })
 
   afterEach(async () => {
-    await db.destroy()
+    await context.db.destroy()
   })
 
   describe('exists', () => {
@@ -101,7 +98,7 @@ describe('RecipeService', () => {
     })
 
     test('should return true for existing recipe', async () => {
-      await db
+      await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -122,7 +119,7 @@ describe('RecipeService', () => {
     })
 
     test('should return recipe data with ingredients', async () => {
-      const recipe = await db
+      const recipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -137,7 +134,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('RecipeIngredients')
         .values([
           {
@@ -182,7 +179,7 @@ describe('RecipeService', () => {
     })
 
     test('should return recipe with parent reference', async () => {
-      const parent = await db
+      const parent = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'base-pizza',
@@ -192,7 +189,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('Recipe')
         .values({
           slug: 'margherita',
@@ -207,7 +204,7 @@ describe('RecipeService', () => {
     })
 
     test('should correctly identify ingredient types', async () => {
-      const recipe = await db
+      const recipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -217,7 +214,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('RecipeIngredients')
         .values([
           {
@@ -262,7 +259,7 @@ describe('RecipeService', () => {
     })
 
     test('should correctly identify sub-recipe types', async () => {
-      const subRecipe = await db
+      const subRecipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'pizza-sauce',
@@ -272,7 +269,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      const recipe = await db
+      const recipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'margherita',
@@ -282,7 +279,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('RecipeIngredients')
         .values({
           recipeId: recipe!.id,
@@ -311,7 +308,7 @@ describe('RecipeService', () => {
     })
 
     test('should handle mixed ingredient and sub-recipe types', async () => {
-      const subRecipe = await db
+      const subRecipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'pizza-sauce',
@@ -321,7 +318,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      const recipe = await db
+      const recipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'margherita',
@@ -331,7 +328,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('RecipeIngredients')
         .values([
           {
@@ -401,7 +398,7 @@ describe('RecipeService', () => {
     })
 
     test('should return empty ingredients array when withIngredients is false', async () => {
-      const recipe = await db
+      const recipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -411,7 +408,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('RecipeIngredients')
         .values({
           recipeId: recipe!.id,
@@ -444,7 +441,7 @@ describe('RecipeService', () => {
       const recipeId = await service.upsert('ham-sandwich', data)
       expect(recipeId).toBeDefined()
 
-      const recipe = await db
+      const recipe = await context.db
         .selectFrom('Recipe')
         .selectAll()
         .where('id', '=', recipeId!)
@@ -460,7 +457,7 @@ describe('RecipeService', () => {
     })
 
     test('should update existing recipe', async () => {
-      await db
+      await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -482,7 +479,7 @@ describe('RecipeService', () => {
 
       await service.upsert('ham-sandwich', data)
 
-      const recipe = await db
+      const recipe = await context.db
         .selectFrom('Recipe')
         .selectAll()
         .where('slug', '=', 'ham-sandwich')
@@ -495,7 +492,7 @@ describe('RecipeService', () => {
     })
 
     test('should inherit price from parent recipe', async () => {
-      const parent = await db
+      const parent = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'base-pizza',
@@ -517,7 +514,7 @@ describe('RecipeService', () => {
 
       const recipeId = await service.upsert('margherita', data)
 
-      const recipe = await db
+      const recipe = await context.db
         .selectFrom('Recipe')
         .selectAll()
         .where('id', '=', recipeId!)
@@ -542,7 +539,7 @@ describe('RecipeService', () => {
 
       const recipeId = await service.upsert('ham-sandwich', data)
 
-      const recipe = await db
+      const recipe = await context.db
         .selectFrom('Recipe')
         .selectAll()
         .where('id', '=', recipeId!)
@@ -567,7 +564,7 @@ describe('RecipeService', () => {
 
       const recipeId = await service.upsert('pizza-sauce', data)
 
-      const recipe = await db
+      const recipe = await context.db
         .selectFrom('Recipe')
         .selectAll()
         .where('id', '=', recipeId!)
@@ -597,7 +594,7 @@ describe('RecipeService', () => {
     let recipeId: number
 
     beforeEach(async () => {
-      const recipe = await db
+      const recipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -624,7 +621,7 @@ describe('RecipeService', () => {
 
       await service.upsertIngredients(recipeId, data)
 
-      const ingredients = await db
+      const ingredients = await context.db
         .selectFrom('RecipeIngredients')
         .selectAll()
         .where('recipeId', '=', recipeId)
@@ -641,7 +638,7 @@ describe('RecipeService', () => {
 
     test('should replace existing ingredients', async () => {
       // Add initial ingredients
-      await db
+      await context.db
         .insertInto('RecipeIngredients')
         .values({
           recipeId,
@@ -663,7 +660,7 @@ describe('RecipeService', () => {
 
       await service.upsertIngredients(recipeId, data)
 
-      const ingredients = await db
+      const ingredients = await context.db
         .selectFrom('RecipeIngredients')
         .selectAll()
         .where('recipeId', '=', recipeId)
@@ -677,7 +674,7 @@ describe('RecipeService', () => {
     })
 
     test('should handle sub-recipe ingredients', async () => {
-      const subRecipe = await db
+      const subRecipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'pizza-sauce',
@@ -701,7 +698,7 @@ describe('RecipeService', () => {
 
       await service.upsertIngredients(recipeId, data)
 
-      const ingredients = await db
+      const ingredients = await context.db
         .selectFrom('RecipeIngredients')
         .selectAll()
         .where('recipeId', '=', recipeId)
@@ -742,7 +739,7 @@ describe('RecipeService', () => {
 
       await service.upsertIngredients(recipeId, data)
 
-      const ingredients = await db
+      const ingredients = await context.db
         .selectFrom('RecipeIngredients')
         .selectAll()
         .where('recipeId', '=', recipeId)
@@ -759,7 +756,7 @@ describe('RecipeService', () => {
     })
 
     test('should return true and delete existing recipe', async () => {
-      await db
+      await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -776,7 +773,7 @@ describe('RecipeService', () => {
     })
 
     test('should cascade delete recipe ingredients', async () => {
-      const recipe = await db
+      const recipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -786,7 +783,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('RecipeIngredients')
         .values({
           recipeId: recipe!.id,
@@ -797,7 +794,7 @@ describe('RecipeService', () => {
 
       await service.delete('ham-sandwich')
 
-      const ingredients = await db
+      const ingredients = await context.db
         .selectFrom('RecipeIngredients')
         .selectAll()
         .where('recipeId', '=', recipe!.id)
@@ -811,7 +808,7 @@ describe('RecipeService', () => {
     let importer: Importer
 
     beforeEach(() => {
-      importer = new Importer(db)
+      importer = new Importer(context)
     })
 
     test('should return "created" for new recipe', async () => {
@@ -844,7 +841,7 @@ describe('RecipeService', () => {
     })
 
     test('should return "upserted" for updated recipe', async () => {
-      await db
+      await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -869,7 +866,7 @@ describe('RecipeService', () => {
     })
 
     test('should return "ignored" when no changes detected', async () => {
-      const recipe = await db
+      const recipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -920,7 +917,7 @@ describe('RecipeService', () => {
     })
 
     test('should throw error when changing parent on existing recipe', async () => {
-      const parent1 = await db
+      const parent1 = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'base-pizza-1',
@@ -930,7 +927,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      const parent2 = await db
+      const parent2 = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'base-pizza-2',
@@ -940,7 +937,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('Recipe')
         .values({
           slug: 'margherita',
@@ -966,7 +963,7 @@ describe('RecipeService', () => {
     })
 
     test('should detect changes in ingredients', async () => {
-      const recipe = await db
+      const recipe = await context.db
         .insertInto('Recipe')
         .values({
           slug: 'ham-sandwich',
@@ -976,7 +973,7 @@ describe('RecipeService', () => {
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('RecipeIngredients')
         .values({
           recipeId: recipe!.id,

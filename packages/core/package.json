@@ -9,10 +9,6 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./database": {
-      "types": "./dist/datastore/database.d.ts",
-      "default": "./dist/datastore/database.js"
-    },
     "./services": {
       "types": "./dist/services/index.d.ts",
       "default": "./dist/services/index.js"
@@ -35,15 +31,14 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "clean": "rm -rf dist",
-    "generate": "prisma-kysely"
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@harrytwright/logger": "^3.2.0-beta.2",
     "@isaacs/ttlcache": "^1.4.1",
+    "@menubook/types": "workspace:*",
     "@sindresorhus/slugify": "^2.2.1",
     "archiver": "^7.0.1",
-    "better-sqlite3": "^12.4.1",
     "chokidar": "^4.0.3",
     "convert-units": "^3.0.0-beta.8",
     "csv-stringify": "^6.6.0",
@@ -59,8 +54,8 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@menubook/sqlite": "workspace:*",
     "@types/archiver": "^7.0.0",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^30.0.0",
     "@types/lodash.get": "^4.4.9",
     "@types/lodash.isdate": "^4.0.9",
@@ -70,13 +65,22 @@
     "@types/pluralize": "^0.0.33",
     "@types/strftime": "^0.9.8",
     "jest": "^30.2.0",
-    "prisma": "^6.16.3",
-    "prisma-kysely": "^2.2.0",
     "ts-jest": "^29.4.4",
     "typescript": "^5.9.3"
   },
+  "peerDependencies": {
+    "@menubook/sqlite": "workspace:*",
+    "@menubook/postgres": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@menubook/sqlite": {
+      "optional": true
+    },
+    "@menubook/postgres": {
+      "optional": true
+    }
+  },
   "files": [
-    "dist",
-    "prisma"
+    "dist"
   ]
 }

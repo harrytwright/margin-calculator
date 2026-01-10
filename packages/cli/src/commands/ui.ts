@@ -4,7 +4,8 @@ import log from '@harrytwright/logger'
 import { Command } from 'commander'
 
 import { startServer } from '@menubook/app'
-import { database } from '@menubook/core'
+import type { DatabaseContext } from '@menubook/core'
+import { createDatabase, jsonArrayFrom, jsonObjectFrom } from '@menubook/sqlite'
 import { isInitialised } from '../utils/is-initialised'
 
 export const ui = new Command()
@@ -70,12 +71,16 @@ export const ui = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(locationDir, dbName))
+    const db = createDatabase(path.join(locationDir, dbName))
+    const context: DatabaseContext = {
+      db,
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
     try {
       const server = await startServer({
         port: parseInt(port, 10),
-        database: db,
+        database: context,
         locationDir,
         workspaceDir,
         storageMode: finalStorageMode,

@@ -1,12 +1,27 @@
-// Database
+// Database adapter
 export {
-  database,
-  destroy,
-  getMigrationsPath,
-  migrate,
-  seed,
-} from './datastore/database'
-export type { DB } from './datastore/types'
+  detectAdapter,
+  getAdapter,
+  getRegisteredAdapters,
+  hasAdapter,
+  registerAdapter,
+} from './datastore/adapter'
+export type { DatabaseAdapter } from './datastore/adapter'
+
+// Database context
+export type { DatabaseContext, JsonHelpers } from './datastore/context'
+
+// Re-export types from @menubook/types for convenience
+export type {
+  DB,
+  Generated,
+  Ingredient,
+  Recipe,
+  RecipeIngredients,
+  Supplier,
+  Timestamp,
+} from '@menubook/types'
+export { RecipeClass, RecipeStage } from '@menubook/types'
 
 // Services
 export {

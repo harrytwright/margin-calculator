@@ -95,7 +95,7 @@ export function createAppRouter(config: ServerConfig): Router {
     try {
       const search = (req.query.search as string) || ''
 
-      let query = config.database.selectFrom('Supplier').selectAll()
+      let query = config.database.db.selectFrom('Supplier').selectAll()
 
       // Apply search filter
       if (search) {
@@ -110,7 +110,7 @@ export function createAppRouter(config: ServerConfig): Router {
       const suppliers = await query.execute()
 
       // Get ingredient counts for all suppliers in ONE query
-      const counts = await config.database
+      const counts = await config.database.db
         .selectFrom('Ingredient')
         .select((eb) => ['supplierId', eb.fn.count('id').as('count')])
         .groupBy('supplierId')
@@ -167,7 +167,7 @@ export function createAppRouter(config: ServerConfig): Router {
 
   router.get('/suppliers/:slug/edit', async (req, res) => {
     try {
-      const supplier = await config.database
+      const supplier = await config.database.db
         .selectFrom('Supplier')
         .selectAll()
         .where('slug', '=', req.params.slug)
@@ -191,7 +191,7 @@ export function createAppRouter(config: ServerConfig): Router {
       const { name, contactName, contactEmail, contactPhone, notes } = req.body
       const slug = slugify(name)
 
-      await config.database
+      await config.database.db
         .insertInto('Supplier')
         .values({
           slug,
@@ -213,12 +213,12 @@ export function createAppRouter(config: ServerConfig): Router {
         .executeTakeFirst()
 
       // Return updated suppliers list
-      const suppliers = await config.database
+      const suppliers = await config.database.db
         .selectFrom('Supplier')
         .selectAll()
         .execute()
 
-      const counts = await config.database
+      const counts = await config.database.db
         .selectFrom('Ingredient')
         .select((eb) => ['supplierId', eb.fn.count('id').as('count')])
         .groupBy('supplierId')
@@ -246,7 +246,7 @@ export function createAppRouter(config: ServerConfig): Router {
     try {
       const { name, contactName, contactEmail, contactPhone, notes } = req.body
 
-      await config.database
+      await config.database.db
         .updateTable('Supplier')
         .set({
           name,
@@ -259,12 +259,12 @@ export function createAppRouter(config: ServerConfig): Router {
         .executeTakeFirst()
 
       // Return updated suppliers list
-      const suppliers = await config.database
+      const suppliers = await config.database.db
         .selectFrom('Supplier')
         .selectAll()
         .execute()
 
-      const counts = await config.database
+      const counts = await config.database.db
         .selectFrom('Ingredient')
         .select((eb) => ['supplierId', eb.fn.count('id').as('count')])
         .groupBy('supplierId')
@@ -290,18 +290,18 @@ export function createAppRouter(config: ServerConfig): Router {
   // Delete supplier
   router.delete('/suppliers/:slug', async (req, res) => {
     try {
-      await config.database
+      await config.database.db
         .deleteFrom('Supplier')
         .where('slug', '=', req.params.slug)
         .execute()
 
       // Return updated suppliers list
-      const suppliers = await config.database
+      const suppliers = await config.database.db
         .selectFrom('Supplier')
         .selectAll()
         .execute()
 
-      const counts = await config.database
+      const counts = await config.database.db
         .selectFrom('Ingredient')
         .select((eb) => ['supplierId', eb.fn.count('id').as('count')])
         .groupBy('supplierId')
@@ -331,7 +331,7 @@ export function createAppRouter(config: ServerConfig): Router {
       const filterCategory = (req.query['filter-category'] as string) || ''
       const filterSupplier = (req.query['filter-supplier'] as string) || ''
 
-      let query = config.database
+      let query = config.database.db
         .selectFrom('Ingredient')
         .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
         .select([
@@ -373,13 +373,13 @@ export function createAppRouter(config: ServerConfig): Router {
       const ingredients = await query.execute()
 
       // Get unique categories and suppliers for filters
-      const categories = await config.database
+      const categories = await config.database.db
         .selectFrom('Ingredient')
         .select('category')
         .distinct()
         .execute()
 
-      const suppliers = await config.database
+      const suppliers = await config.database.db
         .selectFrom('Supplier')
         .select(['id', 'name'])
         .execute()
@@ -422,7 +422,7 @@ export function createAppRouter(config: ServerConfig): Router {
   // Ingredient form routes
   router.get('/ingredients/new', async (req, res) => {
     try {
-      const suppliers = await config.database
+      const suppliers = await config.database.db
         .selectFrom('Supplier')
         .select(['id', 'name'])
         .execute()
@@ -439,7 +439,7 @@ export function createAppRouter(config: ServerConfig): Router {
 
   router.get('/ingredients/:slug/edit', async (req, res) => {
     try {
-      const ingredient = await config.database
+      const ingredient = await config.database.db
         .selectFrom('Ingredient')
         .selectAll()
         .where('slug', '=', req.params.slug)
@@ -449,7 +449,7 @@ export function createAppRouter(config: ServerConfig): Router {
         return res.status(404).send('Ingredient not found')
       }
 
-      const suppliers = await config.database
+      const suppliers = await config.database.db
         .selectFrom('Supplier')
         .select(['id', 'name'])
         .execute()
@@ -479,7 +479,7 @@ export function createAppRouter(config: ServerConfig): Router {
       } = req.body
       const slug = slugify(name)
 
-      await config.database
+      await config.database.db
         .insertInto('Ingredient')
         .values({
           slug,
@@ -507,7 +507,7 @@ export function createAppRouter(config: ServerConfig): Router {
         .executeTakeFirst()
 
       // Return updated ingredients list
-      const ingredients = await config.database
+      const ingredients = await config.database.db
         .selectFrom('Ingredient')
         .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
         .select([
@@ -543,7 +543,7 @@ export function createAppRouter(config: ServerConfig): Router {
         notes,
       } = req.body
 
-      await config.database
+      await config.database.db
         .updateTable('Ingredient')
         .set({
           name,
@@ -558,7 +558,7 @@ export function createAppRouter(config: ServerConfig): Router {
         .executeTakeFirst()
 
       // Return updated ingredients list
-      const ingredients = await config.database
+      const ingredients = await config.database.db
         .selectFrom('Ingredient')
         .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
         .select([
@@ -584,13 +584,13 @@ export function createAppRouter(config: ServerConfig): Router {
   // Delete ingredient
   router.delete('/ingredients/:slug', async (req, res) => {
     try {
-      await config.database
+      await config.database.db
         .deleteFrom('Ingredient')
         .where('slug', '=', req.params.slug)
         .execute()
 
       // Return updated ingredients list
-      const ingredients = await config.database
+      const ingredients = await config.database.db
         .selectFrom('Ingredient')
         .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
         .select([
@@ -620,7 +620,7 @@ export function createAppRouter(config: ServerConfig): Router {
       const filterClass = (req.query['filter-class'] as string) || ''
       const filterCategory = (req.query['filter-category'] as string) || ''
 
-      let query = config.database.selectFrom('Recipe').selectAll()
+      let query = config.database.db.selectFrom('Recipe').selectAll()
 
       // Apply search filter
       if (search) {
@@ -650,7 +650,7 @@ export function createAppRouter(config: ServerConfig): Router {
       const recipes = await query.execute()
 
       // Get unique categories for filter dropdown
-      const allRecipes = await config.database
+      const allRecipes = await config.database.db
         .selectFrom('Recipe')
         .select('category')
         .distinct()
@@ -702,7 +702,7 @@ export function createAppRouter(config: ServerConfig): Router {
 
   router.get('/recipes/:slug/edit', async (req, res) => {
     try {
-      const recipe = await config.database
+      const recipe = await config.database.db
         .selectFrom('Recipe')
         .selectAll()
         .where('slug', '=', req.params.slug)
@@ -737,7 +737,7 @@ export function createAppRouter(config: ServerConfig): Router {
       } = req.body
       const slug = slugify(name)
 
-      await config.database
+      await config.database.db
         .insertInto('Recipe')
         .values({
           slug,
@@ -768,7 +768,7 @@ export function createAppRouter(config: ServerConfig): Router {
         .executeTakeFirst()
 
       // Return updated recipes list
-      const recipes = await config.database
+      const recipes = await config.database.db
         .selectFrom('Recipe')
         .selectAll()
         .execute()
@@ -795,7 +795,7 @@ export function createAppRouter(config: ServerConfig): Router {
         yieldUnit,
       } = req.body
 
-      await config.database
+      await config.database.db
         .updateTable('Recipe')
         .set({
           name,
@@ -812,7 +812,7 @@ export function createAppRouter(config: ServerConfig): Router {
         .executeTakeFirst()
 
       // Return updated recipes list
-      const recipes = await config.database
+      const recipes = await config.database.db
         .selectFrom('Recipe')
         .selectAll()
         .execute()
@@ -827,13 +827,13 @@ export function createAppRouter(config: ServerConfig): Router {
   // Delete recipe
   router.delete('/recipes/:slug', async (req, res) => {
     try {
-      await config.database
+      await config.database.db
         .deleteFrom('Recipe')
         .where('slug', '=', req.params.slug)
         .execute()
 
       // Return updated recipes list
-      const recipes = await config.database
+      const recipes = await config.database.db
         .selectFrom('Recipe')
         .selectAll()
         .execute()

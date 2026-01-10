@@ -1,12 +1,14 @@
-import { Kysely } from 'kysely'
-
-import type { DB } from '../datastore/types'
+import type { DatabaseContext } from '../datastore/context'
 import { Importer, type ImportOutcome } from '../lib/importer'
 import type { SupplierImportData, SupplierResolvedImportData } from '../schema'
 import { hasChanges } from '../utils/has-changes'
 
 export class SupplierService {
-  constructor(private database: Kysely<DB>) {}
+  constructor(private context: DatabaseContext) {}
+
+  private get database() {
+    return this.context.db
+  }
 
   async exists(slug: string) {
     return !!(await this.database

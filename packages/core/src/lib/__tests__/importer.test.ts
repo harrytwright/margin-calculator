@@ -2,11 +2,14 @@ import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
 
-import Database from 'better-sqlite3'
-import { Kysely, SqliteDialect } from 'kysely'
+import {
+  createDatabase,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+} from '@menubook/sqlite'
 
-import { migrate } from '../../datastore/database'
-import { DB } from '../../datastore/types'
+import type { DatabaseContext } from '../../datastore/context'
 import {
   IngredientResolvedImportData,
   RecipeResolvedImportData,
@@ -34,35 +37,31 @@ jest.mock('../../utils/slugify', () => ({
 }))
 
 describe('Importer', () => {
-  let db: Kysely<DB>
+  let context: DatabaseContext
   let tmpDir: string
 
   beforeEach(async () => {
     // Create in-memory database for testing
-    db = new Kysely<DB>({
-      dialect: new SqliteDialect({
-        database: new Database(':memory:'),
-      }),
-    })
+    const db = createDatabase(':memory:')
+    await migrate(db)
 
-    await migrate.call(
+    context = {
       db,
-      'up',
-      path.join(__dirname, '../../datastore/migrations')
-    )
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
     // Create a temporary directory for test files
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'margin-test-'))
   })
 
   afterEach(async () => {
-    await db.destroy()
+    await context.db.destroy()
     await fs.rm(tmpDir, { recursive: true, force: true })
   })
 
   describe('Basic Functionality', () => {
     test('should register and retrieve processors', () => {
-      const importer = new Importer(db)
+      const importer = new Importer(context)
 
       const mockProcessor = jest.fn()
       importer.addProcessor('supplier', mockProcessor)
@@ -73,7 +72,7 @@ describe('Importer', () => {
     })
 
     test('should allow method chaining when adding processors', () => {
-      const importer = new Importer(db)
+      const importer = new Importer(context)
 
       const result = importer
         .addProcessor('supplier', jest.fn())
@@ -85,7 +84,7 @@ describe('Importer', () => {
     })
 
     test('should provide slugify helper', async () => {
-      const importer = new Importer(db)
+      const importer = new Importer(context)
 
       const slug = await importer.slugify('Test Supplier Name')
       expect(slug).toBe('test-supplier-name')
@@ -95,7 +94,7 @@ describe('Importer', () => {
       const mockProcessor1 = jest.fn()
       const mockProcessor2 = jest.fn()
 
-      const importer = new Importer(db, {
+      const importer = new Importer(context, {
         processors: [
           ['supplier', mockProcessor1],
           ['ingredient', mockProcessor2],
@@ -113,7 +112,7 @@ describe('Importer', () => {
         processor: jest.fn().mockResolvedValue('created'),
       }
 
-      const importer = new Importer(db, {
+      const importer = new Importer(context, {
         processors: [['supplier', mockService]],
       })
 
@@ -140,8 +139,8 @@ describe('Importer', () => {
 
   describe('File Import', () => {
     test('should import a simple supplier file', async () => {
-      const importer = new Importer(db)
-      const supplierService = new SupplierService(db)
+      const importer = new Importer(context)
+      const supplierService = new SupplierService(context)
 
       // Register supplier processor (receives resolved data with slug already set)
       importer.addProcessor<SupplierResolvedImportData>(
@@ -169,7 +168,7 @@ data:
       expect(stats.failed).toBe(0)
 
       // Verify database
-      const supplier = await db
+      const supplier = await context.db
         .selectFrom('Supplier')
         .selectAll()
         .executeTakeFirst()
@@ -178,11 +177,11 @@ data:
     })
 
     test('should track upserted items', async () => {
-      const importer = new Importer(db)
-      const supplierService = new SupplierService(db)
+      const importer = new Importer(context)
+      const supplierService = new SupplierService(context)
 
       // Insert initial supplier with matching slug
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'asda-new-name', name: 'Asda Old Name' })
         .execute()
@@ -213,7 +212,7 @@ data:
       expect(stats.created).toBe(0)
 
       // Verify updated
-      const supplier = await db
+      const supplier = await context.db
         .selectFrom('Supplier')
         .selectAll()
         .executeTakeFirst()
@@ -221,11 +220,11 @@ data:
     })
 
     test('should track ignored items when no changes', async () => {
-      const importer = new Importer(db)
-      const supplierService = new SupplierService(db)
+      const importer = new Importer(context)
+      const supplierService = new SupplierService(context)
 
       // Insert initial supplier
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'asda', name: 'Asda' })
         .execute()
@@ -267,7 +266,7 @@ data:
     })
 
     test('should handle errors gracefully in default mode', async () => {
-      const importer = new Importer(db)
+      const importer = new Importer(context)
 
       // Register processor that throws
       importer.addProcessor<SupplierResolvedImportData>(
@@ -297,7 +296,7 @@ data:
     })
 
     test('should throw in fail-fast mode', async () => {
-      const importer = new Importer(db, { failFast: true })
+      const importer = new Importer(context, { failFast: true })
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
@@ -323,7 +322,7 @@ data:
 
   describe('Slug mapping & import-only mode', () => {
     test('should expose slug to path mapping after import', async () => {
-      const importer = new Importer(db)
+      const importer = new Importer(context)
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
         async function () {
@@ -350,7 +349,7 @@ data:
 
     test('should resolve data without touching database in import-only mode', async () => {
       const processor = jest.fn()
-      const importer = new Importer(db, { importOnly: true })
+      const importer = new Importer(context, { importOnly: true })
       importer.addProcessor<SupplierResolvedImportData>('supplier', processor)
 
       const supplierFile = path.join(tmpDir, 'supplier.yaml')
@@ -376,12 +375,15 @@ data:
       expect(entry?.path).toBe(supplierFile)
       expect(entry?.data.slug).toBe('test-supplier')
 
-      const suppliers = await db.selectFrom('Supplier').selectAll().execute()
+      const suppliers = await context.db
+        .selectFrom('Supplier')
+        .selectAll()
+        .execute()
       expect(suppliers).toHaveLength(0)
     })
 
     test('should not return resolved map when not in import-only mode', async () => {
-      const importer = new Importer(db)
+      const importer = new Importer(context)
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
         async function () {
@@ -405,8 +407,8 @@ data:
 
   describe('Dependency Resolution', () => {
     test('should prevent duplicate imports', async () => {
-      const importer = new Importer(db)
-      const supplierService = new SupplierService(db)
+      const importer = new Importer(context)
+      const supplierService = new SupplierService(context)
 
       let importCount = 0
       importer.addProcessor<SupplierResolvedImportData>(
@@ -439,7 +441,7 @@ data:
   describe('Reference Resolution', () => {
     describe('resolveReferenceToPath', () => {
       test('should resolve absolute (@/) references', () => {
-        const importer = new Importer(db, { dataDir: '/project' })
+        const importer = new Importer(context, { dataDir: '/project' })
 
         const resolved = importer.resolveReferenceToPath(
           '/project/recipes/pizza.yaml',
@@ -450,7 +452,7 @@ data:
       })
 
       test('should resolve relative (./) references', () => {
-        const importer = new Importer(db)
+        const importer = new Importer(context)
 
         const resolved = importer.resolveReferenceToPath(
           '/project/recipes/pizza.yaml',
@@ -461,7 +463,7 @@ data:
       })
 
       test('should resolve parent (../) references', () => {
-        const importer = new Importer(db)
+        const importer = new Importer(context)
 
         const resolved = importer.resolveReferenceToPath(
           '/project/recipes/pizza.yaml',
@@ -472,7 +474,7 @@ data:
       })
 
       test('should return null for slug references', () => {
-        const importer = new Importer(db)
+        const importer = new Importer(context)
 
         const resolved = importer.resolveReferenceToPath(
           '/project/recipes/pizza.yaml',
@@ -483,7 +485,7 @@ data:
       })
 
       test('should use cwd as default project root', () => {
-        const importer = new Importer(db)
+        const importer = new Importer(context)
 
         const resolved = importer.resolveReferenceToPath(
           '/any/file.yaml',
@@ -496,7 +498,7 @@ data:
 
     describe('extractFileDependencies', () => {
       test('should extract recipe extends dependencies', () => {
-        const importer = new Importer(db, {
+        const importer = new Importer(context, {
           dataDir: tmpDir,
           failFast: true,
         })
@@ -521,7 +523,7 @@ data:
       })
 
       test('should extract recipe ingredient path dependencies', () => {
-        const importer = new Importer(db, {
+        const importer = new Importer(context, {
           dataDir: tmpDir,
           failFast: true,
         })
@@ -549,7 +551,7 @@ data:
       })
 
       test('should extract ingredient supplier path dependencies', () => {
-        const importer = new Importer(db, {
+        const importer = new Importer(context, {
           dataDir: tmpDir,
           failFast: true,
         })
@@ -575,7 +577,7 @@ data:
       })
 
       test('should ignore slug references', () => {
-        const importer = new Importer(db)
+        const importer = new Importer(context)
 
         const data = {
           object: 'ingredient',
@@ -600,9 +602,9 @@ data:
 
   describe('Dependency Graph Import', () => {
     test('should auto-import dependencies in correct order', async () => {
-      const importer = new Importer(db, { dataDir: tmpDir, failFast: true })
-      const supplierService = new SupplierService(db)
-      const ingredientService = new IngredientService(db, supplierService)
+      const importer = new Importer(context, { dataDir: tmpDir, failFast: true })
+      const supplierService = new SupplierService(context)
+      const ingredientService = new IngredientService(context, supplierService)
 
       const importOrder: string[] = []
 
@@ -670,8 +672,11 @@ data:
       expect(importOrder).toEqual(['supplier:Asda', 'ingredient:Ham'])
 
       // Verify database
-      const suppliers = await db.selectFrom('Supplier').selectAll().execute()
-      const ingredients = await db
+      const suppliers = await context.db
+        .selectFrom('Supplier')
+        .selectAll()
+        .execute()
+      const ingredients = await context.db
         .selectFrom('Ingredient')
         .selectAll()
         .execute()
@@ -682,9 +687,9 @@ data:
     })
 
     test('should handle complex dependency trees', async () => {
-      const importer = new Importer(db, { dataDir: tmpDir, failFast: true })
-      const supplierService = new SupplierService(db)
-      const ingredientService = new IngredientService(db, supplierService)
+      const importer = new Importer(context, { dataDir: tmpDir, failFast: true })
+      const supplierService = new SupplierService(context)
+      const ingredientService = new IngredientService(context, supplierService)
 
       const importOrder: string[] = []
 
@@ -799,7 +804,7 @@ data:
     })
 
     test('should detect circular dependencies', async () => {
-      const importer = new Importer(db, { dataDir: tmpDir, failFast: true })
+      const importer = new Importer(context, { dataDir: tmpDir, failFast: true })
 
       importer.addProcessor<RecipeResolvedImportData>(
         'recipe',
@@ -849,8 +854,8 @@ data:
 
   describe('Multiple Files', () => {
     test('should import multiple files and aggregate stats', async () => {
-      const importer = new Importer(db)
-      const supplierService = new SupplierService(db)
+      const importer = new Importer(context)
+      const supplierService = new SupplierService(context)
 
       importer.addProcessor<SupplierResolvedImportData>(
         'supplier',
@@ -882,7 +887,10 @@ data:
       expect(stats.created).toBe(3)
       expect(stats.failed).toBe(0)
 
-      const suppliers = await db.selectFrom('Supplier').selectAll().execute()
+      const suppliers = await context.db
+        .selectFrom('Supplier')
+        .selectAll()
+        .execute()
       expect(suppliers).toHaveLength(3)
     })
   })

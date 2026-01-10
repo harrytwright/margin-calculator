@@ -1,6 +1,4 @@
-import { Kysely } from 'kysely'
-
-import type { DB } from '../datastore/types'
+import type { DatabaseContext } from '../datastore/context'
 import type { ImportOutcome } from '../lib/importer'
 import type {
   IngredientImportData,
@@ -13,9 +11,13 @@ import { SupplierService } from './supplier'
 
 export class IngredientService {
   constructor(
-    private database: Kysely<DB>,
+    private context: DatabaseContext,
     private readonly supplier: SupplierService
   ) {}
+
+  private get database() {
+    return this.context.db
+  }
 
   async exists(slug: string) {
     return !!(await this.database

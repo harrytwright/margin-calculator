@@ -2,10 +2,12 @@ import fs from 'fs/promises'
 import path from 'path'
 
 import log from '@harrytwright/logger'
-import { Kysely } from 'kysely'
+import type { Kysely } from 'kysely'
 import yaml from 'yaml'
 
-import { DB } from '../datastore/types'
+import type { DB } from '@menubook/types'
+
+import type { DatabaseContext } from '../datastore/context'
 import {
   ImportData,
   isIngredientImport,
@@ -121,8 +123,13 @@ export class Importer {
   private slugToPath = new Map<string, string>() // slug -> absolutePath
   private resolvedDataCache = new Map<string, ResolvedImportData>() // Cache for faster lookup
 
+  /** @deprecated Use context.db instead */
+  public get database(): Kysely<DB> {
+    return this.context.db
+  }
+
   constructor(
-    public database: Kysely<DB>,
+    public context: DatabaseContext,
     options: ImportOptions = {}
   ) {
     this.options = {

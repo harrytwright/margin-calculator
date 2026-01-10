@@ -6,7 +6,8 @@ import log from '@harrytwright/logger'
 import { Command } from 'commander'
 import prompt from 'prompts'
 
-import { ConfigService, database, migrate } from '@menubook/core'
+import { ConfigService } from '@menubook/core'
+import { createDatabase, migrate } from '@menubook/sqlite'
 import { spin } from '../utils/spinner'
 
 export const initialise = new Command()
@@ -100,9 +101,9 @@ export const initialise = new Command()
     }
 
     // Initialise the database file at location root
-    const db = database(path.join(locationBase, dbPath))
+    const db = createDatabase(path.join(locationBase, dbPath))
 
-    await migrate.call(db, 'up')
+    await migrate(db, 'up')
 
     console.log(
       '\nInitialised margin system.\nLocation: ✔ (%s)\nWorkspace: ✔ (%s)',

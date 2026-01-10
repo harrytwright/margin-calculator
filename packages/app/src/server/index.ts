@@ -2,12 +2,11 @@ import { EventEmitter } from 'events'
 import express, { Express } from 'express'
 import fs from 'fs/promises'
 import { Server } from 'http'
-import { Kysely } from 'kysely'
 import path from 'path'
 
 import log from '@harrytwright/logger'
 
-import type { DB, StorageMode } from '@menubook/core'
+import type { DatabaseContext, StorageMode } from '@menubook/core'
 import {
   ConfigService,
   FileWatcher,
@@ -21,7 +20,7 @@ import { createApiRouter } from './routes/api'
 
 export interface ServerConfig {
   port: number
-  database: Kysely<DB>
+  database: DatabaseContext
   locationDir: string
   workspaceDir: string
   storageMode?: StorageMode

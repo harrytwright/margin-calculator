@@ -6,16 +6,19 @@ import YAML from 'yaml'
 
 import {
   ConfigService,
-  database,
-  destroy,
   FileSystemStorage,
-  getMigrationsPath,
   IngredientService,
-  migrate,
   RecipeService,
-  seed,
   SupplierService,
+  type DatabaseContext,
 } from '@menubook/core'
+import {
+  createDatabase,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+  seed,
+} from '@menubook/sqlite'
 import type { ServerConfig } from '../../index'
 import { EntityPersistence } from '../entity-persistence'
 
@@ -42,28 +45,31 @@ jest.mock('@menubook/core', () => {
 
 describe('EntityPersistence create flow', () => {
   let tempDir: string
-  let dbPath: string
-  let db: ReturnType<typeof database>
+  let context: DatabaseContext
   let persistence: EntityPersistence
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'entity-persistence-'))
-    dbPath = path.join(tempDir, 'test.sqlite')
     const dataDir = path.join(tempDir, 'data')
     await fs.mkdir(dataDir, { recursive: true })
 
-    db = database(dbPath)
-    await migrate.call(db, 'up', getMigrationsPath())
-    await seed.call(db)
+    const db = createDatabase(':memory:')
+    await migrate(db)
+    await seed(db)
+
+    context = {
+      db,
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
     const configService = new ConfigService(tempDir)
-    const supplier = new SupplierService(db)
-    const ingredient = new IngredientService(db, supplier)
-    const recipe = new RecipeService(db, ingredient, configService)
+    const supplier = new SupplierService(context)
+    const ingredient = new IngredientService(context, supplier)
+    const recipe = new RecipeService(context, ingredient, configService)
 
     const config: ServerConfig = {
       port: 0,
-      database: db as unknown as any,
+      database: context.db as unknown as any,
       locationDir: tempDir,
       workspaceDir: dataDir,
       openBrowser: false,
@@ -83,7 +89,7 @@ describe('EntityPersistence create flow', () => {
   })
 
   afterEach(async () => {
-    await destroy(dbPath)
+    await context.db.destroy()
     await fs.rm(tempDir, { recursive: true, force: true })
   })
 

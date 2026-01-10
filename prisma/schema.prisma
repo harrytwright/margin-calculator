@@ -5,8 +5,8 @@ datasource db {
 
 generator kysely {
   provider    = "prisma-kysely"
-  output      = "../src/datastore"
-  fileName    = "types.ts"
+  output      = "../packages/types/src"
+  fileName    = "generated.ts"
   readOnlyIds = true
 }
 

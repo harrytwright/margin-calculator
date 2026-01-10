@@ -1,36 +1,33 @@
-import path from 'path'
+import {
+  createDatabase,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+} from '@menubook/sqlite'
 
-import Database from 'better-sqlite3'
-import { Kysely, SqliteDialect } from 'kysely'
-
-import { migrate } from '../../datastore/database'
-import { DB } from '../../datastore/types'
+import type { DatabaseContext } from '../../datastore/context'
 import { Importer } from '../../lib/importer'
 import { SupplierResolvedImportData } from '../../schema'
 import { SupplierService } from '../supplier'
 
 describe('SupplierService', () => {
-  let db: Kysely<DB>
+  let context: DatabaseContext
   let service: SupplierService
 
   beforeEach(async () => {
-    db = new Kysely<DB>({
-      dialect: new SqliteDialect({
-        database: new Database(':memory:'),
-      }),
-    })
+    const db = createDatabase(':memory:')
+    await migrate(db)
 
-    await migrate.call(
+    context = {
       db,
-      'up',
-      path.join(__dirname, '../../datastore/migrations')
-    )
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
-    service = new SupplierService(db)
+    service = new SupplierService(context)
   })
 
   afterEach(async () => {
-    await db.destroy()
+    await context.db.destroy()
   })
 
   describe('exists', () => {
@@ -40,7 +37,7 @@ describe('SupplierService', () => {
     })
 
     test('should return true for existing supplier', async () => {
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'asda', name: 'Asda' })
         .execute()
@@ -57,7 +54,7 @@ describe('SupplierService', () => {
     })
 
     test('should return supplier data for existing supplier', async () => {
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'asda', name: 'Asda Supermarket' })
         .execute()
@@ -74,7 +71,7 @@ describe('SupplierService', () => {
     test('should create new supplier', async () => {
       await service.upsert('tesco', { name: 'Tesco' })
 
-      const supplier = await db
+      const supplier = await context.db
         .selectFrom('Supplier')
         .selectAll()
         .where('slug', '=', 'tesco')
@@ -87,14 +84,14 @@ describe('SupplierService', () => {
     })
 
     test('should update existing supplier', async () => {
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'asda', name: 'Asda Old' })
         .execute()
 
       await service.upsert('asda', { name: 'Asda New' })
 
-      const supplier = await db
+      const supplier = await context.db
         .selectFrom('Supplier')
         .selectAll()
         .where('slug', '=', 'asda')
@@ -107,7 +104,7 @@ describe('SupplierService', () => {
       await service.upsert('asda', { name: 'Asda First' })
       await service.upsert('asda', { name: 'Asda Second' })
 
-      const suppliers = await db
+      const suppliers = await context.db
         .selectFrom('Supplier')
         .selectAll()
         .where('slug', '=', 'asda')
@@ -125,7 +122,7 @@ describe('SupplierService', () => {
     })
 
     test('should return true and delete existing supplier', async () => {
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'asda', name: 'Asda' })
         .execute()
@@ -138,11 +135,11 @@ describe('SupplierService', () => {
     })
 
     test('should only delete specified supplier', async () => {
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'asda', name: 'Asda' })
         .execute()
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'tesco', name: 'Tesco' })
         .execute()
@@ -161,7 +158,7 @@ describe('SupplierService', () => {
     let importer: Importer
 
     beforeEach(() => {
-      importer = new Importer(db)
+      importer = new Importer(context)
     })
 
     test('should return "created" for new supplier', async () => {
@@ -178,7 +175,7 @@ describe('SupplierService', () => {
     })
 
     test('should return "upserted" for updated supplier', async () => {
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'asda', name: 'Asda Old' })
         .execute()
@@ -196,7 +193,7 @@ describe('SupplierService', () => {
     })
 
     test('should return "ignored" when no changes detected', async () => {
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'asda', name: 'Asda' })
         .execute()
@@ -211,7 +208,7 @@ describe('SupplierService', () => {
     })
 
     test('should detect changes and upsert', async () => {
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'tesco', name: 'Tesco' })
         .execute()

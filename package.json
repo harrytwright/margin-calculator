@@ -14,12 +14,15 @@
     "dev:web": "pnpm --filter @menubook/web dev",
     "lint": "turbo lint",
     "format": "prettier --write \"packages/**/*.{ts,tsx,js,jsx,json}\" \"apps/**/*.{ts,tsx,js,jsx,json}\"",
-    "clean": "turbo clean && rm -rf node_modules"
+    "clean": "turbo clean && rm -rf node_modules",
+    "generate": "prisma generate"
   },
   "devDependencies": {
     "@tsconfig/node16": "^16.1.8",
     "prettier": "^3.5.0",
     "prettier-plugin-organize-imports": "^4.3.0",
+    "prisma": "^6.9.0",
+    "prisma-kysely": "^2.0.0",
     "turbo": "^2.5.0",
     "typescript": "^5.9.3"
   },

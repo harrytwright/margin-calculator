@@ -4,12 +4,9 @@ import log from '@harrytwright/logger'
 import { Command } from 'commander'
 import ora from 'ora'
 
-import {
-  database,
-  Importer,
-  IngredientService,
-  SupplierService,
-} from '@menubook/core'
+import type { DatabaseContext } from '@menubook/core'
+import { Importer, IngredientService, SupplierService } from '@menubook/core'
+import { createDatabase, jsonArrayFrom, jsonObjectFrom } from '@menubook/sqlite'
 import { isInitialised } from '../utils/is-initialised'
 
 /**
@@ -58,13 +55,17 @@ const importer = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(locationDir, dbName))
+    const db = createDatabase(path.join(locationDir, dbName))
+    const context: DatabaseContext = {
+      db,
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
     // Initialize services
-    const supplier = new SupplierService(db)
-    const ingredient = new IngredientService(db, supplier)
+    const supplier = new SupplierService(context)
+    const ingredient = new IngredientService(context, supplier)
 
-    const importer = new Importer(db, {
+    const importer = new Importer(context, {
       failFast,
       dataDir: path.resolve(process.cwd(), workspaceDir),
       processors: [

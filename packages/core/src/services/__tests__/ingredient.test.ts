@@ -1,45 +1,42 @@
-import path from 'path'
+import {
+  createDatabase,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+} from '@menubook/sqlite'
 
-import Database from 'better-sqlite3'
-import { Kysely, SqliteDialect } from 'kysely'
-
-import { migrate } from '../../datastore/database'
-import { DB } from '../../datastore/types'
+import type { DatabaseContext } from '../../datastore/context'
 import { Importer } from '../../lib/importer'
 import { IngredientResolvedImportData } from '../../schema'
 import { IngredientService } from '../ingredient'
 import { SupplierService } from '../supplier'
 
 describe('IngredientService', () => {
-  let db: Kysely<DB>
+  let context: DatabaseContext
   let service: IngredientService
   let supplierService: SupplierService
   let supplierId: number
 
   beforeEach(async () => {
-    db = new Kysely<DB>({
-      dialect: new SqliteDialect({
-        database: new Database(':memory:'),
-      }),
-    })
+    const db = createDatabase(':memory:')
+    await migrate(db)
 
-    await migrate.call(
+    context = {
       db,
-      'up',
-      path.join(__dirname, '../../datastore/migrations')
-    )
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
-    supplierService = new SupplierService(db)
-    service = new IngredientService(db, supplierService)
+    supplierService = new SupplierService(context)
+    service = new IngredientService(context, supplierService)
 
     // Create generic supplier (used as default)
-    await db
+    await context.db
       .insertInto('Supplier')
       .values({ slug: 'generic', name: 'Generic Supplier' })
       .execute()
 
     // Create a test supplier
-    const supplier = await db
+    const supplier = await context.db
       .insertInto('Supplier')
       .values({ slug: 'asda', name: 'Asda' })
       .returning('id')
@@ -48,7 +45,7 @@ describe('IngredientService', () => {
   })
 
   afterEach(async () => {
-    await db.destroy()
+    await context.db.destroy()
   })
 
   describe('exists', () => {
@@ -58,7 +55,7 @@ describe('IngredientService', () => {
     })
 
     test('should return true for existing ingredient', async () => {
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'ham',
@@ -83,7 +80,7 @@ describe('IngredientService', () => {
     })
 
     test('should return ingredient data with supplier info', async () => {
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'ham',
@@ -111,7 +108,7 @@ describe('IngredientService', () => {
     })
 
     test('should handle ingredient without notes', async () => {
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'cheese',
@@ -144,7 +141,7 @@ describe('IngredientService', () => {
 
       await service.upsert('ham', data, 'asda')
 
-      const ingredient = await db
+      const ingredient = await context.db
         .selectFrom('Ingredient')
         .selectAll()
         .where('slug', '=', 'ham')
@@ -162,7 +159,7 @@ describe('IngredientService', () => {
     })
 
     test('should update existing ingredient', async () => {
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'ham',
@@ -188,7 +185,7 @@ describe('IngredientService', () => {
 
       await service.upsert('ham', data, 'asda')
 
-      const ingredient = await db
+      const ingredient = await context.db
         .selectFrom('Ingredient')
         .selectAll()
         .where('slug', '=', 'ham')
@@ -203,13 +200,13 @@ describe('IngredientService', () => {
     })
 
     test('should preserve supplierId on update', async () => {
-      const anotherSupplier = await db
+      const anotherSupplier = await context.db
         .insertInto('Supplier')
         .values({ slug: 'tesco', name: 'Tesco' })
         .returning('id')
         .executeTakeFirst()
 
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'cheese',
@@ -236,7 +233,7 @@ describe('IngredientService', () => {
       // Try to update with different supplier - should be ignored in upsert
       await service.upsert('cheese', data, 'asda')
 
-      const ingredient = await db
+      const ingredient = await context.db
         .selectFrom('Ingredient')
         .selectAll()
         .where('slug', '=', 'cheese')
@@ -274,7 +271,7 @@ describe('IngredientService', () => {
     })
 
     test('should return true and delete existing ingredient', async () => {
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'ham',
@@ -299,7 +296,7 @@ describe('IngredientService', () => {
     let importer: Importer
 
     beforeEach(() => {
-      importer = new Importer(db)
+      importer = new Importer(context)
     })
 
     test('should return "created" for new ingredient', async () => {
@@ -323,7 +320,7 @@ describe('IngredientService', () => {
     })
 
     test('should return "upserted" for updated ingredient', async () => {
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'ham',
@@ -353,7 +350,7 @@ describe('IngredientService', () => {
     })
 
     test('should return "ignored" when no changes detected', async () => {
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'ham',
@@ -397,7 +394,7 @@ describe('IngredientService', () => {
       const result = await service.processor(importer, data, undefined)
       expect(result).toBe('created')
 
-      const ingredient = await db
+      const ingredient = await context.db
         .selectFrom('Ingredient')
         .innerJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
         .select('Supplier.slug as supplierSlug')
@@ -426,12 +423,12 @@ describe('IngredientService', () => {
     })
 
     test('should throw error when changing supplier on existing ingredient', async () => {
-      await db
+      await context.db
         .insertInto('Supplier')
         .values({ slug: 'tesco', name: 'Tesco' })
         .execute()
 
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'ham',
@@ -462,7 +459,7 @@ describe('IngredientService', () => {
     })
 
     test('should detect changes in purchase details', async () => {
-      await db
+      await context.db
         .insertInto('Ingredient')
         .values({
           slug: 'cheese',

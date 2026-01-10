@@ -4,15 +4,16 @@ import log from '@harrytwright/logger'
 import { Command } from 'commander'
 import ora from 'ora'
 
+import type { DatabaseContext } from '@menubook/core'
 import {
   Calculator,
   ConfigService,
-  database,
   Importer,
   IngredientService,
   RecipeService,
   SupplierService,
 } from '@menubook/core'
+import { createDatabase, jsonArrayFrom, jsonObjectFrom } from '@menubook/sqlite'
 import { runCalculations } from '../lib/runner'
 import { DefaultReporter } from '../reporters/DefaultReporter'
 import { JSONReporter } from '../reporters/JSONReporter'
@@ -65,15 +66,19 @@ const importer = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(locationDir, dbName))
+    const db = createDatabase(path.join(locationDir, dbName))
+    const context: DatabaseContext = {
+      db,
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
     // Initialize services
     const config = new ConfigService(locationDir)
-    const supplier = new SupplierService(db)
-    const ingredient = new IngredientService(db, supplier)
-    const recipe = new RecipeService(db, ingredient, config)
+    const supplier = new SupplierService(context)
+    const ingredient = new IngredientService(context, supplier)
+    const recipe = new RecipeService(context, ingredient, config)
 
-    const importer = new Importer(db, {
+    const importer = new Importer(context, {
       failFast,
       dataDir: path.resolve(process.cwd(), workspaceDir),
       processors: [
@@ -129,13 +134,17 @@ const calculate = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(locationDir, dbName))
+    const db = createDatabase(path.join(locationDir, dbName))
+    const context: DatabaseContext = {
+      db,
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
     // Initialize services
     const config = new ConfigService(locationDir)
-    const supplier = new SupplierService(db)
-    const ingredient = new IngredientService(db, supplier)
-    const recipeService = new RecipeService(db, ingredient, config)
+    const supplier = new SupplierService(context)
+    const ingredient = new IngredientService(context, supplier)
+    const recipeService = new RecipeService(context, ingredient, config)
 
     // Create calculator
     const calculator = new Calculator(recipeService, ingredient, config)
@@ -182,13 +191,17 @@ const report = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(locationDir, dbName))
+    const db = createDatabase(path.join(locationDir, dbName))
+    const context: DatabaseContext = {
+      db,
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
     // Initialize services
     const config = new ConfigService(locationDir)
-    const supplier = new SupplierService(db)
-    const ingredient = new IngredientService(db, supplier)
-    const recipeService = new RecipeService(db, ingredient, config)
+    const supplier = new SupplierService(context)
+    const ingredient = new IngredientService(context, supplier)
+    const recipeService = new RecipeService(context, ingredient, config)
 
     // Get all recipe slugs
     const allRecipes = await db.selectFrom('Recipe').select('slug').execute()

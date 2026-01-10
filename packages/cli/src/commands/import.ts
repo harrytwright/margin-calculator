@@ -5,10 +5,9 @@ import log from '@harrytwright/logger'
 import { Command } from 'commander'
 import ora from 'ora'
 
-import type { ImportStats } from '@menubook/core'
+import type { DatabaseContext, ImportStats } from '@menubook/core'
 import {
   ConfigService,
-  database,
   FileWatcher,
   HashService,
   Importer,
@@ -16,6 +15,7 @@ import {
   RecipeService,
   SupplierService,
 } from '@menubook/core'
+import { createDatabase, jsonArrayFrom, jsonObjectFrom } from '@menubook/sqlite'
 import { isInitialised } from '../utils/is-initialised'
 
 /**
@@ -67,18 +67,22 @@ export const importCommand = new Command()
       process.exit(409)
     }
 
-    const db = database(path.join(locationDir, dbName))
+    const db = createDatabase(path.join(locationDir, dbName))
+    const context: DatabaseContext = {
+      db,
+      helpers: { jsonArrayFrom, jsonObjectFrom },
+    }
 
     // Initialize services
     const config = new ConfigService(locationDir)
-    const supplier = new SupplierService(db)
-    const ingredient = new IngredientService(db, supplier)
-    const recipe = new RecipeService(db, ingredient, config)
+    const supplier = new SupplierService(context)
+    const ingredient = new IngredientService(context, supplier)
+    const recipe = new RecipeService(context, ingredient, config)
 
     const dataDir = path.resolve(process.cwd(), workspaceDir)
 
     const createImporter = () =>
-      new Importer(db, {
+      new Importer(context, {
         failFast,
         dataDir,
         processors: [

@@ -1,275 +1,137 @@
 # 📖 Menu Book
 
-A powerful tool for managing recipes, ingredients, and calculating profit margins for food service operations. Tracks ingredient costs from suppliers, calculates recipe costs including sub-recipes, and helps maintain target profit margins. Features both a beautiful web UI and powerful CLI.
-
-**Created by GoBowling Shipley Lanes**
+Monorepo for Menu Book — recipe costing, margin analysis, and data import/export with both CLI and web UI. Built with pnpm workspaces and turbo across `packages/` (core, CLI, app) and `apps/web` (marketing site).
 
 ## Features
+- Recursive recipe costing with sub-recipe support, yield scaling, and unit conversion
+- VAT/tax-aware pricing with configurable defaults
+- Import from YAML/JSON with dependency resolution and change detection
+- Multiple reporters (pretty/summary/JSON) and CSV/YAML export paths
+- Web UI with live updates via file watching + SSE
 
-- 📊 **Recursive Cost Calculation** - Accurately calculates costs including sub-recipes (e.g., pizza sauce in a pizza)
-- 💰 **Margin Analysis** - Compare actual vs. target margins with color-coded indicators
-- 🧾 **VAT Handling** - Automatically strips VAT from ingredient costs and adds it to customer prices
-- 📦 **Yield Scaling** - Scale recipe costs based on yield (e.g., 1L sauce yields 20 portions)
-- 📱 **Web UI** - Beautiful web interface for non-technical users
-- 📥 **YAML Import** - Easy data management with YAML files
-- 🔗 **Sub-recipes** - Use recipes as ingredients in other recipes
-- 📈 **Multiple Reporters** - Pretty CLI output, JSON for automation, or summary statistics
+## Requirements
+- Node 18+
+- pnpm 10+
 
-## Installation
-
+## Install & Build
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/margin.git
-cd margin
-
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
-
-# Initialize the working directory
-node dist/index.js initialise
+pnpm install
+pnpm build          # turbo build across packages
 ```
 
-## Quick Start
+## Monorepo Layout
+- `packages/core`: business logic, importer, calculator, storage backends, Prisma schema (`prisma/schema.prisma`), Kysely migrations (`src/datastore/migrations`).
+- `packages/cli`: Commander-based `margin` CLI (commands in `src/commands`, reporters in `src/reporters`).
+- `packages/app`: Express + EJS UI/API (`src/server`), SSE at `/api/events`, supports filesystem or database-only storage.
+- `apps/web`: Parcel + Tailwind marketing site/blog.
 
-### 1. Initialize Your Project
-
+## Using the CLI (local workspace)
+Commands run through pnpm exec so the local binary is used:
 ```bash
-node dist/index.js initialise --working ./my-restaurant
-```
+# Show help
+pnpm --filter @menubook/cli exec margin -- --help
 
-This creates:
+# Initialise (prompts for VAT pricing model)
+pnpm --filter @menubook/cli exec margin initialise --location ~/.margin --workspace ./data
 
-- `./my-restaurant/data/` - Database and data files
-- `./my-restaurant/conf/` - Configuration files
+# Import YAML/JSON (auto-detects entity types)
+pnpm --filter @menubook/cli exec margin import data/**/*.yaml
+# Watch mode (imports on save)
+pnpm --filter @menubook/cli exec margin import --watch --workspace ./data
 
-### 2. Import Your Data
-
-```bash
-# Import suppliers
-node dist/index.js import data/suppliers/*.yaml
-
-# Import ingredients (automatically imports referenced suppliers)
-node dist/index.js import data/ingredients/*.yaml
-
-# Import recipes (automatically imports all dependencies)
-node dist/index.js import data/recipes/*.yaml
-```
-
-### 3. Calculate Costs & Margins
-
-```bash
 # Calculate specific recipes
-node dist/index.js recipe calculate cheese-sandwich ham-sandwich
+pnpm --filter @menubook/cli exec margin recipe calculate margherita pizza-sauce --json
 
-# Generate a report for all recipes
-node dist/index.js recipe report
-
-# Get JSON output for automation
-node dist/index.js recipe calculate cheese-sandwich --json
+# Report all recipes
+pnpm --filter @menubook/cli exec margin recipe report
 ```
 
-### 4. Launch the Web UI
+### Global Options
+- `--location` system data (config + database), default `~/margin`
+- `--workspace` YAML files root, default `./data`
+- `--working` deprecated alias of `--location`
+- `--storage <fs|database-only>` storage mode (fs writes YAML, database-only avoids filesystem)
+- `-d, --database` database filename (default `margin.sqlite3`)
+- `--verbose` / `--quiet` logging
 
+### Web UI
 ```bash
-# Start the web interface (auto-opens browser)
-node dist/index.js ui
-
-# Run on a custom port
-node dist/index.js ui --port 8080
-
-# Disable auto-open
-node dist/index.js ui --no-open
+pnpm --filter @menubook/cli exec margin ui -p 3000           # opens browser
+pnpm --filter @menubook/cli exec margin ui --no-open         # skip auto-open
+pnpm --filter @menubook/cli exec margin ui --standalone      # database-only, no file watching
+pnpm --filter @menubook/cli exec margin ui --no-watch        # disable watch/SSE
 ```
+UI watches `<workspace>` by default and streams file events over `/api/events`.
 
-## Data Format
+## Data Format (YAML)
+References accept `@/`, relative paths, or `slug:` prefixes.
 
-### Supplier (YAML)
-
+**Supplier**
 ```yaml
 object: supplier
 data:
   name: ASDA
-  contact:
-    email: orders@asda.com
-    phone: '0800 123 4567'
 ```
 
-### Ingredient (YAML)
-
+**Ingredient**
 ```yaml
 object: ingredient
 data:
   name: Cheddar Cheese
   category: dairy
   supplier:
-    uses: '@/suppliers/asda.yaml'
+    uses: slug:asda
   purchase:
     unit: 1kg
     cost: 5.99
-    vat: false # true if purchase price includes VAT
+    vat: false
+  conversionRate: 1kg = 10 portions
 ```
 
-### Recipe (YAML)
-
+**Recipe**
 ```yaml
-object: recipe
-data:
-  name: Cheese Sandwich
-  class: menu_item # or base_template, sub_recipe
-  stage: active
-  costing:
-    price: 350 # £3.50 in pence
-    margin: 25 # Target 25% margin
-    vat: false # true if VAT-eligible (e.g., hot food)
-  ingredients:
-    - uses: '@/ingredients/cheddar-cheese.yaml'
-      with:
-        unit: 50g
-    - uses: '@/ingredients/white-bread.yaml'
-      with:
-        unit: 2 slices
-```
-
-### Sub-Recipe Example
-
-```yaml
-object: recipe
-data:
-  name: Pizza Sauce
-  class: sub_recipe
-  yield:
-    amount: 1
-    unit: L
-  ingredients:
-    - uses: '@/ingredients/tomatoes.yaml'
-      with:
-        unit: 500g
-    # ... more ingredients
-
----
-# Using the sub-recipe
 object: recipe
 data:
   name: Margherita Pizza
   class: menu_item
+  stage: active
   costing:
-    price: 1200 # £12.00
+    price: 1200      # pence
     margin: 30
+    vat: true
+  yieldAmount: 1
+  yieldUnit: pizza
   ingredients:
-    - uses: '@/recipes/pizza-sauce.yaml'
-      with:
-        unit: 50ml # Automatically scales from 1L yield
-```
-
-## CLI Commands
-
-### Global Options
-
-```bash
---working <dir>     # Working directory (default: ./.margin)
---database <name>   # Database filename (default: margin.sqlite3)
---verbose          # Verbose logging
---quiet            # Only show warnings
-```
-
-### Available Commands
-
-#### `initialise`
-
-Initialize a new margin project
-
-```bash
-margin initialise [--force]
-```
-
-#### `import <files...>`
-
-Import suppliers, ingredients, or recipes from YAML files
-
-```bash
-margin import data/**/*.yaml [--root <dir>] [--fail-fast]
-```
-
-#### `recipe calculate <slugs...>`
-
-Calculate cost and margin for specific recipes
-
-```bash
-margin recipe calculate cheese-sandwich ham-sandwich [--json]
-```
-
-#### `recipe report`
-
-Generate a summary report for all recipes
-
-```bash
-margin recipe report [--json]
-```
-
-#### `ui`
-
-Launch the web UI
-
-```bash
-margin ui [-p <port>] [--no-open]
-```
-
-## Web UI
-
-The web UI provides a visual interface for viewing recipes and their margins:
-
-- **Recipe List**: Grid view showing all recipes with cost, price, and margin
-- **Detail View**: Click any recipe to see full cost breakdown including sub-recipes
-- **Color Coding**: Green for recipes meeting target margin, red for below target
-- **Nested Display**: Sub-recipes shown as expandable trees
-- **Mobile Responsive**: Works on desktop and mobile devices
-
-![Web UI Screenshot](docs/screenshot.png)
-
-## Configuration
-
-Edit `conf/margin.toml` in your working directory:
-
-```toml
-# VAT rate (decimal, e.g., 0.2 for 20%)
-vat = 0.2
-
-# Default target margin (percentage)
-marginTarget = 25
+    - uses: slug:pizza-sauce
+      with: { unit: 50g }
+    - uses: slug:mozzarella
+      with: { unit: 60g }
 ```
 
 ## Development
-
 ```bash
-# Run tests
-npm test
+# Run tests (all packages)
+pnpm test
+pnpm test:watch
+pnpm test:coverage
 
-# Watch mode
-npm run test:watch
+# Targeted builds / dev loops
+pnpm --filter @menubook/cli build      # CLI
+pnpm --filter @menubook/app dev        # UI (tailwind watch + tsc)
+pnpm --filter @menubook/web dev        # marketing site (Parcel)
 
-# Coverage
-npm run test:coverage
-
-# Generate database types after schema changes
-npm run generate:database
+# After editing prisma/schema.prisma
+pnpm --filter @menubook/core generate
 ```
 
-## Architecture
+## Configuration & Storage
+- Config file: `<location>/conf/margin.toml` (VAT rate, default margin, defaultPriceIncludesVat).
+- Database: `<location>/margin.sqlite3` by default.
+- Workspace YAML lives under `<workspace>/suppliers|ingredients|recipes`.
+- Storage modes: `fs` writes YAML via `FileSystemStorage`; `database-only` keeps data in the DB (used for standalone UI/API).
 
-- **Database**: SQLite with Kysely query builder
-- **Schema**: Prisma schema → Kysely types
-- **Migrations**: Custom Kysely-based migration system
-- **Import System**: Centralized `Importer` class with dependency resolution
-- **Reporter Pattern**: Pluggable reporters for different output formats
-- **Calculator**: Recursive cost calculation with VAT handling and yield scaling
+## Export Paths
+- `ExportService` (core) supports YAML and CSV exports for suppliers, ingredients, recipes, and full dataset bundles (used by the API/UI).
 
 ## License
-
-MIT
-
-## Contributing
-
-Contributions welcome! Please follow Conventional Commits for commit messages.
+MIT — Created by GoBowling Shipley Lanes

@@ -1,8 +1,9 @@
-import { ExpressionBuilder, Kysely } from 'kysely'
-import { jsonArrayFrom } from 'kysely/helpers/sqlite'
+import type { ExpressionBuilder } from 'kysely'
 
-import type { DB } from '../datastore/types'
-import { Recipe, RecipeIngredients } from '../interfaces/database'
+import type { DB } from '@menubook/types'
+
+import type { DatabaseContext } from '../datastore/context'
+import type { Recipe, RecipeIngredients } from '../interfaces/database'
 import { Importer, type ImportOutcome } from '../lib/importer'
 import type { RecipeResolvedImportData } from '../schema'
 import { hasChanges } from '../utils/has-changes'
@@ -27,10 +28,14 @@ export type RecipeWithIngredients<WithIngredients extends boolean> = Omit<
 
 export class RecipeService {
   constructor(
-    private database: Kysely<DB>,
+    private context: DatabaseContext,
     private readonly ingredient: IngredientService,
     private readonly config: ConfigService
   ) {}
+
+  private get database() {
+    return this.context.db
+  }
 
   async exists(slug: string) {
     return !!(await this.database
@@ -74,7 +79,7 @@ export class RecipeService {
       ])
       .$if(withIngredients, (eb) =>
         eb.select((eb) => [
-          jsonArrayFrom(
+          this.context.helpers.jsonArrayFrom(
             eb
               .selectFrom('RecipeIngredients')
               .leftJoin(
