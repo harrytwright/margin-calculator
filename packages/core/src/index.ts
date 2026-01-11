@@ -1,3 +1,25 @@
+// Cache adapter
+export {
+  NoopCache,
+  TTLCache,
+  getCache,
+  getDefaultCache,
+  getRegisteredCaches,
+  hasCache,
+  registerCache,
+} from './cache'
+export type { CacheAdapter } from './cache'
+
+// Realm configuration
+export {
+  detectRealm,
+  isCloudMode,
+  isFileSystemEnabled,
+  realmToConfig,
+  resolveRealmConfig,
+} from './realm'
+export type { Realm, RealmConfig, ResolveRealmOptions } from './realm'
+
 // Database adapter
 export {
   detectAdapter,
@@ -12,6 +34,7 @@ export type { DatabaseAdapter } from './datastore/adapter'
 export type { DatabaseContext, JsonHelpers } from './datastore/context'
 
 // Re-export types from @menubook/types for convenience
+export { RecipeClass, RecipeStage } from '@menubook/types'
 export type {
   DB,
   Generated,
@@ -21,7 +44,6 @@ export type {
   Supplier,
   Timestamp,
 } from '@menubook/types'
-export { RecipeClass, RecipeStage } from '@menubook/types'
 
 // Services
 export {

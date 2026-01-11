@@ -4,7 +4,6 @@ import log from '@harrytwright/logger'
 import { Command } from 'commander'
 import ora from 'ora'
 
-import type { DatabaseContext } from '@menubook/core'
 import {
   Calculator,
   ConfigService,
@@ -13,7 +12,7 @@ import {
   RecipeService,
   SupplierService,
 } from '@menubook/core'
-import { createDatabase, jsonArrayFrom, jsonObjectFrom } from '@menubook/sqlite'
+import { createDatabaseContext } from '../lib/database'
 import { runCalculations } from '../lib/runner'
 import { DefaultReporter } from '../reporters/DefaultReporter'
 import { JSONReporter } from '../reporters/JSONReporter'
@@ -66,11 +65,10 @@ const importer = new Command()
       process.exit(409)
     }
 
-    const db = createDatabase(path.join(locationDir, dbName))
-    const context: DatabaseContext = {
-      db,
-      helpers: { jsonArrayFrom, jsonObjectFrom },
-    }
+    const { context } = createDatabaseContext({
+      database: dbName,
+      locationDir,
+    })
 
     // Initialize services
     const config = new ConfigService(locationDir)
@@ -134,11 +132,10 @@ const calculate = new Command()
       process.exit(409)
     }
 
-    const db = createDatabase(path.join(locationDir, dbName))
-    const context: DatabaseContext = {
-      db,
-      helpers: { jsonArrayFrom, jsonObjectFrom },
-    }
+    const { context } = createDatabaseContext({
+      database: dbName,
+      locationDir,
+    })
 
     // Initialize services
     const config = new ConfigService(locationDir)
@@ -191,11 +188,10 @@ const report = new Command()
       process.exit(409)
     }
 
-    const db = createDatabase(path.join(locationDir, dbName))
-    const context: DatabaseContext = {
-      db,
-      helpers: { jsonArrayFrom, jsonObjectFrom },
-    }
+    const { context } = createDatabaseContext({
+      database: dbName,
+      locationDir,
+    })
 
     // Initialize services
     const config = new ConfigService(locationDir)
@@ -204,7 +200,10 @@ const report = new Command()
     const recipeService = new RecipeService(context, ingredient, config)
 
     // Get all recipe slugs
-    const allRecipes = await db.selectFrom('Recipe').select('slug').execute()
+    const allRecipes = await context.db
+      .selectFrom('Recipe')
+      .select('slug')
+      .execute()
 
     if (allRecipes.length === 0) {
       log.warn('recipe.report', 'No recipes found in database')

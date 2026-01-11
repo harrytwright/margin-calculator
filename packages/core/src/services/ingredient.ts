@@ -1,3 +1,4 @@
+import type { CacheAdapter } from '../cache'
 import type { DatabaseContext } from '../datastore/context'
 import type { ImportOutcome } from '../lib/importer'
 import type {
@@ -9,11 +10,41 @@ import { Importer } from '../lib/importer'
 import { hasChanges } from '../utils/has-changes'
 import { SupplierService } from './supplier'
 
+/** Cache key patterns for invalidation */
+const CACHE_PATTERNS = {
+  /** Invalidate all margin calculations */
+  margin: 'margin:*',
+  /** Invalidate all dashboard stats */
+  dashboard: 'dashboard:*',
+} as const
+
+export interface IngredientServiceOptions {
+  /** Cache adapter for invalidation on mutations */
+  cache?: CacheAdapter
+}
+
 export class IngredientService {
+  private cache?: CacheAdapter
+
   constructor(
     private context: DatabaseContext,
-    private readonly supplier: SupplierService
-  ) {}
+    private readonly supplier: SupplierService,
+    options: IngredientServiceOptions = {}
+  ) {
+    this.cache = options.cache
+  }
+
+  /**
+   * Invalidate cache entries affected by ingredient changes.
+   * Called automatically on upsert/delete.
+   */
+  private async invalidateCache(): Promise<void> {
+    if (!this.cache) return
+    await Promise.all([
+      this.cache.invalidatePattern(CACHE_PATTERNS.margin),
+      this.cache.invalidatePattern(CACHE_PATTERNS.dashboard),
+    ])
+  }
 
   private get database() {
     return this.context.db
@@ -47,12 +78,12 @@ export class IngredientService {
       .executeTakeFirst()
   }
 
-  upsert(
+  async upsert(
     slug: string,
     data: IngredientImportData | IngredientResolvedImportData,
     supplierSlug: string = 'generic'
   ) {
-    return this.database
+    const result = await this.database
       .insertInto('Ingredient')
       .values((eb) => ({
         slug,
@@ -83,6 +114,11 @@ export class IngredientService {
         })
       )
       .executeTakeFirst()
+
+    // Invalidate cache after mutation
+    await this.invalidateCache()
+
+    return result
   }
 
   async delete(slug: string) {
@@ -91,7 +127,14 @@ export class IngredientService {
       .where('slug', '=', slug)
       .executeTakeFirst()
 
-    return result.numDeletedRows > 0n
+    const deleted = result.numDeletedRows > 0n
+
+    // Invalidate cache after deletion
+    if (deleted) {
+      await this.invalidateCache()
+    }
+
+    return deleted
   }
 
   async processor(

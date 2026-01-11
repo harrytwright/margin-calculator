@@ -4,9 +4,8 @@ import log from '@harrytwright/logger'
 import { Command } from 'commander'
 import ora from 'ora'
 
-import type { DatabaseContext } from '@menubook/core'
 import { Importer, SupplierService } from '@menubook/core'
-import { createDatabase, jsonArrayFrom, jsonObjectFrom } from '@menubook/sqlite'
+import { createDatabaseContext } from '../lib/database'
 import { isInitialised } from '../utils/is-initialised'
 
 /**
@@ -55,11 +54,10 @@ const importer = new Command()
       process.exit(409)
     }
 
-    const db = createDatabase(path.join(locationDir, dbName))
-    const context: DatabaseContext = {
-      db,
-      helpers: { jsonArrayFrom, jsonObjectFrom },
-    }
+    const { context } = createDatabaseContext({
+      database: dbName,
+      locationDir,
+    })
 
     // Initialize service
     const supplier = new SupplierService(context)

@@ -1,6 +1,6 @@
 {
   "name": "@menubook/web",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Menu Book marketing landing page",
   "scripts": {
     "predev": "node scripts/build-blog.js",

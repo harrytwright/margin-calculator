@@ -1,3 +1,4 @@
+import type { CacheAdapter } from '../cache'
 import type { DatabaseContext } from '../datastore/context'
 import { Calculator } from '../lib/calculation/calculator'
 import type { ConfigService } from './config'
@@ -24,41 +25,65 @@ export interface DashboardStats {
   }[]
 }
 
+/** Cache key for dashboard statistics */
+const CACHE_KEY = 'dashboard:stats'
+
+/** Default cache TTL: 5 minutes */
+const DEFAULT_CACHE_TTL = 5 * 60 * 1000
+
+export interface DashboardServiceOptions {
+  /** Cache adapter for storing computed statistics */
+  cache?: CacheAdapter
+  /** Cache TTL in milliseconds (default: 5 minutes) */
+  cacheTTL?: number
+}
+
 export class DashboardService {
-  private cache: DashboardStats | null = null
-  private cacheTimestamp: number = 0
-  private readonly CACHE_TTL = 5 * 60 * 1000 // 5 minutes in milliseconds
+  private cache?: CacheAdapter
+  private cacheTTL: number
 
   constructor(
     private context: DatabaseContext,
     private recipeService: RecipeService,
     private ingredientService: IngredientService,
-    private configService: ConfigService
-  ) {}
+    private configService: ConfigService,
+    options: DashboardServiceOptions = {}
+  ) {
+    this.cache = options.cache
+    this.cacheTTL = options.cacheTTL ?? DEFAULT_CACHE_TTL
+  }
 
   private get database() {
     return this.context.db
   }
 
   /**
-   * Invalidate the cache to force recalculation on next request
+   * Invalidate the cache to force recalculation on next request.
+   * Safe to call even if no cache is configured.
    */
-  invalidateCache(): void {
-    this.cache = null
-    this.cacheTimestamp = 0
+  async invalidateCache(): Promise<void> {
+    if (this.cache) {
+      await this.cache.delete(CACHE_KEY)
+    }
   }
 
   async getStatistics(): Promise<DashboardStats> {
-    // Check if cache is still valid
-    const now = Date.now()
-    if (this.cache && now - this.cacheTimestamp < this.CACHE_TTL) {
-      return this.cache
+    // Try to get from cache
+    if (this.cache) {
+      const cached = await this.cache.get<DashboardStats>(CACHE_KEY)
+      if (cached) {
+        return cached
+      }
     }
 
-    // Cache miss or expired - recalculate
+    // Cache miss or no cache configured - recalculate
     const stats = await this.calculateStatistics()
-    this.cache = stats
-    this.cacheTimestamp = now
+
+    // Store in cache if available
+    if (this.cache) {
+      await this.cache.set(CACHE_KEY, stats, this.cacheTTL)
+    }
+
     return stats
   }
 

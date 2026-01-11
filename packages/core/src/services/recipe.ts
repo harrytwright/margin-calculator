@@ -2,6 +2,7 @@ import type { ExpressionBuilder } from 'kysely'
 
 import type { DB } from '@menubook/types'
 
+import type { CacheAdapter } from '../cache'
 import type { DatabaseContext } from '../datastore/context'
 import type { Recipe, RecipeIngredients } from '../interfaces/database'
 import { Importer, type ImportOutcome } from '../lib/importer'
@@ -9,6 +10,14 @@ import type { RecipeResolvedImportData } from '../schema'
 import { hasChanges } from '../utils/has-changes'
 import { ConfigService } from './config'
 import { IngredientService } from './ingredient'
+
+/** Cache key patterns for invalidation */
+const CACHE_PATTERNS = {
+  /** Invalidate all margin calculations */
+  margin: 'margin:*',
+  /** Invalidate all dashboard stats */
+  dashboard: 'dashboard:*',
+} as const
 
 export type RecipeIngredientsLookup = Pick<
   RecipeIngredients,
@@ -26,12 +35,34 @@ export type RecipeWithIngredients<WithIngredients extends boolean> = Omit<
     ? { ingredients: RecipeIngredientsLookup[] }
     : { ingredients?: RecipeIngredientsLookup[] })
 
+export interface RecipeServiceOptions {
+  /** Cache adapter for invalidation on mutations */
+  cache?: CacheAdapter
+}
+
 export class RecipeService {
+  private cache?: CacheAdapter
+
   constructor(
     private context: DatabaseContext,
     private readonly ingredient: IngredientService,
-    private readonly config: ConfigService
-  ) {}
+    private readonly config: ConfigService,
+    options: RecipeServiceOptions = {}
+  ) {
+    this.cache = options.cache
+  }
+
+  /**
+   * Invalidate cache entries affected by recipe changes.
+   * Called automatically on upsert/delete.
+   */
+  private async invalidateCache(): Promise<void> {
+    if (!this.cache) return
+    await Promise.all([
+      this.cache.invalidatePattern(CACHE_PATTERNS.margin),
+      this.cache.invalidatePattern(CACHE_PATTERNS.dashboard),
+    ])
+  }
 
   private get database() {
     return this.context.db
@@ -79,55 +110,57 @@ export class RecipeService {
       ])
       .$if(withIngredients, (eb) =>
         eb.select((eb) => [
-          this.context.helpers.jsonArrayFrom(
-            eb
-              .selectFrom('RecipeIngredients')
-              .leftJoin(
-                'Ingredient',
-                'RecipeIngredients.ingredientId',
-                'Ingredient.id'
-              )
-              .leftJoin(
-                'Recipe as SubRecipe',
-                'RecipeIngredients.subRecipeId',
-                'SubRecipe.id'
-              )
-              .select((eb) => [
-                'RecipeIngredients.unit',
-                'RecipeIngredients.notes',
-                // Coalesce to get slug from either Ingredient or SubRecipe
-                eb
-                  .fn<string>('coalesce', [
-                    eb.ref('Ingredient.slug'),
-                    eb.ref('SubRecipe.slug'),
-                  ])
-                  .as('slug'),
-                eb
-                  .fn<string>('coalesce', [
-                    eb.ref('Ingredient.name'),
-                    eb.ref('SubRecipe.name'),
-                  ])
-                  .as('name'),
-                // Type discriminator: if ingredientId is not null, it's an ingredient
-                eb
-                  .case()
-                  .when('RecipeIngredients.ingredientId', 'is not', null)
-                  .then(eb.val<'ingredient' | 'recipe'>('ingredient'))
-                  .else(eb.val<'ingredient' | 'recipe'>('recipe'))
-                  .end()
-                  .as('type'),
-              ])
-              .where((eb) =>
-                eb.or([
-                  eb(
-                    'RecipeIngredients.recipeId',
-                    '=',
-                    eb.ref('Recipe.parentId')
-                  ),
-                  eb('RecipeIngredients.recipeId', '=', eb.ref('Recipe.id')),
+          this.context.helpers
+            .jsonArrayFrom(
+              eb
+                .selectFrom('RecipeIngredients')
+                .leftJoin(
+                  'Ingredient',
+                  'RecipeIngredients.ingredientId',
+                  'Ingredient.id'
+                )
+                .leftJoin(
+                  'Recipe as SubRecipe',
+                  'RecipeIngredients.subRecipeId',
+                  'SubRecipe.id'
+                )
+                .select((eb) => [
+                  'RecipeIngredients.unit',
+                  'RecipeIngredients.notes',
+                  // Coalesce to get slug from either Ingredient or SubRecipe
+                  eb
+                    .fn<string>('coalesce', [
+                      eb.ref('Ingredient.slug'),
+                      eb.ref('SubRecipe.slug'),
+                    ])
+                    .as('slug'),
+                  eb
+                    .fn<string>('coalesce', [
+                      eb.ref('Ingredient.name'),
+                      eb.ref('SubRecipe.name'),
+                    ])
+                    .as('name'),
+                  // Type discriminator: if ingredientId is not null, it's an ingredient
+                  eb
+                    .case()
+                    .when('RecipeIngredients.ingredientId', 'is not', null)
+                    .then(eb.val<'ingredient' | 'recipe'>('ingredient'))
+                    .else(eb.val<'ingredient' | 'recipe'>('recipe'))
+                    .end()
+                    .as('type'),
                 ])
-              )
-          ).as('ingredients'),
+                .where((eb) =>
+                  eb.or([
+                    eb(
+                      'RecipeIngredients.recipeId',
+                      '=',
+                      eb.ref('Recipe.parentId')
+                    ),
+                    eb('RecipeIngredients.recipeId', '=', eb.ref('Recipe.id')),
+                  ])
+                )
+            )
+            .as('ingredients'),
         ])
       )
       .where('Recipe.slug', '=', slug)
@@ -218,6 +251,9 @@ export class RecipeService {
       .returning('id')
       .executeTakeFirst()
 
+    // Invalidate cache after mutation
+    await this.invalidateCache()
+
     return result?.id
   }
 
@@ -258,7 +294,14 @@ export class RecipeService {
       .where('slug', '=', slug)
       .executeTakeFirst()
 
-    return result.numDeletedRows > 0n
+    const deleted = result.numDeletedRows > 0n
+
+    // Invalidate cache after deletion
+    if (deleted) {
+      await this.invalidateCache()
+    }
+
+    return deleted
   }
 
   async processor(

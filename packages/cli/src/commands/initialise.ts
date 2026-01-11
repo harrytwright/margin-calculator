@@ -7,7 +7,7 @@ import { Command } from 'commander'
 import prompt from 'prompts'
 
 import { ConfigService } from '@menubook/core'
-import { createDatabase, migrate } from '@menubook/sqlite'
+import { createDatabaseContext, runMigrations } from '../lib/database'
 import { spin } from '../utils/spinner'
 
 export const initialise = new Command()
@@ -101,9 +101,12 @@ export const initialise = new Command()
     }
 
     // Initialise the database file at location root
-    const db = createDatabase(path.join(locationBase, dbPath))
+    const { context, adapter } = createDatabaseContext({
+      database: dbPath,
+      locationDir: locationBase,
+    })
 
-    await migrate(db, 'up')
+    await runMigrations(context, adapter, 'up')
 
     console.log(
       '\nInitialised margin system.\nLocation: ✔ (%s)\nWorkspace: ✔ (%s)',

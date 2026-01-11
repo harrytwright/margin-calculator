@@ -5,9 +5,10 @@ import log from '@harrytwright/logger'
 import { Command } from 'commander'
 import ora from 'ora'
 
-import type { DatabaseContext, ImportStats } from '@menubook/core'
+import type { ImportStats } from '@menubook/core'
 import {
   ConfigService,
+  detectRealm,
   FileWatcher,
   HashService,
   Importer,
@@ -15,7 +16,7 @@ import {
   RecipeService,
   SupplierService,
 } from '@menubook/core'
-import { createDatabase, jsonArrayFrom, jsonObjectFrom } from '@menubook/sqlite'
+import { createDatabaseContext } from '../lib/database'
 import { isInitialised } from '../utils/is-initialised'
 
 /**
@@ -67,11 +68,10 @@ export const importCommand = new Command()
       process.exit(409)
     }
 
-    const db = createDatabase(path.join(locationDir, dbName))
-    const context: DatabaseContext = {
-      db,
-      helpers: { jsonArrayFrom, jsonObjectFrom },
-    }
+    const { context } = createDatabaseContext({
+      database: dbName,
+      locationDir,
+    })
 
     // Initialize services
     const config = new ConfigService(locationDir)
@@ -93,6 +93,15 @@ export const importCommand = new Command()
       })
 
     const fileList = (files as string[]) ?? []
+
+    // Block --watch in cloud mode (no filesystem to watch)
+    if (watch && detectRealm() === 'cloud') {
+      log.error(
+        'import',
+        'Cannot use --watch in cloud mode (REALM=cloud). File watching requires filesystem access.'
+      )
+      process.exit(1)
+    }
 
     if (watch) {
       await runWatchMode({

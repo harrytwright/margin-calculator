@@ -9,10 +9,12 @@ import log from '@harrytwright/logger'
 import type { DatabaseContext, StorageMode } from '@menubook/core'
 import {
   ConfigService,
+  detectRealm,
   FileWatcher,
   HashService,
   Importer,
   IngredientService,
+  realmToConfig,
   RecipeService,
   SupplierService,
 } from '@menubook/core'
@@ -67,7 +69,15 @@ export async function startServer(
   config: ServerConfig
 ): Promise<{ close: () => Promise<void> }> {
   const events = config.events ?? new EventEmitter()
-  const runtimeConfig: ServerConfig = { ...config, events }
+
+  // Apply REALM-based defaults if not explicitly configured
+  const realmDefaults = realmToConfig(detectRealm())
+  const runtimeConfig: ServerConfig = {
+    storageMode: realmDefaults.storageMode,
+    watchFiles: realmDefaults.watchFiles,
+    ...config, // CLI-provided values override defaults
+    events,
+  }
 
   const app = createServer(runtimeConfig)
   const url = `http://localhost:${config.port}`

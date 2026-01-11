@@ -4,8 +4,8 @@ import log from '@harrytwright/logger'
 import { Command } from 'commander'
 
 import { startServer } from '@menubook/app'
-import type { DatabaseContext } from '@menubook/core'
-import { createDatabase, jsonArrayFrom, jsonObjectFrom } from '@menubook/sqlite'
+import { resolveRealmConfig } from '@menubook/core'
+import { createDatabaseContext } from '../lib/database'
 import { isInitialised } from '../utils/is-initialised'
 
 export const ui = new Command()
@@ -26,7 +26,8 @@ export const ui = new Command()
       working,
       workspace,
       database: dbName,
-      storage: storageMode,
+      storage: legacyStorage,
+      fileSystem,
       port,
       open,
       watch: watchFlag,
@@ -38,29 +39,38 @@ export const ui = new Command()
     // Use workspace if provided, otherwise fall back to working/data
     const workspaceDir = workspace || path.join(working, 'data')
 
-    // Standalone mode forces database-only storage and disables file watching
-    let finalStorageMode = storageMode
-    let watch = watchFlag !== false
-
-    if (standalone) {
-      finalStorageMode = 'database-only'
-      watch = false
-      log.info(
+    // Warn about deprecated --storage option
+    if (legacyStorage !== undefined) {
+      log.warn(
         'ui',
-        '🔒 Running in standalone mode (database-only, no file watching)'
+        '--storage is deprecated and will be removed in v0.4.0. Use --file-system or --no-file-system instead.'
       )
     }
 
-    // Validate storage mode
-    if (
-      finalStorageMode &&
-      !['fs', 'database-only'].includes(finalStorageMode)
-    ) {
-      log.error(
+    // Resolve realm configuration from CLI options and environment
+    const realmConfig = resolveRealmConfig({
+      fileSystem,
+      standalone,
+      storage: legacyStorage,
+      watch: watchFlag,
+    })
+
+    // Log the resolved configuration
+    if (realmConfig.realm === 'cloud') {
+      log.info('ui', 'Running in cloud mode (REALM=cloud)')
+    }
+
+    if (standalone) {
+      log.info(
         'ui',
-        `Invalid storage mode '${finalStorageMode}'. Must be 'fs' or 'database-only'`
+        'Running in standalone mode (database-only, no file watching)'
       )
-      process.exit(1)
+    } else if (!realmConfig.watchFiles) {
+      log.info('ui', 'File watching disabled')
+    }
+
+    if (realmConfig.storageMode === 'database-only') {
+      log.info('ui', 'Using database-only storage (no filesystem writes)')
     }
 
     if (!(await isInitialised(locationDir))) {
@@ -71,11 +81,10 @@ export const ui = new Command()
       process.exit(409)
     }
 
-    const db = createDatabase(path.join(locationDir, dbName))
-    const context: DatabaseContext = {
-      db,
-      helpers: { jsonArrayFrom, jsonObjectFrom },
-    }
+    const { context } = createDatabaseContext({
+      database: dbName,
+      locationDir,
+    })
 
     try {
       const server = await startServer({
@@ -83,9 +92,9 @@ export const ui = new Command()
         database: context,
         locationDir,
         workspaceDir,
-        storageMode: finalStorageMode,
+        storageMode: realmConfig.storageMode,
         openBrowser: open,
-        watchFiles: watch,
+        watchFiles: realmConfig.watchFiles,
       })
 
       // Keep process alive

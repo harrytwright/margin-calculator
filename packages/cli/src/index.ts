@@ -46,13 +46,20 @@ async function main() {
       DEFAULT_WORKING_DIR
     )
     .option(
-      '--storage <mode>',
-      'Storage backend: fs (filesystem) or database-only',
-      'fs'
+      '--file-system',
+      'Enable file system storage (default: true for REALM=local, false for REALM=cloud)'
     )
     .option(
-      '-d, --database [name]',
-      'Set the default database name. Memory can be used but should only be used for testing',
+      '--no-file-system',
+      'Disable file system storage (database-only mode)'
+    )
+    .option(
+      '--storage <mode>',
+      '[DEPRECATED] Use --file-system instead. Storage backend: fs or database-only'
+    )
+    .option(
+      '-d, --database [connection]',
+      'Database connection string or path. Supports PostgreSQL URLs (postgresql://...) or SQLite paths. Defaults to margin.sqlite3 in location directory.',
       'margin.sqlite3'
     )
     .version(
