@@ -602,7 +602,10 @@ data:
 
   describe('Dependency Graph Import', () => {
     test('should auto-import dependencies in correct order', async () => {
-      const importer = new Importer(context, { dataDir: tmpDir, failFast: true })
+      const importer = new Importer(context, {
+        dataDir: tmpDir,
+        failFast: true,
+      })
       const supplierService = new SupplierService(context)
       const ingredientService = new IngredientService(context, supplierService)
 
@@ -687,7 +690,10 @@ data:
     })
 
     test('should handle complex dependency trees', async () => {
-      const importer = new Importer(context, { dataDir: tmpDir, failFast: true })
+      const importer = new Importer(context, {
+        dataDir: tmpDir,
+        failFast: true,
+      })
       const supplierService = new SupplierService(context)
       const ingredientService = new IngredientService(context, supplierService)
 
@@ -804,7 +810,10 @@ data:
     })
 
     test('should detect circular dependencies', async () => {
-      const importer = new Importer(context, { dataDir: tmpDir, failFast: true })
+      const importer = new Importer(context, {
+        dataDir: tmpDir,
+        failFast: true,
+      })
 
       importer.addProcessor<RecipeResolvedImportData>(
         'recipe',

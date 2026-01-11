@@ -9,8 +9,8 @@
  * and re-run `@lanelink/tools generate` to regenerate this file
  * */
 
-import type { Insertable, Selectable, Updateable } from 'kysely'
 import type { Ingredient as ingredient } from '@menubook/types'
+import type { Insertable, Selectable, Updateable } from 'kysely'
 
 export type Ingredient = Selectable<ingredient>
 export type NewIngredient = Insertable<ingredient>

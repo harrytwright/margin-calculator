@@ -55,7 +55,9 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('category', 'text', (col) => col.notNull())
     .addColumn('purchaseUnit', 'text', (col) => col.notNull())
     .addColumn('purchaseCost', 'decimal', (col) => col.notNull())
-    .addColumn('includesVat', 'boolean', (col) => col.notNull().defaultTo(false))
+    .addColumn('includesVat', 'boolean', (col) =>
+      col.notNull().defaultTo(false)
+    )
     .addColumn('conversionRule', 'text')
     .addColumn('supplierId', 'integer', (col) =>
       col.references('Supplier.id').onDelete('set null')

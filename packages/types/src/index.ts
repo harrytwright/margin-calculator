@@ -10,17 +10,17 @@ export type { ColumnType, GeneratedAlways } from 'kysely'
 
 // Re-export all generated types
 export {
-  // Helper types
-  type Generated,
-  type Timestamp,
+  RecipeClass,
   // Enums (exported as both const objects and types)
   RecipeStage,
-  RecipeClass,
+  // Database schema
+  type DB,
+  // Helper types
+  type Generated,
   // Database model types
   type Ingredient,
   type Recipe,
   type RecipeIngredients,
   type Supplier,
-  // Database schema
-  type DB,
+  type Timestamp,
 } from './generated'
