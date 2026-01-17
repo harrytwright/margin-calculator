@@ -6,8 +6,6 @@ slug: 'building-menu-book'
 excerpt: "Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches."
 ---
 
-# Building Menu Book: Our Journey Begins
-
 Running a food service business is tough. Between managing staff, keeping customers happy, and maintaining quality, the last thing you want to worry about is whether your pricing is right.
 
 But here's the reality: **if you don't know your costs, you can't know your margins**. And if you don't know your margins, you're flying blind.

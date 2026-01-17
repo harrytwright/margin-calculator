@@ -33,5 +33,6 @@ initializeAnalytics()
 document.addEventListener('DOMContentLoaded', () => {
   setupWaitlistForm()
   setupSmoothScroll()
+  setupMobileMenu()
   initDemo()
 })

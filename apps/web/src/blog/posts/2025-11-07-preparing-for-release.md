@@ -6,8 +6,6 @@ slug: 'preparing-for-release'
 excerpt: 'Features, and why we think they are important.'
 ---
 
-# Building Menu Book: Preparing for release
-
 Why are we building a system to do this when a simple spreadsheet could work?
 
 The best answer is, because we could. Spreadsheets have their usage, but also their limitations. They work when data is logical, but fail when things get more complex; when you need weird conversions, recipes as ingredients, historical pricing changes, etc.

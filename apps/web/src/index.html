@@ -3,11 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Menu Book - Master Your Food Service Profits</title>
+    <title>Menu Book - Know Your Margins, Protect Your Profits</title>
     <meta
       name="description"
-      content="Calculate recipe costs, track margins, and maximize profits for your food service business. Built for cafes, restaurants, and food service operators."
+      content="When supplier prices rise, know exactly how it affects your dishes. Menu Book helps cafes and restaurants track recipe costs and protect margins in an inflationary world."
     />
+
+    <!-- Preconnect to external origins for faster resource loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
     <!-- SEO Meta Tags -->
     <meta
@@ -16,7 +22,8 @@
     />
     <meta name="author" content="GoBowling Shipley Lanes" />
     <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#2563EB" />
+    <meta name="color-scheme" content="light" />
     <link rel="canonical" href="https://getmenubook.com/" />
 
     <!-- Open Graph / Facebook -->
@@ -24,13 +31,15 @@
     <meta property="og:url" content="https://getmenubook.com/" />
     <meta
       property="og:title"
-      content="Menu Book - Master Your Food Service Profits"
+      content="Menu Book - Know Your Margins, Protect Your Profits"
     />
     <meta
       property="og:description"
-      content="Calculate recipe costs, track margins, and maximize profits for your food service business. Built for cafes, restaurants, and food service operators."
+      content="When supplier prices rise, know exactly how it affects your dishes. Menu Book helps cafes and restaurants track recipe costs and protect margins."
     />
     <meta property="og:image" content="https://getmenubook.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="Menu Book" />
     <meta property="og:locale" content="en_GB" />
 
@@ -39,11 +48,11 @@
     <meta name="twitter:url" content="https://getmenubook.com/" />
     <meta
       name="twitter:title"
-      content="Menu Book - Master Your Food Service Profits"
+      content="Menu Book - Know Your Margins, Protect Your Profits"
     />
     <meta
       name="twitter:description"
-      content="Calculate recipe costs, track margins, and maximize profits for your food service business. Built for cafes, restaurants, and food service operators."
+      content="When supplier prices rise, know exactly how it affects your dishes. Menu Book helps cafes and restaurants track recipe costs and protect margins."
     />
     <meta
       name="twitter:image"
@@ -56,10 +65,24 @@
     <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
     <link rel="manifest" href="./manifest.json" />
 
+    <!-- Fonts - loaded with display=swap for better performance -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      />
+    </noscript>
+
     <!-- Styles -->
     <link rel="stylesheet" href="./styles.css" />
 
-    <!-- Scripts -->
+    <!-- Scripts - module for modern browsers, deferred by default -->
     <script type="module" src="./scripts/main.js"></script>
 
     <!-- Structured Data (JSON-LD) -->
@@ -116,100 +139,337 @@
       }
     </script>
   </head>
-  <body class="bg-gray-50">
+  <body>
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center space-x-2">
-            <span class="text-xl font-bold text-gray-900">Menu Book</span>
-          </div>
-          <nav class="hidden md:flex space-x-8">
-            <a href="#features" class="text-gray-600 hover:text-gray-900"
-              >Features</a
-            >
-            <a href="#demo" class="text-gray-600 hover:text-gray-900">Demo</a>
-            <a href="#pricing" class="text-gray-600 hover:text-gray-900"
-              >Pricing</a
-            >
-            <a href="./blog" class="text-gray-600 hover:text-gray-900">Blog</a>
+    <header
+      class="sticky top-0 z-50 bg-white/80 backdrop-blur-fallback border-b border-neutral-100"
+    >
+      <div class="container-main">
+        <div class="flex justify-between items-center h-16">
+          <!-- Logo -->
+          <a href="/" class="flex items-center gap-2">
+            <span class="text-xl font-bold text-neutral-900">Menu Book</span>
+          </a>
+
+          <!-- Desktop Navigation -->
+          <nav class="hidden md:flex items-center gap-8">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#demo" class="nav-link">Demo</a>
+            <a href="#pricing" class="nav-link">Pricing</a>
+            <a href="./blog" class="nav-link">Blog</a>
           </nav>
-          <div>
-            <a
-              href="#signup"
-              class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
+
+          <!-- CTA Button -->
+          <div class="flex items-center gap-4">
+            <a href="#signup" class="btn-primary hidden sm:inline-flex">
               Get Early Access
             </a>
+            <!-- Mobile Menu Button -->
+            <button
+              type="button"
+              id="mobile-menu-btn"
+              class="btn-ghost md:hidden"
+              aria-label="Toggle menu"
+              aria-expanded="false"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
           </div>
         </div>
+
+        <!-- Mobile Navigation -->
+        <nav id="mobile-menu" class="hidden md:hidden pb-4">
+          <div class="flex flex-col gap-2">
+            <a href="#features" class="nav-link py-2">Features</a>
+            <a href="#demo" class="nav-link py-2">Demo</a>
+            <a href="#pricing" class="nav-link py-2">Pricing</a>
+            <a href="./blog" class="nav-link py-2">Blog</a>
+            <a href="#signup" class="btn-primary mt-2 sm:hidden"
+              >Get Early Access</a
+            >
+          </div>
+        </nav>
       </div>
     </header>
 
     <!-- Hero Section -->
-    <section class="hero-gradient text-white py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <h1 class="text-5xl md:text-6xl font-bold mb-6">
-            Stop Guessing.<br />Start Profiting.
-          </h1>
-          <p class="text-xl md:text-2xl mb-8 text-purple-100 max-w-3xl mx-auto">
-            The only margin calculator built specifically for food service
-            operations. Calculate recipe costs, track ingredients, and hit your
-            target margins—every time.
-          </p>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="#signup"
-              class="bg-white text-purple-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg"
-            >
-              Join the Waitlist
-            </a>
-            <a
-              href="#features"
-              class="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-purple-600 transition-colors"
-            >
-              See Features
-            </a>
+    <section class="section-lg bg-white">
+      <div class="container-main">
+        <div class="max-w-4xl mx-auto text-center">
+          <!-- Badge -->
+          <div class="inline-flex items-center gap-2 badge-primary mb-6">
+            <span
+              class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"
+            ></span>
+            Launching Soon
           </div>
-          <p class="mt-6 text-purple-200">
-            ✨ Launching Soon | 🎯 Built for Cafes, Restaurants & Food Service
+
+          <!-- Headline -->
+          <h1 class="heading-1 mb-6 text-balance">
+            Know Your Margins.<br class="hidden sm:block" />
+            Protect Your Profits.
+          </h1>
+
+          <!-- Subheadline -->
+          <p class="subheading max-w-2xl mx-auto mb-10">
+            Supplier prices up again? VAT changes? Menu Book shows you exactly
+            how every cost increase affects your dishes—so you can adjust prices
+            with confidence, not guesswork.
           </p>
+
+          <!-- CTA Buttons -->
+          <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <a href="#signup" class="btn-primary btn-lg">
+              Join the Waitlist
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </a>
+            <a href="#demo" class="btn-secondary btn-lg"> Try the Demo </a>
+          </div>
+
+          <!-- Social Proof -->
+          <p class="body-small text-neutral-500">
+            Built by food service operators, for food service operators
+          </p>
+        </div>
+
+        <!-- Hero Image Placeholder - App Mockup -->
+        <div class="mt-16 max-w-5xl mx-auto">
+          <div
+            class="card-elevated rounded-2xl overflow-hidden bg-neutral-900 p-1"
+          >
+            <!-- Browser Chrome -->
+            <div
+              class="bg-neutral-800 rounded-t-xl px-4 py-3 flex items-center gap-2"
+            >
+              <div class="flex gap-1.5">
+                <div class="w-3 h-3 rounded-full bg-neutral-600"></div>
+                <div class="w-3 h-3 rounded-full bg-neutral-600"></div>
+                <div class="w-3 h-3 rounded-full bg-neutral-600"></div>
+              </div>
+              <div class="flex-1 mx-4">
+                <div
+                  class="bg-neutral-700 rounded-md px-3 py-1.5 text-xs text-neutral-400 max-w-md mx-auto"
+                >
+                  localhost:3000
+                </div>
+              </div>
+            </div>
+            <!-- App Content Mockup -->
+            <div class="bg-neutral-50 rounded-b-xl p-6 min-h-[400px]">
+              <div class="grid grid-cols-12 gap-6 h-full">
+                <!-- Sidebar -->
+                <div class="col-span-3 space-y-4">
+                  <div class="h-8 bg-primary-100 rounded-lg w-3/4"></div>
+                  <div class="space-y-2">
+                    <div class="h-4 bg-neutral-200 rounded w-full"></div>
+                    <div class="h-4 bg-primary-200 rounded w-full"></div>
+                    <div class="h-4 bg-neutral-200 rounded w-full"></div>
+                    <div class="h-4 bg-neutral-200 rounded w-5/6"></div>
+                  </div>
+                  <div class="pt-4 space-y-2">
+                    <div class="h-3 bg-neutral-300 rounded w-1/2"></div>
+                    <div class="h-4 bg-neutral-200 rounded w-full"></div>
+                    <div class="h-4 bg-neutral-200 rounded w-full"></div>
+                  </div>
+                </div>
+                <!-- Main Content -->
+                <div class="col-span-9 space-y-4">
+                  <div class="flex justify-between items-center">
+                    <div class="h-6 bg-neutral-300 rounded w-48"></div>
+                    <div class="h-8 bg-primary-500 rounded-lg w-32"></div>
+                  </div>
+                  <!-- Recipe Cards -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div
+                      class="bg-white rounded-xl p-4 border border-neutral-200 space-y-3"
+                    >
+                      <div class="flex justify-between">
+                        <div class="h-5 bg-neutral-300 rounded w-32"></div>
+                        <div
+                          class="h-5 bg-success-200 text-success-700 rounded px-2 w-16"
+                        ></div>
+                      </div>
+                      <div class="space-y-2">
+                        <div class="h-3 bg-neutral-100 rounded w-full"></div>
+                        <div class="h-3 bg-neutral-100 rounded w-3/4"></div>
+                      </div>
+                      <div class="flex justify-between pt-2">
+                        <div class="h-4 bg-neutral-200 rounded w-20"></div>
+                        <div class="h-4 bg-neutral-300 rounded w-16"></div>
+                      </div>
+                    </div>
+                    <div
+                      class="bg-white rounded-xl p-4 border border-neutral-200 space-y-3"
+                    >
+                      <div class="flex justify-between">
+                        <div class="h-5 bg-neutral-300 rounded w-28"></div>
+                        <div
+                          class="h-5 bg-success-200 text-success-700 rounded px-2 w-16"
+                        ></div>
+                      </div>
+                      <div class="space-y-2">
+                        <div class="h-3 bg-neutral-100 rounded w-full"></div>
+                        <div class="h-3 bg-neutral-100 rounded w-2/3"></div>
+                      </div>
+                      <div class="flex justify-between pt-2">
+                        <div class="h-4 bg-neutral-200 rounded w-20"></div>
+                        <div class="h-4 bg-neutral-300 rounded w-16"></div>
+                      </div>
+                    </div>
+                    <div
+                      class="bg-white rounded-xl p-4 border border-neutral-200 space-y-3"
+                    >
+                      <div class="flex justify-between">
+                        <div class="h-5 bg-neutral-300 rounded w-36"></div>
+                        <div
+                          class="h-5 bg-warning-200 text-warning-700 rounded px-2 w-16"
+                        ></div>
+                      </div>
+                      <div class="space-y-2">
+                        <div class="h-3 bg-neutral-100 rounded w-full"></div>
+                        <div class="h-3 bg-neutral-100 rounded w-5/6"></div>
+                      </div>
+                      <div class="flex justify-between pt-2">
+                        <div class="h-4 bg-neutral-200 rounded w-20"></div>
+                        <div class="h-4 bg-neutral-300 rounded w-16"></div>
+                      </div>
+                    </div>
+                    <div
+                      class="bg-white rounded-xl p-4 border border-neutral-200 space-y-3"
+                    >
+                      <div class="flex justify-between">
+                        <div class="h-5 bg-neutral-300 rounded w-24"></div>
+                        <div
+                          class="h-5 bg-success-200 text-success-700 rounded px-2 w-16"
+                        ></div>
+                      </div>
+                      <div class="space-y-2">
+                        <div class="h-3 bg-neutral-100 rounded w-full"></div>
+                        <div class="h-3 bg-neutral-100 rounded w-4/5"></div>
+                      </div>
+                      <div class="flex justify-between pt-2">
+                        <div class="h-4 bg-neutral-200 rounded w-20"></div>
+                        <div class="h-4 bg-neutral-300 rounded w-16"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Problem Section -->
-    <section class="py-16 bg-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Sound Familiar?
-          </h2>
+    <section class="section bg-neutral-50">
+      <div class="container-main">
+        <div class="section-header">
+          <p class="eyebrow">The Reality</p>
+          <h2 class="heading-2">Costs Are Rising. Are Your Prices?</h2>
         </div>
+
         <div class="grid md:grid-cols-3 gap-8">
-          <div class="text-center p-6">
-            <div class="text-4xl mb-4">😓</div>
-            <h3 class="text-xl font-semibold mb-2">Pricing by Gut Feel</h3>
-            <p class="text-gray-600">
-              You're setting menu prices based on what "feels right" rather than
-              actual costs and margins.
+          <!-- Problem 1 -->
+          <div class="card card-padding text-center">
+            <div
+              class="w-14 h-14 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-5"
+            >
+              <svg
+                class="w-7 h-7 text-neutral-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
+                />
+              </svg>
+            </div>
+            <h3 class="heading-4 mb-2">Supplier Prices Keep Climbing</h3>
+            <p class="body text-neutral-500">
+              Another email, another price increase. But which dishes does it
+              actually affect? And by how much?
             </p>
           </div>
-          <div class="text-center p-6">
-            <div class="text-4xl mb-4">📊</div>
-            <h3 class="text-xl font-semibold mb-2">Spreadsheet Hell</h3>
-            <p class="text-gray-600">
-              Juggling multiple Excel files, manually calculating costs, and
-              praying you didn't make a mistake.
+
+          <!-- Problem 2 -->
+          <div class="card card-padding text-center">
+            <div
+              class="w-14 h-14 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-5"
+            >
+              <svg
+                class="w-7 h-7 text-neutral-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"
+                />
+              </svg>
+            </div>
+            <h3 class="heading-4 mb-2">VAT Changes Hit Hard</h3>
+            <p class="body text-neutral-500">
+              When VAT rates shift, recalculating every dish by hand is a
+              nightmare. Most people just absorb the hit.
             </p>
           </div>
-          <div class="text-center p-6">
-            <div class="text-4xl mb-4">💸</div>
-            <h3 class="text-xl font-semibold mb-2">Shrinking Margins</h3>
-            <p class="text-gray-600">
-              Ingredient costs keep rising, but you're not sure which recipes
-              are actually profitable anymore.
+
+          <!-- Problem 3 -->
+          <div class="card card-padding text-center">
+            <div
+              class="w-14 h-14 bg-neutral-100 rounded-2xl flex items-center justify-center mx-auto mb-5"
+            >
+              <svg
+                class="w-7 h-7 text-neutral-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"
+                />
+              </svg>
+            </div>
+            <h3 class="heading-4 mb-2">Flying Blind on Margins</h3>
+            <p class="body text-neutral-500">
+              You know costs have gone up. You think you're still profitable.
+              But you can't say for certain which dishes are winners and which
+              are losers.
             </p>
           </div>
         </div>
@@ -217,100 +477,160 @@
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="py-20 bg-gray-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-          <h2 class="text-4xl font-bold text-gray-900 mb-4">
-            Everything You Need to Master Your Margins
-          </h2>
-          <p class="text-xl text-gray-600">
-            Purpose-built for food service operators who care about
-            profitability
+    <section id="features" class="section bg-white">
+      <div class="container-main">
+        <div class="section-header">
+          <p class="eyebrow">How It Works</p>
+          <h2 class="heading-2">Update Once, See the Impact Everywhere</h2>
+          <p class="subheading">
+            When your supplier raises prices, just update the ingredient once.
+            Menu Book instantly recalculates every affected dish.
           </p>
         </div>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <!-- Feature 1 -->
-          <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
-            <div
-              class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4"
-            >
-              <span class="text-2xl">🧮</span>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V13.5zm0 2.25h.008v.008H8.25v-.008zm0 2.25h.008v.008H8.25V18zm2.498-6.75h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V13.5zm0 2.25h.007v.008h-.007v-.008zm0 2.25h.007v.008h-.007V18zm2.504-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zm0 2.25h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V18zm2.498-6.75h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V13.5zM8.25 6h7.5v2.25h-7.5V6zM12 2.25c-1.892 0-3.758.11-5.593.322C5.307 2.7 4.5 3.65 4.5 4.757V19.5a2.25 2.25 0 002.25 2.25h10.5a2.25 2.25 0 002.25-2.25V4.757c0-1.108-.806-2.057-1.907-2.185A48.507 48.507 0 0012 2.25z"
+                />
+              </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Recursive Costing</h3>
-            <p class="text-gray-600">
-              Calculate costs for recipes with sub-recipes. Your "Pizza Sauce"
-              recipe automatically updates when ingredient prices change.
+            <h3 class="feature-title">Recipes Within Recipes</h3>
+            <p class="feature-description">
+              Your burger uses your special sauce. Your sauce uses 6
+              ingredients. Change one price and everything updates
+              automatically.
             </p>
           </div>
 
           <!-- Feature 2 -->
-          <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
-            <div
-              class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4"
-            >
-              <span class="text-2xl">💷</span>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"
+                />
+              </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Smart VAT Handling</h3>
-            <p class="text-gray-600">
-              Handles VAT automatically for both ingredient purchases and
-              customer pricing. No more manual calculations.
+            <h3 class="feature-title">VAT Done Right</h3>
+            <p class="feature-description">
+              Whether you price inclusive or exclusive, buy VAT-exempt or
+              standard-rated—Menu Book handles it all without the headache.
             </p>
           </div>
 
           <!-- Feature 3 -->
-          <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
-            <div
-              class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4"
-            >
-              <span class="text-2xl">📏</span>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+                />
+              </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Unit Conversion</h3>
-            <p class="text-gray-600">
-              Buy in bulk (2kg), use in grams (50g). Custom units supported (1
-              box = 24 bags). It just works.
+            <h3 class="feature-title">Real-World Units</h3>
+            <p class="feature-description">
+              Buy cheese by the kilo, use it by the gram. Buy rolls by the bag,
+              use them individually. No more mental maths.
             </p>
           </div>
 
           <!-- Feature 4 -->
-          <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
-            <div
-              class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4"
-            >
-              <span class="text-2xl">🏪</span>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z"
+                />
+              </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Supplier Tracking</h3>
-            <p class="text-gray-600">
-              Track which supplier each ingredient comes from. Compare costs and
-              switch suppliers with confidence.
+            <h3 class="feature-title">Know Your Suppliers</h3>
+            <p class="feature-description">
+              Track where every ingredient comes from. When one supplier raises
+              prices, instantly see if switching makes sense.
             </p>
           </div>
 
           <!-- Feature 5 -->
-          <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
-            <div
-              class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4"
-            >
-              <span class="text-2xl">📊</span>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"
+                />
+              </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Margin Reports</h3>
-            <p class="text-gray-600">
-              See at a glance which recipes meet your target margins and which
-              need price adjustments.
+            <h3 class="feature-title">Spot Problems Fast</h3>
+            <p class="feature-description">
+              Instant reports show which dishes are hitting your margin targets
+              and which need attention. No more guessing.
             </p>
           </div>
 
           <!-- Feature 6 -->
-          <div class="feature-card bg-white p-6 rounded-xl shadow-lg">
-            <div
-              class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4"
-            >
-              <span class="text-2xl">📱</span>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z"
+                />
+              </svg>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Web & CLI</h3>
-            <p class="text-gray-600">
-              Beautiful web UI for your team, powerful CLI for batch operations.
-              Import/export via YAML/JSON.
+            <h3 class="feature-title">Your Way</h3>
+            <p class="feature-description">
+              Simple web interface for daily use. Powerful command line for bulk
+              updates. Your recipes, your data, your control.
             </p>
           </div>
         </div>
@@ -318,17 +638,24 @@
     </section>
 
     <!-- Benefits Section -->
-    <section id="benefits" class="py-20 bg-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-2 gap-12 items-center">
+    <section id="benefits" class="section bg-neutral-50">
+      <div class="container-main">
+        <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <!-- Left: Content -->
           <div>
-            <h2 class="text-4xl font-bold text-gray-900 mb-6">
-              Built by Food Service Operators, For Food Service Operators
-            </h2>
-            <div class="space-y-4">
-              <div class="flex items-start">
+            <p class="eyebrow mb-3">Why Menu Book</p>
+            <h2 class="heading-2 mb-6">We Built This Because We Needed It</h2>
+            <p class="body text-neutral-600 mb-6">
+              Menu Book was born in a real kitchen. We run a food service
+              operation and got tired of spreadsheet chaos every time costs
+              changed. So we built something better.
+            </p>
+
+            <div class="space-y-5">
+              <!-- Benefit 1 -->
+              <div class="flex gap-4">
                 <div
-                  class="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mt-1"
+                  class="flex-shrink-0 w-6 h-6 bg-success-500 rounded-full flex items-center justify-center mt-0.5"
                 >
                   <svg
                     class="w-4 h-4 text-white"
@@ -341,21 +668,24 @@
                       stroke-linejoin="round"
                       stroke-width="2"
                       d="M5 13l4 4L19 7"
-                    ></path>
+                    />
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <h3 class="text-lg font-semibold">
-                    Stop Losing Money on "Popular" Items
+                <div>
+                  <h3 class="font-semibold text-neutral-900 mb-1">
+                    Find the Hidden Loss-Makers
                   </h3>
-                  <p class="text-gray-600">
-                    Discover which best-sellers are actually costing you money
+                  <p class="body-small">
+                    That popular dish everyone loves? It might be costing you
+                    money. Now you'll know for sure.
                   </p>
                 </div>
               </div>
-              <div class="flex items-start">
+
+              <!-- Benefit 2 -->
+              <div class="flex gap-4">
                 <div
-                  class="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mt-1"
+                  class="flex-shrink-0 w-6 h-6 bg-success-500 rounded-full flex items-center justify-center mt-0.5"
                 >
                   <svg
                     class="w-4 h-4 text-white"
@@ -368,22 +698,24 @@
                       stroke-linejoin="round"
                       stroke-width="2"
                       d="M5 13l4 4L19 7"
-                    ></path>
+                    />
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <h3 class="text-lg font-semibold">
-                    Price Changes in Seconds
+                <div>
+                  <h3 class="font-semibold text-neutral-900 mb-1">
+                    React to Price Changes Instantly
                   </h3>
-                  <p class="text-gray-600">
-                    Update ingredient costs once, see impact across all recipes
-                    instantly
+                  <p class="body-small">
+                    Supplier email lands at 9am. By 9:05, you know exactly which
+                    dishes need repricing.
                   </p>
                 </div>
               </div>
-              <div class="flex items-start">
+
+              <!-- Benefit 3 -->
+              <div class="flex gap-4">
                 <div
-                  class="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mt-1"
+                  class="flex-shrink-0 w-6 h-6 bg-success-500 rounded-full flex items-center justify-center mt-0.5"
                 >
                   <svg
                     class="w-4 h-4 text-white"
@@ -396,22 +728,24 @@
                       stroke-linejoin="round"
                       stroke-width="2"
                       d="M5 13l4 4L19 7"
-                    ></path>
+                    />
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <h3 class="text-lg font-semibold">
-                    Negotiate with Confidence
+                <div>
+                  <h3 class="font-semibold text-neutral-900 mb-1">
+                    Price with Confidence
                   </h3>
-                  <p class="text-gray-600">
-                    Know exactly how much a supplier price increase affects your
-                    bottom line
+                  <p class="body-small">
+                    No more "I think we're okay" - know your actual margins
+                    before you set your menu prices.
                   </p>
                 </div>
               </div>
-              <div class="flex items-start">
+
+              <!-- Benefit 4 -->
+              <div class="flex gap-4">
                 <div
-                  class="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mt-1"
+                  class="flex-shrink-0 w-6 h-6 bg-success-500 rounded-full flex items-center justify-center mt-0.5"
                 >
                   <svg
                     class="w-4 h-4 text-white"
@@ -424,139 +758,170 @@
                       stroke-linejoin="round"
                       stroke-width="2"
                       d="M5 13l4 4L19 7"
-                    ></path>
+                    />
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <h3 class="text-lg font-semibold">
-                    Version Control Your Recipes
+                <div>
+                  <h3 class="font-semibold text-neutral-900 mb-1">
+                    Your Data, Your Control
                   </h3>
-                  <p class="text-gray-600">
-                    Store recipes in git, track changes over time, collaborate
-                    with your team
+                  <p class="body-small">
+                    Everything stored locally. Export anytime. No lock-in, no
+                    surprises.
                   </p>
                 </div>
               </div>
             </div>
           </div>
-          <div
-            class="bg-gradient-to-br from-purple-50 to-blue-50 p-8 rounded-2xl"
-          >
-            <div class="space-y-6">
-              <div class="bg-white p-6 rounded-lg shadow-md">
-                <div class="flex justify-between items-start mb-4">
-                  <div>
-                    <h4 class="font-semibold text-lg">Cheese Sandwich</h4>
-                    <p class="text-sm text-gray-500">
-                      Cost: £0.37 | Price: £3.50
-                    </p>
-                  </div>
-                  <span class="text-2xl font-bold text-green-600">89.4%</span>
+
+          <!-- Right: Preview Card -->
+          <div class="card-elevated p-8 rounded-2xl">
+            <div class="card card-padding mb-6">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h4 class="font-semibold text-lg text-neutral-900">
+                    Cheese Sandwich
+                  </h4>
+                  <p class="body-small">Cost: £0.37 | Price: £3.50</p>
                 </div>
-                <div class="text-sm text-gray-600">
-                  <div class="flex justify-between mb-1">
-                    <span>Bread (2 slices)</span>
-                    <span>£0.12</span>
-                  </div>
-                  <div class="flex justify-between mb-1">
-                    <span>Cheese (30g)</span>
-                    <span>£0.25</span>
-                  </div>
-                  <div class="border-t pt-2 flex justify-between font-semibold">
-                    <span>Profit</span>
-                    <span class="text-green-600">£3.13</span>
-                  </div>
+                <span class="text-2xl font-bold text-success-500">89.4%</span>
+              </div>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between text-neutral-600">
+                  <span>Bread (2 slices)</span>
+                  <span>£0.12</span>
+                </div>
+                <div class="flex justify-between text-neutral-600">
+                  <span>Cheese (30g)</span>
+                  <span>£0.25</span>
+                </div>
+                <div
+                  class="border-t border-neutral-100 pt-2 flex justify-between font-semibold"
+                >
+                  <span class="text-neutral-900">Profit</span>
+                  <span class="text-success-500">£3.13</span>
                 </div>
               </div>
-              <p class="text-center text-gray-600 italic">
-                "We discovered 3 recipes were losing money. Fixed our pricing
-                and increased profits by 18%."
-                <br /><span class="font-semibold">— Sarah, Cafe Owner</span>
-              </p>
             </div>
+
+            <p class="text-center body-small text-neutral-500">
+              See exactly what each dish costs—down to the penny.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Interactive Demo Section -->
-    <section id="demo" class="py-20 bg-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-          <h2 class="text-4xl font-bold text-gray-900 mb-4">Try It Yourself</h2>
-          <p class="text-xl text-gray-600">
-            See how Menu Book calculates costs and margins in real-time
+    <section id="demo" class="section bg-white">
+      <div class="container-main">
+        <div class="section-header">
+          <p class="eyebrow">See It In Action</p>
+          <h2 class="heading-2">Change a Price, See the Impact</h2>
+          <p class="subheading">
+            Try adjusting the ingredient costs below. Watch how the margin
+            updates instantly—that's what happens across your entire menu.
           </p>
         </div>
 
         <div
-          class="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl"
+          class="card-elevated rounded-2xl overflow-hidden max-w-5xl mx-auto"
         >
-          <!-- Left Panel: Ingredients -->
-          <div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">
-              📦 Ingredient Prices
-            </h3>
-            <p class="text-sm text-gray-600 mb-4">
-              Edit the purchase prices and watch the recipe cost update
-            </p>
-            <div id="demo-ingredients" class="space-y-3"></div>
-          </div>
-
-          <!-- Right Panel: Recipe -->
-          <div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">
-              🍳 Recipe Calculator
-            </h3>
-            <p class="text-sm text-gray-600 mb-4">
-              Change amounts, remove ingredients, or adjust the sell price
-            </p>
+          <div class="grid md:grid-cols-2">
+            <!-- Left Panel: Ingredients -->
             <div
-              id="demo-recipe"
-              class="bg-white p-6 rounded-xl shadow-lg"
-            ></div>
+              class="p-6 lg:p-8 bg-neutral-50 border-b md:border-b-0 md:border-r border-neutral-100"
+            >
+              <div class="flex items-center gap-2 mb-2">
+                <svg
+                  class="w-5 h-5 text-primary-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
+                  />
+                </svg>
+                <h3 class="font-semibold text-neutral-900">
+                  Ingredient Prices
+                </h3>
+              </div>
+              <p class="body-small mb-6">
+                Edit the purchase prices and watch the recipe cost update
+              </p>
+              <div id="demo-ingredients" class="space-y-3"></div>
+            </div>
+
+            <!-- Right Panel: Recipe -->
+            <div class="p-6 lg:p-8">
+              <div class="flex items-center gap-2 mb-2">
+                <svg
+                  class="w-5 h-5 text-primary-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.5"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                  />
+                </svg>
+                <h3 class="font-semibold text-neutral-900">
+                  Recipe Calculator
+                </h3>
+              </div>
+              <p class="body-small mb-6">
+                Change amounts, remove ingredients, or adjust the sell price
+              </p>
+              <div id="demo-recipe"></div>
+            </div>
           </div>
         </div>
 
-        <div class="text-center mt-12">
-          <p class="text-gray-600 mb-6">
-            This is just a simple demo. The full version includes sub-recipes,
-            multiple suppliers, historical tracking, and more!
+        <div class="text-center mt-10">
+          <p class="body text-neutral-500 mb-6">
+            This is a simplified demo. The full version handles recipes within
+            recipes, multiple suppliers, VAT calculations, and much more.
           </p>
-          <a
-            href="#signup"
-            class="inline-block bg-gradient-to-br from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-xl transition-all"
-          >
-            Join Waitlist for Full Access
-          </a>
+          <a href="#signup" class="btn-primary btn-lg"> Get Early Access </a>
         </div>
       </div>
     </section>
 
     <!-- Pricing Section -->
-    <section id="pricing" class="py-20 bg-gray-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-          <h2 class="text-4xl font-bold text-gray-900 mb-4">
-            Simple, Transparent Pricing
-          </h2>
-          <p class="text-xl text-gray-600">
-            Choose the plan that's right for your business
+    <section id="pricing" class="section bg-neutral-50">
+      <div class="container-main">
+        <div class="section-header">
+          <p class="eyebrow">Pricing</p>
+          <h2 class="heading-2">Start Free, Upgrade When You're Ready</h2>
+          <p class="subheading">
+            No credit card required. No time limits on the free plan.
           </p>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           <!-- Free Tier -->
-          <div class="bg-white p-8 rounded-xl shadow-lg">
-            <h3 class="text-2xl font-bold mb-4">Free</h3>
-            <div class="mb-6">
-              <span class="text-4xl font-bold">£0</span>
-              <span class="text-gray-600">/month</span>
+          <div class="pricing-card">
+            <div>
+              <h3 class="pricing-name">Free</h3>
+              <div class="pricing-price">
+                £0<span class="pricing-period">/month</span>
+              </div>
+              <p class="pricing-description">
+                For small menus and testing the waters
+              </p>
             </div>
-            <ul class="space-y-3 mb-8">
-              <li class="flex items-center">
+
+            <ul class="pricing-features">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-green-500 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -566,13 +931,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Up to 50 recipes
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-green-500 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -582,13 +947,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Unlimited ingredients
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-green-500 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -598,13 +963,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Web UI access
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-green-500 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -614,37 +979,32 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 CLI tool
               </li>
             </ul>
-            <a
-              href="#signup"
-              class="block text-center bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
-            >
-              Join Waitlist
-            </a>
+
+            <a href="#signup" class="btn-secondary w-full">Join Waitlist</a>
           </div>
 
           <!-- Pro Tier -->
-          <div
-            class="bg-gradient-to-br from-blue-600 to-purple-600 text-white p-8 rounded-xl shadow-2xl transform scale-105"
-          >
-            <div
-              class="absolute top-4 right-4 bg-yellow-400 text-gray-900 text-xs font-bold px-3 py-1 rounded-full"
-            >
-              POPULAR
+          <div class="pricing-card-featured">
+            <span class="pricing-badge">Most Popular</span>
+            <div>
+              <h3 class="pricing-name">Pro</h3>
+              <div class="pricing-price">
+                £20<span class="pricing-period">/month</span>
+              </div>
+              <p class="pricing-description">
+                For serious food service operations
+              </p>
             </div>
-            <h3 class="text-2xl font-bold mb-4">Pro</h3>
-            <div class="mb-6">
-              <span class="text-4xl font-bold">£20</span>
-              <span class="text-purple-200">/month</span>
-            </div>
-            <ul class="space-y-3 mb-8">
-              <li class="flex items-center">
+
+            <ul class="pricing-features">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-yellow-300 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -654,13 +1014,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Unlimited recipes
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-yellow-300 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -670,13 +1030,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Multiple locations
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-yellow-300 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -686,13 +1046,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Historical tracking
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-yellow-300 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -702,13 +1062,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 CSV/Excel export
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-yellow-300 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -718,29 +1078,29 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Priority support
               </li>
             </ul>
-            <a
-              href="#signup"
-              class="block text-center bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-            >
-              Join Waitlist
-            </a>
+
+            <a href="#signup" class="btn-primary w-full">Join Waitlist</a>
           </div>
 
           <!-- Enterprise Tier -->
-          <div class="bg-white p-8 rounded-xl shadow-lg">
-            <h3 class="text-2xl font-bold mb-4">Enterprise</h3>
-            <div class="mb-6">
-              <span class="text-4xl font-bold">Custom</span>
+          <div class="pricing-card">
+            <div>
+              <h3 class="pricing-name">Enterprise</h3>
+              <div class="pricing-price">Custom</div>
+              <p class="pricing-description">
+                Multi-site chains and franchises
+              </p>
             </div>
-            <ul class="space-y-3 mb-8">
-              <li class="flex items-center">
+
+            <ul class="pricing-features">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-green-500 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -750,13 +1110,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Everything in Pro
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-green-500 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -766,13 +1126,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 SSO & SAML
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-green-500 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -782,13 +1142,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 API access
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-green-500 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -798,13 +1158,13 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Dedicated support
               </li>
-              <li class="flex items-center">
+              <li class="pricing-feature">
                 <svg
-                  class="w-5 h-5 text-green-500 mr-2"
+                  class="pricing-feature-icon"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -814,33 +1174,31 @@
                     stroke-linejoin="round"
                     stroke-width="2"
                     d="M5 13l4 4L19 7"
-                  ></path>
+                  />
                 </svg>
                 Custom integrations
               </li>
             </ul>
-            <a
-              href="mailto:sales@getmenubook.com"
-              class="block text-center bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+
+            <a href="mailto:info@getmenubook.com" class="btn-secondary w-full"
+              >Contact Us</a
             >
-              Contact Sales
-            </a>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Signup Section -->
-    <section
-      id="signup"
-      class="py-20 bg-gradient-to-br from-blue-600 to-purple-600 text-white"
-    >
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold mb-6">Get Early Access</h2>
-        <p class="text-xl mb-8 text-purple-100">
-          Join the waitlist and be among the first to get access when we launch.
-          Early users get 3 months of Pro for free!
+    <section id="signup" class="section bg-primary-600">
+      <div class="container-narrow text-center">
+        <h2 class="heading-2 text-white mb-4">
+          Ready to Know Your Real Margins?
+        </h2>
+        <p class="body-large text-primary-100 mb-8">
+          Join the waitlist for early access. We'll notify you as soon as Menu
+          Book is ready—plus early users get 3 months of Pro free.
         </p>
+
         <form
           class="max-w-md mx-auto"
           id="signup-form"
@@ -856,92 +1214,139 @@
           <input type="hidden" name="_captcha" value="false" />
           <input type="hidden" name="_template" value="table" />
 
-          <div class="flex flex-col sm:flex-row gap-4">
+          <div class="input-group">
             <input
               type="email"
               id="email"
               name="email"
               required
               placeholder="Enter your email"
-              class="flex-1 px-6 py-4 rounded-lg text-gray-900 focus:outline-none focus:ring-4 focus:ring-purple-300"
+              class="input input-lg"
             />
-            <button
-              type="submit"
-              class="bg-white text-purple-600 px-8 py-4 rounded-lg font-bold hover:bg-gray-100 transition-colors shadow-lg"
-            >
+            <button type="submit" class="btn-primary btn-lg whitespace-nowrap">
               Join Waitlist
             </button>
           </div>
-          <p class="mt-4 text-sm text-purple-200">
-            No spam. Unsubscribe anytime. We respect your privacy.
+
+          <p class="body-small text-primary-200 mt-4">
+            No spam, just launch updates. Unsubscribe anytime.
           </p>
         </form>
+
         <div id="signup-message" class="mt-6 hidden"></div>
       </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-12">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-4 gap-8">
-          <div>
-            <div class="mb-4">
-              <span class="text-white font-bold text-lg">Menu Book</span>
-            </div>
-            <p class="text-sm">
+    <footer class="bg-white border-t border-neutral-200">
+      <div class="container-main py-12 lg:py-16">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          <!-- Brand -->
+          <div class="sm:col-span-2 lg:col-span-1">
+            <a href="/" class="inline-block mb-4">
+              <span class="text-xl font-bold text-neutral-900">Menu Book</span>
+            </a>
+            <p class="body-small text-neutral-500">
               Master your food service margins with confidence.
             </p>
           </div>
+
+          <!-- Product Links -->
           <div>
-            <h3 class="text-white font-semibold mb-4">Product</h3>
-            <ul class="space-y-2 text-sm">
-              <li><a href="#features" class="hover:text-white">Features</a></li>
-              <li><a href="#pricing" class="hover:text-white">Pricing</a></li>
+            <h3 class="text-neutral-900 font-semibold mb-4">Product</h3>
+            <ul class="space-y-3">
               <li>
-                <a href="#signup" class="hover:text-white">Get Started</a>
+                <a href="#features" class="link-subtle text-sm">Features</a>
+              </li>
+              <li>
+                <a href="#pricing" class="link-subtle text-sm">Pricing</a>
+              </li>
+              <li><a href="#demo" class="link-subtle text-sm">Demo</a></li>
+              <li>
+                <a href="#signup" class="link-subtle text-sm">Get Started</a>
               </li>
             </ul>
           </div>
+
+          <!-- Resources Links -->
           <div>
-            <h3 class="text-white font-semibold mb-4">Contact</h3>
-            <ul class="space-y-2 text-sm">
+            <h3 class="text-neutral-900 font-semibold mb-4">Resources</h3>
+            <ul class="space-y-3">
+              <li><a href="./blog" class="link-subtle text-sm">Blog</a></li>
               <li>
-                <a href="mailto:info@getmenubook.com" class="hover:text-white">
+                <a
+                  href="mailto:info@getmenubook.com"
+                  class="link-subtle text-sm"
+                >
                   info@getmenubook.com
                 </a>
               </li>
-              <li class="text-gray-500">GoBowling Shipley Lanes</li>
             </ul>
           </div>
+
+          <!-- Legal Links -->
           <div>
-            <h3 class="text-white font-semibold mb-4">Legal</h3>
-            <ul class="space-y-2 text-sm">
+            <h3 class="text-neutral-900 font-semibold mb-4">Legal</h3>
+            <ul class="space-y-3">
               <li>
-                <a href="./privacy.html" class="hover:text-white"
+                <a href="./privacy.html" class="link-subtle text-sm"
                   >Privacy Policy</a
                 >
               </li>
               <li>
-                <a href="./terms.html" class="hover:text-white"
+                <a href="./terms.html" class="link-subtle text-sm"
                   >Terms of Service</a
                 >
               </li>
               <li>
-                <a href="./cookies.html" class="hover:text-white"
+                <a href="./cookies.html" class="link-subtle text-sm"
                   >Cookie Policy</a
                 >
               </li>
             </ul>
           </div>
         </div>
-        <div class="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
-          <p>&copy; 2025 Menu Book. All rights reserved.</p>
-          <p class="mt-2">
-            Created by GoBowling Shipley Lanes | Built with ❤️ for food service
-            operators
-          </p>
+
+        <!-- Bottom Bar -->
+        <div class="border-t border-neutral-100 mt-12 pt-8">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-center gap-4"
+          >
+            <p class="body-small text-neutral-400">
+              &copy; 2025 Menu Book. All rights reserved.
+            </p>
+            <p class="body-small text-neutral-400">
+              Built by GoBowling Shipley Lanes
+            </p>
+          </div>
         </div>
       </div>
     </footer>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-consent" class="cookie-consent-banner">
+      <div class="cookie-consent-content">
+        <p class="cookie-consent-text">
+          We use cookies to improve your experience. By continuing, you agree to
+          our
+          <a href="./cookies.html" class="cookie-consent-link">Cookie Policy</a
+          >.
+        </p>
+        <div class="cookie-consent-buttons">
+          <button
+            id="cookie-decline"
+            class="cookie-consent-btn cookie-consent-btn-secondary"
+          >
+            Decline
+          </button>
+          <button
+            id="cookie-accept"
+            class="cookie-consent-btn cookie-consent-btn-primary"
+          >
+            Accept
+          </button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

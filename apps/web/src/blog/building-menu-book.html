@@ -4,320 +4,226 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Building Menu Book: Our Journey Begins - Menu Book Blog</title>
-    <meta
-      name="description"
-      content="Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches."
-    />
+    <meta name="description" content="Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches." />
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <!-- SEO Meta Tags -->
     <meta name="author" content="Harry Wright" />
     <meta name="robots" content="index, follow" />
-    <link
-      rel="canonical"
-      href="https://getmenubook.com/blog/building-menu-book"
-    />
+    <meta name="theme-color" content="#2563EB" />
+    <link rel="canonical" href="https://getmenubook.com/blog/building-menu-book" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="article" />
-    <meta
-      property="og:url"
-      content="https://getmenubook.com/blog/building-menu-book"
-    />
-    <meta
-      property="og:title"
-      content="Building Menu Book: Our Journey Begins"
-    />
-    <meta
-      property="og:description"
-      content="Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches."
-    />
-    <meta property="og:site_name" content="Menu Book Blog" />
-    <meta
-      property="article:published_time"
-      content="Fri Oct 24 2025 01:00:00 GMT+0100 (British Summer Time)"
-    />
+    <meta property="og:url" content="https://getmenubook.com/blog/building-menu-book" />
+    <meta property="og:title" content="Building Menu Book: Our Journey Begins" />
+    <meta property="og:description" content="Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches." />
+    <meta property="og:site_name" content="Menu Book" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="article:published_time" content="2025-10-24T00:00:00.000Z" />
     <meta property="article:author" content="Harry Wright" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:url"
-      content="https://getmenubook.com/blog/building-menu-book"
-    />
-    <meta
-      name="twitter:title"
-      content="Building Menu Book: Our Journey Begins"
-    />
-    <meta
-      name="twitter:description"
-      content="Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches."
-    />
+    <meta name="twitter:url" content="https://getmenubook.com/blog/building-menu-book" />
+    <meta name="twitter:title" content="Building Menu Book: Our Journey Begins" />
+    <meta name="twitter:description" content="Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches." />
 
     <!-- Favicons -->
     <link rel="icon" href="../assets/favicon.ico" sizes="32x32" />
     <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
 
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
+
     <!-- Styles -->
     <link rel="stylesheet" href="../styles.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown-light.min.css"
-      integrity="sha512-X175XRJAO6PHAUi8AA7GP8uUF5Wiv+w9bOi64i02CHKDQBsO1yy0jLSKaUKg/NhRCDYBmOLQCfKaTaXiyZlLrw=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
 
-    <style>
-      .markdown-body {
-        background-color: inherit;
-      }
-    </style>
     <!-- Scripts -->
     <script type="module" src="../scripts/main.js"></script>
+
+    <!-- Structured Data (JSON-LD) for Article -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "Building Menu Book: Our Journey Begins",
+      "description": "Why we're building a modern recipe cost calculator for food service businesses, and what makes Menu Book different from traditional spreadsheet approaches.",
+      "author": {
+        "@type": "Person",
+        "name": "Harry Wright"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Menu Book",
+        "url": "https://getmenubook.com"
+      },
+      "datePublished": "2025-10-24T00:00:00.000Z",
+      "dateModified": "2025-10-24T00:00:00.000Z",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://getmenubook.com/blog/building-menu-book"
+      },
+      "url": "https://getmenubook.com/blog/building-menu-book"
+    }
+    </script>
   </head>
-  <body class="bg-gray-50">
+  <body>
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center space-x-2">
-            <a href="/" class="text-xl font-bold text-gray-900">Menu Book</a>
-          </div>
-          <nav class="hidden md:flex space-x-8">
-            <a href="/#features" class="text-gray-600 hover:text-gray-900"
-              >Features</a
-            >
-            <a href="/#demo" class="text-gray-600 hover:text-gray-900">Demo</a>
-            <a href="/#pricing" class="text-gray-600 hover:text-gray-900"
-              >Pricing</a
-            >
-            <a
-              href="/blog"
-              class="text-blue-600 hover:text-blue-700 font-medium"
-              >Blog</a
-            >
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-fallback border-b border-neutral-100">
+      <div class="container-main">
+        <div class="flex justify-between items-center h-16">
+          <!-- Logo -->
+          <a href="/" class="flex items-center gap-2">
+            <span class="text-xl font-bold text-neutral-900">Menu Book</span>
+          </a>
+
+          <!-- Desktop Navigation -->
+          <nav class="hidden md:flex items-center gap-8">
+            <a href="/#features" class="nav-link">Features</a>
+            <a href="/#demo" class="nav-link">Demo</a>
+            <a href="/#pricing" class="nav-link">Pricing</a>
+            <a href="/blog" class="nav-link text-primary-600">Blog</a>
           </nav>
-          <div>
-            <a
-              href="/#signup"
-              class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-            >
+
+          <!-- CTA Button -->
+          <div class="flex items-center gap-4">
+            <a href="/#signup" class="btn-primary hidden sm:inline-flex">
               Get Early Access
             </a>
+            <!-- Mobile Menu Button -->
+            <button
+              type="button"
+              id="mobile-menu-btn"
+              class="btn-ghost md:hidden"
+              aria-label="Toggle menu"
+              aria-expanded="false"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
         </div>
+
+        <!-- Mobile Navigation -->
+        <nav id="mobile-menu" class="hidden md:hidden pb-4">
+          <div class="flex flex-col gap-2">
+            <a href="/#features" class="nav-link py-2">Features</a>
+            <a href="/#demo" class="nav-link py-2">Demo</a>
+            <a href="/#pricing" class="nav-link py-2">Pricing</a>
+            <a href="/blog" class="nav-link py-2 text-primary-600">Blog</a>
+            <a href="/#signup" class="btn-primary mt-2 sm:hidden">Get Early Access</a>
+          </div>
+        </nav>
       </div>
     </header>
 
     <!-- Blog Post -->
-    <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <!-- Back to blog -->
-      <a
-        href="/blog"
-        class="inline-flex items-center text-blue-600 hover:text-blue-700 mb-8"
-      >
-        <svg
-          class="w-5 h-5 mr-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 19l-7-7 7-7"
-          ></path>
-        </svg>
-        Back to Blog
-      </a>
+    <article class="section bg-white">
+      <div class="container-narrow">
+        <!-- Back to blog -->
+        <a href="/blog" class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-8 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Back to Blog
+        </a>
 
-      <!-- Post header -->
-      <header class="mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          Building Menu Book: Our Journey Begins
-        </h1>
-        <div class="flex items-center text-gray-600 space-x-4">
-          <time
-            datetime="Fri Oct 24 2025 01:00:00 GMT+0100 (British Summer Time)"
-            >24 October 2025</time
-          >
-          <span>•</span>
-          <span>3 min read</span>
-          <span>•</span>
-          <span>By Harry Wright</span>
+        <!-- Post header -->
+        <header class="mb-12">
+          <h1 class="heading-1 mb-6">Building Menu Book: Our Journey Begins</h1>
+          <div class="flex flex-wrap items-center gap-3 text-neutral-500 body-small">
+            <time datetime="Fri Oct 24 2025 01:00:00 GMT+0100 (British Summer Time)">24 October 2025</time>
+            <span class="w-1 h-1 rounded-full bg-neutral-300"></span>
+            <span>3 min read</span>
+            <span class="w-1 h-1 rounded-full bg-neutral-300"></span>
+            <span>By Harry Wright</span>
+          </div>
+        </header>
+
+        <!-- Post content -->
+        <div class="prose">
+          <p>Running a food service business is tough. Between managing staff, keeping customers happy, and maintaining quality, the last thing you want to worry about is whether your pricing is right.</p>
+<p>But here&#39;s the reality: <strong>if you don&#39;t know your costs, you can&#39;t know your margins</strong>. And if you don&#39;t know your margins, you&#39;re flying blind.</p>
+<h2>The Problem with Spreadsheets</h2>
+<p>Most cafes, restaurants, and food service operators manage their recipe costs in spreadsheets. We know because we did it too at GoBowling Shipley Lanes.</p>
+<p>The problems quickly pile up:</p>
+<ul>
+<li><strong>Manual calculations</strong> that break when you change one cell</li>
+<li><strong>No sub-recipe support</strong> – if your pizza sauce changes, you have to update every pizza recipe manually</li>
+<li><strong>Unit conversion headaches</strong> – buying in kilos, using in grams, costing by portion</li>
+<li><strong>VAT confusion</strong> – are prices ex-VAT or inc-VAT? Different for purchases vs sales</li>
+<li><strong>Version control nightmares</strong> – which spreadsheet is the current one?</li>
+</ul>
+<p>After one too many pricing mistakes, we decided there had to be a better way.</p>
+<h2>What Makes Menu Book Different</h2>
+<p>We&#39;re building Menu Book to solve the problems we actually face:</p>
+<h3>1. <strong>Recursive Cost Calculation</strong></h3>
+<p>Your pizza sauce is a recipe. Your margherita pizza uses that sauce. When the cost of tomatoes goes up, Menu Book automatically recalculates the sauce cost, then the pizza cost. No manual updates.</p>
+<h3>2. <strong>Smart VAT Handling</strong></h3>
+<p>Menu Book knows that ingredient purchase prices might include VAT, but margins should be calculated ex-VAT. Sell prices can be VAT-eligible or not. It handles all the complexity so you don&#39;t have to think about it.</p>
+<h3>3. <strong>Unit Conversion That Just Works</strong></h3>
+<p>Buy flour in 16kg bags, use it in 250g portions. Buy milk in litres, use it in millilitres. Menu Book converts everything automatically using standard units.</p>
+<h3>4. <strong>Git-Friendly Data</strong></h3>
+<p>Your recipes are stored as YAML files, not locked in a database. Version control them with git, share them with your team, back them up anywhere.</p>
+<h3>5. <strong>CLI + Web UI</strong></h3>
+<p>Power users get a fast CLI for bulk operations. Everyone else gets a beautiful web interface. Same data, different interfaces.</p>
+<h2>Building in Public</h2>
+<p>We&#39;re building Menu Book in the open because:</p>
+<ol>
+<li><strong>Accountability</strong> – Telling you what we&#39;re building keeps us focused</li>
+<li><strong>Feedback</strong> – Your input shapes what features we prioritize</li>
+<li><strong>Transparency</strong> – You can see our progress, not just marketing fluff</li>
+<li><strong>Community</strong> – We&#39;re not the only ones solving these problems</li>
+</ol>
+<h2>What&#39;s Next</h2>
+<p>Over the coming weeks, we&#39;ll be sharing:</p>
+<ul>
+<li>Deep dives into specific features (VAT handling, unit conversions, etc.)</li>
+<li>Technical challenges we&#39;re solving</li>
+<li>Design decisions and why we made them</li>
+<li>Customer stories (once we have customers!)</li>
+</ul>
+<p>If you&#39;re interested in following along, <a href="/#signup">join our waitlist</a> to get updates when we launch.</p>
+<h2>Questions?</h2>
+<p>We&#39;d love to hear from you. What recipe costing problems are you facing? What features would make Menu Book useful for your business?</p>
+<p>Email us at <a href="mailto:info@getmenubook.com">info@getmenubook.com</a> or <a href="mailto:sales@getmenubook.com">sales@getmenubook.com</a>.</p>
+<hr>
+<p><em>This is post #1 in our &quot;Building in Public&quot; series. Follow along as we build Menu Book from the ground up.</em></p>
+
         </div>
-      </header>
 
-      <!-- Post content -->
-      <div class="prose prose-lg markdown-body max-w-none">
-        <h1>Building Menu Book: Our Journey Begins</h1>
-        <p>
-          Running a food service business is tough. Between managing staff,
-          keeping customers happy, and maintaining quality, the last thing you
-          want to worry about is whether your pricing is right.
-        </p>
-        <p>
-          But here&#39;s the reality:
-          <strong
-            >if you don&#39;t know your costs, you can&#39;t know your
-            margins</strong
-          >. And if you don&#39;t know your margins, you&#39;re flying blind.
-        </p>
-        <h2>The Problem with Spreadsheets</h2>
-        <p>
-          Most cafes, restaurants, and food service operators manage their
-          recipe costs in spreadsheets. We know because we did it too at
-          GoBowling Shipley Lanes.
-        </p>
-        <p>The problems quickly pile up:</p>
-        <ul>
-          <li>
-            <strong>Manual calculations</strong> that break when you change one
-            cell
-          </li>
-          <li>
-            <strong>No sub-recipe support</strong> – if your pizza sauce
-            changes, you have to update every pizza recipe manually
-          </li>
-          <li>
-            <strong>Unit conversion headaches</strong> – buying in kilos, using
-            in grams, costing by portion
-          </li>
-          <li>
-            <strong>VAT confusion</strong> – are prices ex-VAT or inc-VAT?
-            Different for purchases vs sales
-          </li>
-          <li>
-            <strong>Version control nightmares</strong> – which spreadsheet is
-            the current one?
-          </li>
-        </ul>
-        <p>
-          After one too many pricing mistakes, we decided there had to be a
-          better way.
-        </p>
-        <h2>What Makes Menu Book Different</h2>
-        <p>
-          We&#39;re building Menu Book to solve the problems we actually face:
-        </p>
-        <h3>1. <strong>Recursive Cost Calculation</strong></h3>
-        <p>
-          Your pizza sauce is a recipe. Your margherita pizza uses that sauce.
-          When the cost of tomatoes goes up, Menu Book automatically
-          recalculates the sauce cost, then the pizza cost. No manual updates.
-        </p>
-        <h3>2. <strong>Smart VAT Handling</strong></h3>
-        <p>
-          Menu Book knows that ingredient purchase prices might include VAT, but
-          margins should be calculated ex-VAT. Sell prices can be VAT-eligible
-          or not. It handles all the complexity so you don&#39;t have to think
-          about it.
-        </p>
-        <h3>3. <strong>Unit Conversion That Just Works</strong></h3>
-        <p>
-          Buy flour in 16kg bags, use it in 250g portions. Buy milk in litres,
-          use it in millilitres. Menu Book converts everything automatically
-          using standard units.
-        </p>
-        <h3>4. <strong>Git-Friendly Data</strong></h3>
-        <p>
-          Your recipes are stored as YAML files, not locked in a database.
-          Version control them with git, share them with your team, back them up
-          anywhere.
-        </p>
-        <h3>5. <strong>CLI + Web UI</strong></h3>
-        <p>
-          Power users get a fast CLI for bulk operations. Everyone else gets a
-          beautiful web interface. Same data, different interfaces.
-        </p>
-        <h2>Building in Public</h2>
-        <p>We&#39;re building Menu Book in the open because:</p>
-        <ol>
-          <li>
-            <strong>Accountability</strong> – Telling you what we&#39;re
-            building keeps us focused
-          </li>
-          <li>
-            <strong>Feedback</strong> – Your input shapes what features we
-            prioritize
-          </li>
-          <li>
-            <strong>Transparency</strong> – You can see our progress, not just
-            marketing fluff
-          </li>
-          <li>
-            <strong>Community</strong> – We&#39;re not the only ones solving
-            these problems
-          </li>
-        </ol>
-        <h2>What&#39;s Next</h2>
-        <p>Over the coming weeks, we&#39;ll be sharing:</p>
-        <ul>
-          <li>
-            Deep dives into specific features (VAT handling, unit conversions,
-            etc.)
-          </li>
-          <li>Technical challenges we&#39;re solving</li>
-          <li>Design decisions and why we made them</li>
-          <li>Customer stories (once we have customers!)</li>
-        </ul>
-        <p>
-          If you&#39;re interested in following along,
-          <a href="/#signup">join our waitlist</a> to get updates when we
-          launch.
-        </p>
-        <h2>Questions?</h2>
-        <p>
-          We&#39;d love to hear from you. What recipe costing problems are you
-          facing? What features would make Menu Book useful for your business?
-        </p>
-        <p>
-          Email us at
-          <a href="mailto:info@getmenubook.com">info@getmenubook.com</a> or
-          <a href="mailto:sales@getmenubook.com">sales@getmenubook.com</a>.
-        </p>
-        <hr />
-        <p>
-          <em
-            >This is post #1 in our &quot;Building in Public&quot; series.
-            Follow along as we build Menu Book from the ground up.</em
-          >
-        </p>
+        <!-- Post footer -->
+        <footer class="mt-16 pt-8 border-t border-neutral-200">
+          <div class="card card-padding bg-primary-50 rounded-2xl">
+            <h3 class="heading-4 mb-3">Want to follow our journey?</h3>
+            <p class="body text-neutral-600 mb-6">Join our waitlist to get updates when we launch and exclusive early access.</p>
+            <a href="/#signup" class="btn-primary">
+              Join the Waitlist
+            </a>
+          </div>
+        </footer>
       </div>
-
-      <!-- Post footer -->
-      <footer class="mt-16 pt-8 border-t border-gray-200">
-        <div
-          class="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl"
-        >
-          <h3 class="text-2xl font-bold text-gray-900 mb-4">
-            Want to follow our journey?
-          </h3>
-          <p class="text-gray-700 mb-6">
-            Join our waitlist to get updates when we launch and exclusive early
-            access.
-          </p>
-          <a
-            href="/#signup"
-            class="inline-block bg-gradient-to-br from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-bold hover:shadow-xl transition-all"
-          >
-            Join the Waitlist
-          </a>
-        </div>
-      </footer>
     </article>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-12 mt-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p>&copy; 2025 Menu Book. All rights reserved.</p>
-        <p class="mt-2">Created by GoBowling Shipley Lanes</p>
-        <div class="mt-4 space-x-4">
-          <a href="../privacy.html" class="hover:text-white">Privacy Policy</a>
-          <a href="../terms.html" class="hover:text-white">Terms of Service</a>
-          <a href="../cookies.html" class="hover:text-white">Cookie Policy</a>
+    <footer class="bg-white border-t border-neutral-200">
+      <div class="container-main py-12">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p class="body-small text-neutral-400">
+            &copy; 2025 Menu Book. All rights reserved.
+          </p>
+          <div class="flex items-center gap-6">
+            <a href="../privacy.html" class="link-subtle text-sm">Privacy Policy</a>
+            <a href="../terms.html" class="link-subtle text-sm">Terms of Service</a>
+            <a href="../cookies.html" class="link-subtle text-sm">Cookie Policy</a>
+          </div>
         </div>
       </div>
     </footer>

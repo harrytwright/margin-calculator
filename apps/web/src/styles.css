@@ -1,25 +1,401 @@
+/* 
+ * Fonts are loaded via <link> tags in HTML for better performance.
+ * See index.html for preconnect and font loading.
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   BASE LAYER - Global defaults
+   ============================================ */
+@layer base {
+  html {
+    @apply scroll-smooth antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-neutral-50 text-neutral-700 font-sans;
+  }
+
+  /* Improved focus styles for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+  }
+
+  /* Selection styling */
+  ::selection {
+    @apply bg-primary-100 text-primary-900;
+  }
+}
+
+/* ============================================
+   COMPONENTS LAYER - Reusable UI components
+   ============================================ */
 @layer components {
-  .hero-gradient {
-    @apply bg-gradient-to-br from-blue-600 to-purple-600;
+  /* ----------------------------------------
+     Layout Components
+     ---------------------------------------- */
+  .container-main {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
+  .container-narrow {
+    @apply max-w-3xl mx-auto px-4 sm:px-6;
+  }
+
+  .container-wide {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section {
+    @apply py-16 sm:py-20 lg:py-24;
+  }
+
+  .section-sm {
+    @apply py-12 sm:py-16;
+  }
+
+  .section-lg {
+    @apply py-20 sm:py-24 lg:py-32;
+  }
+
+  /* ----------------------------------------
+     Typography Components
+     ---------------------------------------- */
+  .heading-1 {
+    @apply text-4xl sm:text-5xl lg:text-6xl font-bold text-neutral-900 tracking-tight;
+  }
+
+  .heading-2 {
+    @apply text-3xl sm:text-4xl font-bold text-neutral-900 tracking-tight;
+  }
+
+  .heading-3 {
+    @apply text-2xl sm:text-3xl font-semibold text-neutral-900;
+  }
+
+  .heading-4 {
+    @apply text-xl sm:text-2xl font-semibold text-neutral-900;
+  }
+
+  .subheading {
+    @apply text-lg sm:text-xl text-neutral-600 leading-relaxed;
+  }
+
+  .body-large {
+    @apply text-lg text-neutral-600 leading-relaxed;
+  }
+
+  .body {
+    @apply text-base text-neutral-600 leading-relaxed;
+  }
+
+  .body-small {
+    @apply text-sm text-neutral-500;
+  }
+
+  .label {
+    @apply text-sm font-medium text-neutral-700;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-wider text-primary-600;
+  }
+
+  /* ----------------------------------------
+     Button Components
+     ---------------------------------------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2
+           font-medium rounded-lg
+           transition-all duration-200 ease-smooth
+           focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn px-5 py-2.5
+           bg-primary-600 text-white
+           hover:bg-primary-700 active:bg-primary-800
+           focus-visible:ring-primary-500
+           shadow-soft hover:shadow-medium;
+  }
+
+  .btn-secondary {
+    @apply btn px-5 py-2.5
+           bg-white text-neutral-700
+           border border-neutral-200
+           hover:bg-neutral-50 hover:border-neutral-300 active:bg-neutral-100
+           focus-visible:ring-neutral-400
+           shadow-subtle hover:shadow-soft;
+  }
+
+  .btn-ghost {
+    @apply btn px-4 py-2
+           text-neutral-600
+           hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-200
+           focus-visible:ring-neutral-400;
+  }
+
+  .btn-link {
+    @apply btn px-0 py-0
+           text-primary-600
+           hover:text-primary-700 active:text-primary-800
+           underline-offset-4 hover:underline
+           focus-visible:ring-primary-500;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm;
+  }
+
+  .btn-icon {
+    @apply p-2.5 aspect-square;
+  }
+
+  /* ----------------------------------------
+     Card Components
+     ---------------------------------------- */
+  .card {
+    @apply bg-white rounded-xl border border-neutral-200
+           shadow-subtle
+           transition-all duration-200 ease-smooth;
+  }
+
+  .card-hover {
+    @apply card
+           hover:shadow-medium hover:border-neutral-300
+           hover:-translate-y-0.5;
+  }
+
+  .card-interactive {
+    @apply card-hover cursor-pointer
+           active:translate-y-0 active:shadow-soft;
+  }
+
+  .card-elevated {
+    @apply bg-white rounded-xl
+           shadow-elevated
+           transition-all duration-200 ease-smooth;
+  }
+
+  .card-padding {
+    @apply p-6;
+  }
+
+  .card-padding-lg {
+    @apply p-8;
+  }
+
+  /* ----------------------------------------
+     Input Components
+     ---------------------------------------- */
+  .input {
+    @apply w-full px-4 py-2.5
+           bg-white text-neutral-900
+           border border-neutral-200 rounded-lg
+           placeholder:text-neutral-400
+           transition-all duration-200
+           focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100
+           disabled:bg-neutral-50 disabled:text-neutral-500 disabled:cursor-not-allowed;
+  }
+
+  .input-lg {
+    @apply px-5 py-3 text-lg;
+  }
+
+  .input-error {
+    @apply border-error-500 focus:border-error-500 focus:ring-error-50;
+  }
+
+  .input-group {
+    @apply flex flex-col sm:flex-row gap-3 sm:gap-0;
+  }
+
+  .input-group .input {
+    @apply sm:rounded-r-none sm:border-r-0 focus:z-10;
+  }
+
+  .input-group .btn {
+    @apply sm:rounded-l-none;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-neutral-700 mb-1.5;
+  }
+
+  .form-hint {
+    @apply text-sm text-neutral-500 mt-1.5;
+  }
+
+  .form-error {
+    @apply text-sm text-error-600 mt-1.5;
+  }
+
+  /* ----------------------------------------
+     Badge Components
+     ---------------------------------------- */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5
+           text-xs font-medium rounded-full;
+  }
+
+  .badge-primary {
+    @apply badge bg-primary-50 text-primary-700;
+  }
+
+  .badge-success {
+    @apply badge bg-success-50 text-success-600;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning-50 text-warning-600;
+  }
+
+  .badge-error {
+    @apply badge bg-error-50 text-error-600;
+  }
+
+  .badge-neutral {
+    @apply badge bg-neutral-100 text-neutral-600;
+  }
+
+  /* ----------------------------------------
+     Link Components
+     ---------------------------------------- */
+  .link {
+    @apply text-primary-600 hover:text-primary-700
+           underline-offset-4 hover:underline
+           transition-colors duration-200;
+  }
+
+  .link-subtle {
+    @apply text-neutral-600 hover:text-neutral-900
+           transition-colors duration-200;
+  }
+
+  .nav-link {
+    @apply text-neutral-600 hover:text-neutral-900
+           font-medium
+           transition-colors duration-200;
+  }
+
+  .nav-link-active {
+    @apply text-neutral-900;
+  }
+
+  /* ----------------------------------------
+     Feature Card (Homepage specific)
+     ---------------------------------------- */
   .feature-card {
-    @apply transition-transform duration-300;
+    @apply card-hover p-5 sm:p-6;
   }
 
-  .feature-card:hover {
-    @apply -translate-y-1;
+  .feature-icon {
+    @apply w-10 h-10 sm:w-12 sm:h-12 rounded-xl
+           bg-primary-50 text-primary-600
+           flex items-center justify-center
+           mb-3 sm:mb-4;
   }
 
-  /* Cookie Consent Banner */
+  .feature-icon svg {
+    @apply w-5 h-5 sm:w-6 sm:h-6;
+  }
+
+  .feature-title {
+    @apply text-base sm:text-lg font-semibold text-neutral-900 mb-2;
+  }
+
+  .feature-description {
+    @apply text-neutral-600 leading-relaxed text-sm sm:text-base;
+  }
+
+  /* ----------------------------------------
+     Pricing Card (Homepage specific)
+     ---------------------------------------- */
+  .pricing-card {
+    @apply card p-6 sm:p-8 flex flex-col;
+  }
+
+  .pricing-card-featured {
+    @apply pricing-card
+           border-primary-500 border-2
+           shadow-medium
+           relative
+           md:-my-4 md:py-10;
+  }
+
+  .pricing-badge {
+    @apply absolute -top-3 left-1/2 -translate-x-1/2
+           badge-primary px-3 py-1
+           whitespace-nowrap;
+  }
+
+  .pricing-name {
+    @apply text-lg font-semibold text-neutral-900;
+  }
+
+  .pricing-price {
+    @apply text-3xl sm:text-4xl font-bold text-neutral-900 mt-4;
+  }
+
+  .pricing-period {
+    @apply text-neutral-500 font-normal text-base;
+  }
+
+  .pricing-description {
+    @apply text-neutral-600 mt-2 mb-6;
+  }
+
+  .pricing-features {
+    @apply space-y-3 mb-8 flex-1;
+  }
+
+  .pricing-feature {
+    @apply flex items-start gap-3 text-neutral-600 text-sm sm:text-base;
+  }
+
+  .pricing-feature-icon {
+    @apply w-5 h-5 text-success-500 flex-shrink-0 mt-0.5;
+  }
+
+  /* ----------------------------------------
+     Section Header
+     ---------------------------------------- */
+  .section-header {
+    @apply text-center max-w-3xl mx-auto mb-12 sm:mb-16;
+  }
+
+  .section-header .eyebrow {
+    @apply mb-3;
+  }
+
+  .section-header .heading-2 {
+    @apply mb-4;
+  }
+
+  .section-header .subheading {
+    @apply max-w-2xl mx-auto;
+  }
+
+  /* ----------------------------------------
+     Cookie Consent Banner
+     ---------------------------------------- */
   .cookie-consent-banner {
-    @apply fixed bottom-0 left-0 right-0 bg-gray-900 text-white shadow-2xl z-50;
+    @apply fixed bottom-0 left-0 right-0
+           bg-neutral-900 text-white
+           shadow-floating z-50;
     transform: translateY(100%);
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-smooth;
   }
 
   .cookie-consent-banner.cookie-consent-visible {
@@ -31,15 +407,16 @@
   }
 
   .cookie-consent-content {
-    @apply max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4;
+    @apply container-main py-4
+           flex flex-col sm:flex-row items-center justify-between gap-4;
   }
 
   .cookie-consent-text {
-    @apply text-sm text-gray-300 flex-1;
+    @apply text-sm text-neutral-300 flex-1;
   }
 
   .cookie-consent-link {
-    @apply text-blue-400 hover:text-blue-300 underline;
+    @apply text-primary-400 hover:text-primary-300 underline;
   }
 
   .cookie-consent-buttons {
@@ -47,14 +424,442 @@
   }
 
   .cookie-consent-btn {
-    @apply px-4 py-2 rounded-lg font-medium text-sm transition-colors;
+    @apply btn-sm rounded-lg font-medium transition-colors;
   }
 
   .cookie-consent-btn-primary {
-    @apply bg-blue-600 text-white hover:bg-blue-700;
+    @apply bg-primary-600 text-white hover:bg-primary-500;
   }
 
   .cookie-consent-btn-secondary {
-    @apply bg-gray-700 text-gray-300 hover:bg-gray-600;
+    @apply bg-neutral-700 text-neutral-300 hover:bg-neutral-600;
+  }
+
+  /* ----------------------------------------
+     Divider
+     ---------------------------------------- */
+  .divider {
+    @apply border-t border-neutral-200;
+  }
+
+  .divider-subtle {
+    @apply border-t border-neutral-100;
+  }
+
+  /* ----------------------------------------
+     Prose (for blog/content)
+     Medium/Notion-inspired typography
+     ---------------------------------------- */
+  .prose,
+  .prose-custom {
+    @apply text-neutral-700;
+    font-size: 1.125rem;
+    line-height: 1.8;
+    letter-spacing: -0.003em;
+  }
+
+  /* Headings - clean, bold, with breathing room */
+  .prose h1,
+  .prose-custom h1 {
+    @apply text-3xl sm:text-4xl font-bold text-neutral-900 tracking-tight;
+    margin-top: 2.5em;
+    margin-bottom: 0.8em;
+    line-height: 1.2;
+  }
+
+  .prose h1:first-child,
+  .prose-custom h1:first-child {
+    margin-top: 0;
+  }
+
+  .prose h2,
+  .prose-custom h2 {
+    @apply text-2xl sm:text-[1.75rem] font-bold text-neutral-900;
+    margin-top: 2em;
+    margin-bottom: 0.75em;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+  }
+
+  .prose h3,
+  .prose-custom h3 {
+    @apply text-xl sm:text-[1.375rem] font-semibold text-neutral-900;
+    margin-top: 1.75em;
+    margin-bottom: 0.5em;
+    line-height: 1.4;
+  }
+
+  .prose h4,
+  .prose-custom h4 {
+    @apply text-lg font-semibold text-neutral-900;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    line-height: 1.4;
+  }
+
+  /* Paragraphs - comfortable reading */
+  .prose p,
+  .prose-custom p {
+    margin-bottom: 1.5em;
+  }
+
+  /* Lead paragraph style (first p after heading) */
+  .prose h1 + p,
+  .prose h2 + p,
+  .prose-custom h1 + p,
+  .prose-custom h2 + p {
+    @apply text-neutral-600;
+    font-size: 1.25rem;
+    line-height: 1.7;
+  }
+
+  /* Links - subtle underline, clear interaction */
+  .prose a,
+  .prose-custom a {
+    @apply text-primary-600 font-medium;
+    text-decoration: underline;
+    text-decoration-color: rgba(37, 99, 235, 0.3);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    transition: text-decoration-color 0.2s ease;
+  }
+
+  .prose a:hover,
+  .prose-custom a:hover {
+    text-decoration-color: rgba(37, 99, 235, 1);
+  }
+
+  /* Lists - clean spacing and custom bullets */
+  .prose ul,
+  .prose ol,
+  .prose-custom ul,
+  .prose-custom ol {
+    margin-bottom: 1.5em;
+    padding-left: 1.625em;
+  }
+
+  .prose ul,
+  .prose-custom ul {
+    list-style-type: disc;
+  }
+
+  .prose ul ul,
+  .prose-custom ul ul {
+    list-style-type: circle;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+
+  .prose ol,
+  .prose-custom ol {
+    list-style-type: decimal;
+  }
+
+  .prose li,
+  .prose-custom li {
+    margin-bottom: 0.5em;
+    padding-left: 0.375em;
+  }
+
+  .prose li::marker,
+  .prose-custom li::marker {
+    @apply text-neutral-400;
+  }
+
+  /* Nested list spacing */
+  .prose li > ul,
+  .prose li > ol,
+  .prose-custom li > ul,
+  .prose-custom li > ol {
+    margin-top: 0.5em;
+  }
+
+  /* Strong and emphasis */
+  .prose strong,
+  .prose-custom strong {
+    @apply font-semibold text-neutral-900;
+  }
+
+  .prose em,
+  .prose-custom em {
+    @apply italic;
+  }
+
+  /* Blockquotes - elegant left border style */
+  .prose blockquote,
+  .prose-custom blockquote {
+    @apply border-l-[3px] border-primary-400 text-neutral-600;
+    margin: 2em 0;
+    padding: 0.25em 0 0.25em 1.5em;
+    font-style: italic;
+  }
+
+  .prose blockquote p,
+  .prose-custom blockquote p {
+    margin-bottom: 0.5em;
+  }
+
+  .prose blockquote p:last-child,
+  .prose-custom blockquote p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Inline code - subtle highlight */
+  .prose code,
+  .prose-custom code {
+    @apply font-mono text-neutral-800;
+    font-size: 0.875em;
+    background: linear-gradient(
+      to bottom,
+      transparent 60%,
+      rgba(37, 99, 235, 0.1) 60%
+    );
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+  }
+
+  /* Code blocks - dark theme with good contrast */
+  .prose pre,
+  .prose-custom pre {
+    @apply bg-neutral-900 text-neutral-100 rounded-xl overflow-x-auto;
+    margin: 1.75em 0;
+    padding: 1.25em 1.5em;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .prose pre code,
+  .prose-custom pre code {
+    @apply bg-transparent p-0 text-inherit;
+    background: none;
+    font-size: inherit;
+  }
+
+  /* Images - rounded with subtle shadow */
+  .prose img,
+  .prose-custom img {
+    @apply rounded-xl w-full;
+    margin: 2em 0;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  }
+
+  .prose figure,
+  .prose-custom figure {
+    margin: 2em 0;
+  }
+
+  .prose figcaption,
+  .prose-custom figcaption {
+    @apply text-sm text-neutral-500 text-center;
+    margin-top: 0.75em;
+  }
+
+  /* Horizontal rules - subtle divider */
+  .prose hr,
+  .prose-custom hr {
+    @apply border-0;
+    margin: 3em auto;
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      rgba(0, 0, 0, 0.15),
+      transparent
+    );
+  }
+
+  /* Tables - clean and readable */
+  .prose table,
+  .prose-custom table {
+    @apply w-full text-left border-collapse;
+    margin: 2em 0;
+    font-size: 0.9375rem;
+  }
+
+  .prose thead,
+  .prose-custom thead {
+    @apply border-b-2 border-neutral-200;
+  }
+
+  .prose th,
+  .prose-custom th {
+    @apply font-semibold text-neutral-900 py-3 px-4;
+  }
+
+  .prose td,
+  .prose-custom td {
+    @apply py-3 px-4 border-b border-neutral-100;
+  }
+
+  .prose tbody tr:hover,
+  .prose-custom tbody tr:hover {
+    @apply bg-neutral-50;
+  }
+
+  /* Definition lists */
+  .prose dl,
+  .prose-custom dl {
+    margin: 1.5em 0;
+  }
+
+  .prose dt,
+  .prose-custom dt {
+    @apply font-semibold text-neutral-900;
+    margin-top: 1em;
+  }
+
+  .prose dd,
+  .prose-custom dd {
+    @apply text-neutral-600;
+    margin-left: 1em;
+    margin-top: 0.25em;
+  }
+
+  /* Keyboard input */
+  .prose kbd,
+  .prose-custom kbd {
+    @apply font-mono text-sm bg-neutral-100 text-neutral-800 border border-neutral-300 rounded;
+    padding: 0.125em 0.375em;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  /* Abbreviations */
+  .prose abbr,
+  .prose-custom abbr {
+    @apply cursor-help;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+  }
+
+  /* Mark/highlight */
+  .prose mark,
+  .prose-custom mark {
+    @apply bg-warning-50 text-neutral-900 rounded-sm;
+    padding: 0.1em 0.2em;
+  }
+
+  /* Footnotes (if using) */
+  .prose .footnotes,
+  .prose-custom .footnotes {
+    @apply text-sm text-neutral-500 border-t border-neutral-200;
+    margin-top: 3em;
+    padding-top: 1.5em;
+  }
+}
+
+/* ============================================
+   UTILITIES LAYER - Custom utilities
+   ============================================ */
+@layer utilities {
+  /* Text balance for headings */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400;
+  }
+
+  /* Hide scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Backdrop blur fallback */
+  .backdrop-blur-fallback {
+    @apply backdrop-blur-sm;
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+  @supports (backdrop-filter: blur(12px)) {
+    .backdrop-blur-fallback {
+      @apply bg-white/80;
+    }
+  }
+
+  /* Safe area padding for mobile notches */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Touch-friendly tap targets (min 44px) */
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Prevent text selection on interactive elements */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Smooth momentum scrolling on iOS */
+  .scroll-smooth-ios {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+/* Mobile-first touch improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger tap targets on touch devices */
+  .btn,
+  .nav-link {
+    min-height: 44px;
+  }
+
+  /* Remove hover effects that don't work well on touch */
+  .card-hover:hover {
+    transform: none;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background-color: white;
+    color: black;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  .card,
+  .card-elevated {
+    box-shadow: none;
+    border: 1px solid #d4d4d4;
   }
 }

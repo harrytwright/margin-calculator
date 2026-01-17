@@ -170,21 +170,21 @@ function renderIngredients() {
   container.innerHTML = Object.entries(demoData.ingredients)
     .map(
       ([id, ingredient]) => `
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-      <label class="block text-sm font-medium text-gray-700 mb-2">
+    <div class="card card-padding">
+      <label class="form-label">
         ${ingredient.name}
       </label>
       <div class="flex items-center gap-2">
-        <span class="text-gray-600 text-sm">£</span>
+        <span class="text-neutral-500 text-sm">£</span>
         <input
           type="number"
           step="0.01"
           min="0"
           value="${ingredient.purchasePrice.toFixed(2)}"
           data-ingredient-id="${id}"
-          class="demo-price-input flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="demo-price-input input flex-1"
         />
-        <span class="text-gray-600 text-sm">/ ${ingredient.purchaseAmount}${ingredient.purchaseUnit}</span>
+        <span class="text-neutral-500 text-sm whitespace-nowrap">/ ${ingredient.purchaseAmount}${ingredient.purchaseUnit}</span>
       </div>
     </div>
   `
@@ -214,25 +214,26 @@ function renderRecipe() {
   if (!container) return
 
   const result = calculateRecipe()
-  const marginColor = result.margin >= 65 ? 'text-green-600' : 'text-red-600'
-  const marginBgColor = result.margin >= 65 ? 'bg-green-50' : 'bg-red-50'
+  const marginColor =
+    result.margin >= 65 ? 'text-success-500' : 'text-error-500'
+  const marginBgColor = result.margin >= 65 ? 'bg-success-50' : 'bg-error-50'
 
   container.innerHTML = `
     <div class="space-y-4">
       <!-- Recipe header -->
-      <div class="border-b border-gray-200 pb-4">
-        <h3 class="text-xl font-semibold text-gray-900">${demoData.recipe.name}</h3>
+      <div class="border-b border-neutral-100 pb-4">
+        <h3 class="text-xl font-semibold text-neutral-900">${demoData.recipe.name}</h3>
         <div class="mt-2 flex items-center gap-2">
-          <label class="text-sm text-gray-600">Sell Price:</label>
+          <label class="text-sm text-neutral-500">Sell Price:</label>
           <div class="flex items-center gap-1">
-            <span class="text-gray-600">£</span>
+            <span class="text-neutral-500">£</span>
             <input
               type="number"
               step="0.01"
               min="0"
               value="${demoData.recipe.sellPrice.toFixed(2)}"
               id="demo-sell-price"
-              class="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="input w-24 py-1.5"
             />
           </div>
         </div>
@@ -240,11 +241,11 @@ function renderRecipe() {
 
       <!-- Ingredients list -->
       <div class="space-y-2">
-        <h4 class="text-sm font-semibold text-gray-700">Ingredients:</h4>
+        <h4 class="label">Ingredients:</h4>
         ${result.breakdown
           .map(
             (item, index) => `
-          <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+          <div class="flex items-center justify-between bg-neutral-50 p-3 rounded-lg">
             <div class="flex items-center gap-3 flex-1">
               <input
                 type="number"
@@ -252,16 +253,16 @@ function renderRecipe() {
                 min="0"
                 value="${item.amount}"
                 data-index="${index}"
-                class="demo-amount-input w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                class="demo-amount-input input w-20 py-1.5"
               />
-              <span class="text-gray-600 text-sm">${item.unit}</span>
-              <span class="text-gray-900">${item.name}</span>
+              <span class="text-neutral-500 text-sm">${item.unit}</span>
+              <span class="text-neutral-900">${item.name}</span>
             </div>
             <div class="flex items-center gap-3">
-              <span class="text-gray-700 font-medium">${formatCurrency(item.cost)}</span>
+              <span class="text-neutral-700 font-medium">${formatCurrency(item.cost)}</span>
               <button
                 data-index="${index}"
-                class="demo-remove-btn text-red-500 hover:text-red-700 p-1"
+                class="demo-remove-btn text-error-500 hover:text-error-600 p-1 transition-colors"
                 title="Remove ingredient"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -276,17 +277,17 @@ function renderRecipe() {
       </div>
 
       <!-- Totals -->
-      <div class="border-t border-gray-200 pt-4 space-y-2">
+      <div class="border-t border-neutral-100 pt-4 space-y-2">
         <div class="flex justify-between text-lg">
-          <span class="font-semibold text-gray-900">Total Cost:</span>
-          <span class="font-bold text-gray-900">${formatCurrency(result.totalCost)}</span>
+          <span class="font-semibold text-neutral-900">Total Cost:</span>
+          <span class="font-bold text-neutral-900">${formatCurrency(result.totalCost)}</span>
         </div>
         <div class="flex justify-between text-lg">
-          <span class="font-semibold text-gray-900">Profit:</span>
-          <span class="font-bold ${result.profit >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(result.profit)}</span>
+          <span class="font-semibold text-neutral-900">Profit:</span>
+          <span class="font-bold ${result.profit >= 0 ? 'text-success-500' : 'text-error-500'}">${formatCurrency(result.profit)}</span>
         </div>
-        <div class="flex justify-between items-center ${marginBgColor} p-4 rounded-lg mt-4">
-          <span class="font-semibold text-gray-900 text-xl">Margin:</span>
+        <div class="flex justify-between items-center ${marginBgColor} p-4 rounded-xl mt-4">
+          <span class="font-semibold text-neutral-900 text-xl">Margin:</span>
           <span class="font-bold ${marginColor} text-2xl">${formatPercent(result.margin)}</span>
         </div>
       </div>
@@ -295,18 +296,18 @@ function renderRecipe() {
         getAvailableIngredients().length > 0
           ? `
       <!-- Available Ingredients -->
-      <div class="border-t border-gray-200 pt-4 mt-4">
-        <h4 class="text-sm font-semibold text-gray-700 mb-2">Available Ingredients:</h4>
+      <div class="border-t border-neutral-100 pt-4 mt-4">
+        <h4 class="label mb-2">Available Ingredients:</h4>
         <div class="space-y-2">
           ${getAvailableIngredients()
             .map(
               (id) => `
             <button
               data-ingredient-id="${id}"
-              class="demo-add-btn w-full flex items-center justify-between bg-blue-50 hover:bg-blue-100 p-3 rounded-lg transition-colors"
+              class="demo-add-btn w-full flex items-center justify-between bg-primary-50 hover:bg-primary-100 p-3 rounded-lg transition-colors"
             >
-              <span class="text-gray-900">${demoData.ingredients[id].name}</span>
-              <span class="text-blue-600 font-medium flex items-center gap-1">
+              <span class="text-neutral-900">${demoData.ingredients[id].name}</span>
+              <span class="text-primary-600 font-medium flex items-center gap-1">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>

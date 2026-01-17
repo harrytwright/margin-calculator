@@ -44,6 +44,8 @@ function formatDate(dateString) {
  * Generate blog post HTML
  */
 function generatePostHTML(post) {
+  const isoDate = new Date(post.date).toISOString()
+
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -52,9 +54,14 @@ function generatePostHTML(post) {
     <title>${post.title} - Menu Book Blog</title>
     <meta name="description" content="${post.excerpt}" />
 
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <!-- SEO Meta Tags -->
     <meta name="author" content="${post.author}" />
     <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#2563EB" />
     <link rel="canonical" href="${SITE_URL}/blog/${post.slug}" />
 
     <!-- Open Graph -->
@@ -62,8 +69,9 @@ function generatePostHTML(post) {
     <meta property="og:url" content="${SITE_URL}/blog/${post.slug}" />
     <meta property="og:title" content="${post.title}" />
     <meta property="og:description" content="${post.excerpt}" />
-    <meta property="og:site_name" content="Menu Book Blog" />
-    <meta property="article:published_time" content="${post.date}" />
+    <meta property="og:site_name" content="Menu Book" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="article:published_time" content="${isoDate}" />
     <meta property="article:author" content="${post.author}" />
 
     <!-- Twitter Card -->
@@ -77,89 +85,146 @@ function generatePostHTML(post) {
     <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
 
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
+
     <!-- Styles -->
     <link rel="stylesheet" href="../styles.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown-light.min.css" integrity="sha512-X175XRJAO6PHAUi8AA7GP8uUF5Wiv+w9bOi64i02CHKDQBsO1yy0jLSKaUKg/NhRCDYBmOLQCfKaTaXiyZlLrw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <style>
-        .markdown-body {
-            background-color: inherit;
-        }
-    </style>
+
     <!-- Scripts -->
     <script type="module" src="../scripts/main.js"></script>
+
+    <!-- Structured Data (JSON-LD) for Article -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "${post.title}",
+      "description": "${post.excerpt}",
+      "author": {
+        "@type": "Person",
+        "name": "${post.author}"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Menu Book",
+        "url": "${SITE_URL}"
+      },
+      "datePublished": "${isoDate}",
+      "dateModified": "${isoDate}",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "${SITE_URL}/blog/${post.slug}"
+      },
+      "url": "${SITE_URL}/blog/${post.slug}"
+    }
+    </script>
   </head>
-  <body class="bg-gray-50">
+  <body>
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center space-x-2">
-            <a href="/" class="text-xl font-bold text-gray-900">Menu Book</a>
-          </div>
-          <nav class="hidden md:flex space-x-8">
-            <a href="/#features" class="text-gray-600 hover:text-gray-900">Features</a>
-            <a href="/#demo" class="text-gray-600 hover:text-gray-900">Demo</a>
-            <a href="/#pricing" class="text-gray-600 hover:text-gray-900">Pricing</a>
-            <a href="/blog" class="text-blue-600 hover:text-blue-700 font-medium">Blog</a>
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-fallback border-b border-neutral-100">
+      <div class="container-main">
+        <div class="flex justify-between items-center h-16">
+          <!-- Logo -->
+          <a href="/" class="flex items-center gap-2">
+            <span class="text-xl font-bold text-neutral-900">Menu Book</span>
+          </a>
+
+          <!-- Desktop Navigation -->
+          <nav class="hidden md:flex items-center gap-8">
+            <a href="/#features" class="nav-link">Features</a>
+            <a href="/#demo" class="nav-link">Demo</a>
+            <a href="/#pricing" class="nav-link">Pricing</a>
+            <a href="/blog" class="nav-link text-primary-600">Blog</a>
           </nav>
-          <div>
-            <a href="/#signup" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+
+          <!-- CTA Button -->
+          <div class="flex items-center gap-4">
+            <a href="/#signup" class="btn-primary hidden sm:inline-flex">
               Get Early Access
             </a>
+            <!-- Mobile Menu Button -->
+            <button
+              type="button"
+              id="mobile-menu-btn"
+              class="btn-ghost md:hidden"
+              aria-label="Toggle menu"
+              aria-expanded="false"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
         </div>
+
+        <!-- Mobile Navigation -->
+        <nav id="mobile-menu" class="hidden md:hidden pb-4">
+          <div class="flex flex-col gap-2">
+            <a href="/#features" class="nav-link py-2">Features</a>
+            <a href="/#demo" class="nav-link py-2">Demo</a>
+            <a href="/#pricing" class="nav-link py-2">Pricing</a>
+            <a href="/blog" class="nav-link py-2 text-primary-600">Blog</a>
+            <a href="/#signup" class="btn-primary mt-2 sm:hidden">Get Early Access</a>
+          </div>
+        </nav>
       </div>
     </header>
 
     <!-- Blog Post -->
-    <article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <!-- Back to blog -->
-      <a href="/blog" class="inline-flex items-center text-blue-600 hover:text-blue-700 mb-8">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg>
-        Back to Blog
-      </a>
+    <article class="section bg-white">
+      <div class="container-narrow">
+        <!-- Back to blog -->
+        <a href="/blog" class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium mb-8 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Back to Blog
+        </a>
 
-      <!-- Post header -->
-      <header class="mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">${post.title}</h1>
-        <div class="flex items-center text-gray-600 space-x-4">
-          <time datetime="${post.date}">${formatDate(post.date)}</time>
-          <span>•</span>
-          <span>${post.readingTime} min read</span>
-          <span>•</span>
-          <span>By ${post.author}</span>
+        <!-- Post header -->
+        <header class="mb-12">
+          <h1 class="heading-1 mb-6">${post.title}</h1>
+          <div class="flex flex-wrap items-center gap-3 text-neutral-500 body-small">
+            <time datetime="${post.date}">${formatDate(post.date)}</time>
+            <span class="w-1 h-1 rounded-full bg-neutral-300"></span>
+            <span>${post.readingTime} min read</span>
+            <span class="w-1 h-1 rounded-full bg-neutral-300"></span>
+            <span>By ${post.author}</span>
+          </div>
+        </header>
+
+        <!-- Post content -->
+        <div class="prose">
+          ${post.html}
         </div>
-      </header>
 
-      <!-- Post content -->
-      <div class="prose prose-lg markdown-body max-w-none">
-        ${post.html}
+        <!-- Post footer -->
+        <footer class="mt-16 pt-8 border-t border-neutral-200">
+          <div class="card card-padding bg-primary-50 rounded-2xl">
+            <h3 class="heading-4 mb-3">Want to follow our journey?</h3>
+            <p class="body text-neutral-600 mb-6">Join our waitlist to get updates when we launch and exclusive early access.</p>
+            <a href="/#signup" class="btn-primary">
+              Join the Waitlist
+            </a>
+          </div>
+        </footer>
       </div>
-
-      <!-- Post footer -->
-      <footer class="mt-16 pt-8 border-t border-gray-200">
-        <div class="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl">
-          <h3 class="text-2xl font-bold text-gray-900 mb-4">Want to follow our journey?</h3>
-          <p class="text-gray-700 mb-6">Join our waitlist to get updates when we launch and exclusive early access.</p>
-          <a href="/#signup" class="inline-block bg-gradient-to-br from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-bold hover:shadow-xl transition-all">
-            Join the Waitlist
-          </a>
-        </div>
-      </footer>
     </article>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-12 mt-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p>&copy; 2025 Menu Book. All rights reserved.</p>
-        <p class="mt-2">Created by GoBowling Shipley Lanes</p>
-        <div class="mt-4 space-x-4">
-          <a href="../privacy.html" class="hover:text-white">Privacy Policy</a>
-          <a href="../terms.html" class="hover:text-white">Terms of Service</a>
-          <a href="../cookies.html" class="hover:text-white">Cookie Policy</a>
+    <footer class="bg-white border-t border-neutral-200">
+      <div class="container-main py-12">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p class="body-small text-neutral-400">
+            &copy; 2025 Menu Book. All rights reserved.
+          </p>
+          <div class="flex items-center gap-6">
+            <a href="../privacy.html" class="link-subtle text-sm">Privacy Policy</a>
+            <a href="../terms.html" class="link-subtle text-sm">Terms of Service</a>
+            <a href="../cookies.html" class="link-subtle text-sm">Cookie Policy</a>
+          </div>
         </div>
       </div>
     </footer>
@@ -174,20 +239,23 @@ function generateIndexHTML(posts) {
   const postCards = posts
     .map(
       (post) => `
-    <article class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
-      <time class="text-sm text-gray-500" datetime="${post.date}">${formatDate(post.date)}</time>
-      <h2 class="text-2xl font-bold text-gray-900 mt-2 mb-3">
-        <a href="/blog/${post.slug}" class="hover:text-blue-600">${post.title}</a>
-      </h2>
-      <p class="text-gray-600 mb-4">${post.excerpt}</p>
-      <div class="flex items-center justify-between">
-        <span class="text-sm text-gray-500">${post.readingTime} min read</span>
-        <a href="/blog/${post.slug}" class="text-blue-600 hover:text-blue-700 font-medium">
-          Read more →
-        </a>
-      </div>
-    </article>
-  `
+        <article class="card card-padding group">
+          <time class="body-small text-neutral-500" datetime="${post.date}">${formatDate(post.date)}</time>
+          <h2 class="heading-4 mt-2 mb-3">
+            <a href="/blog/${post.slug}" class="text-neutral-900 group-hover:text-primary-600 transition-colors">${post.title}</a>
+          </h2>
+          <p class="body text-neutral-600 mb-4">${post.excerpt}</p>
+          <div class="flex items-center justify-between">
+            <span class="body-small text-neutral-500">${post.readingTime} min read</span>
+            <a href="/blog/${post.slug}" class="text-primary-600 hover:text-primary-700 font-medium text-sm inline-flex items-center gap-1 transition-colors">
+              Read more
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </a>
+          </div>
+        </article>
+      `
     )
     .join('')
 
@@ -199,8 +267,13 @@ function generateIndexHTML(posts) {
     <title>Blog - Menu Book</title>
     <meta name="description" content="Building in public: Follow our journey building Menu Book, a modern recipe cost calculator for food service businesses." />
 
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <!-- SEO Meta Tags -->
     <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#2563EB" />
     <link rel="canonical" href="${SITE_URL}/blog" />
     <link rel="alternate" type="application/rss+xml" title="Menu Book Blog" href="${SITE_URL}/blog/rss.xml" />
 
@@ -210,11 +283,16 @@ function generateIndexHTML(posts) {
     <meta property="og:title" content="Menu Book Blog - Building in Public" />
     <meta property="og:description" content="Follow our journey building Menu Book, a modern recipe cost calculator for food service businesses." />
     <meta property="og:site_name" content="Menu Book" />
+    <meta property="og:locale" content="en_GB" />
 
     <!-- Favicons -->
     <link rel="icon" href="../assets/favicon.ico" sizes="32x32" />
     <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
+
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" /></noscript>
 
     <!-- Styles -->
     <link rel="stylesheet" href="../styles.css" />
@@ -222,55 +300,100 @@ function generateIndexHTML(posts) {
     <!-- Scripts -->
     <script type="module" src="../scripts/main.js"></script>
   </head>
-  <body class="bg-gray-50">
+  <body>
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center space-x-2">
-            <a href="/" class="text-xl font-bold text-gray-900">Menu Book</a>
-          </div>
-          <nav class="hidden md:flex space-x-8">
-            <a href="/#features" class="text-gray-600 hover:text-gray-900">Features</a>
-            <a href="/#demo" class="text-gray-600 hover:text-gray-900">Demo</a>
-            <a href="/#pricing" class="text-gray-600 hover:text-gray-900">Pricing</a>
-            <a href="/blog" class="text-blue-600 hover:text-blue-700 font-medium">Blog</a>
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-fallback border-b border-neutral-100">
+      <div class="container-main">
+        <div class="flex justify-between items-center h-16">
+          <!-- Logo -->
+          <a href="/" class="flex items-center gap-2">
+            <span class="text-xl font-bold text-neutral-900">Menu Book</span>
+          </a>
+
+          <!-- Desktop Navigation -->
+          <nav class="hidden md:flex items-center gap-8">
+            <a href="/#features" class="nav-link">Features</a>
+            <a href="/#demo" class="nav-link">Demo</a>
+            <a href="/#pricing" class="nav-link">Pricing</a>
+            <a href="/blog" class="nav-link text-primary-600">Blog</a>
           </nav>
-          <div>
-            <a href="/#signup" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+
+          <!-- CTA Button -->
+          <div class="flex items-center gap-4">
+            <a href="/#signup" class="btn-primary hidden sm:inline-flex">
               Get Early Access
             </a>
+            <!-- Mobile Menu Button -->
+            <button
+              type="button"
+              id="mobile-menu-btn"
+              class="btn-ghost md:hidden"
+              aria-label="Toggle menu"
+              aria-expanded="false"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
           </div>
         </div>
+
+        <!-- Mobile Navigation -->
+        <nav id="mobile-menu" class="hidden md:hidden pb-4">
+          <div class="flex flex-col gap-2">
+            <a href="/#features" class="nav-link py-2">Features</a>
+            <a href="/#demo" class="nav-link py-2">Demo</a>
+            <a href="/#pricing" class="nav-link py-2">Pricing</a>
+            <a href="/blog" class="nav-link py-2 text-primary-600">Blog</a>
+            <a href="/#signup" class="btn-primary mt-2 sm:hidden">Get Early Access</a>
+          </div>
+        </nav>
       </div>
     </header>
 
     <!-- Blog Header -->
-    <section class="bg-gradient-to-br from-blue-600 to-purple-600 text-white py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-5xl font-bold mb-4">Menu Book Blog</h1>
-        <p class="text-xl text-purple-100 max-w-2xl mx-auto">
-          Building in public: Follow our journey creating a modern recipe cost calculator
+    <section class="section-sm bg-white border-b border-neutral-100">
+      <div class="container-main text-center">
+        <p class="eyebrow mb-3">Building in Public</p>
+        <h1 class="heading-1 mb-4">Menu Book Blog</h1>
+        <p class="subheading max-w-2xl mx-auto">
+          Follow our journey creating a modern recipe cost calculator for cafes, restaurants, and food service operators.
         </p>
       </div>
     </section>
 
     <!-- Blog Posts -->
-    <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div class="grid md:grid-cols-2 gap-8">
-        ${postCards}
+    <section class="section bg-neutral-50">
+      <div class="container-main">
+        <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          ${postCards}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section-sm bg-white border-t border-neutral-100">
+      <div class="container-narrow text-center">
+        <h2 class="heading-3 mb-4">Want to stay updated?</h2>
+        <p class="body text-neutral-600 mb-6">
+          Join our waitlist for early access and product updates.
+        </p>
+        <a href="/#signup" class="btn-primary">Join the Waitlist</a>
       </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-12 mt-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p>&copy; 2025 Menu Book. All rights reserved.</p>
-        <p class="mt-2">Created by GoBowling Shipley Lanes</p>
-        <div class="mt-4 space-x-4">
-          <a href="../privacy.html" class="hover:text-white">Privacy Policy</a>
-          <a href="../terms.html" class="hover:text-white">Terms of Service</a>
-          <a href="../cookies.html" class="hover:text-white">Cookie Policy</a>
+    <footer class="bg-white border-t border-neutral-200">
+      <div class="container-main py-12">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p class="body-small text-neutral-400">
+            &copy; 2025 Menu Book. All rights reserved.
+          </p>
+          <div class="flex items-center gap-6">
+            <a href="../privacy.html" class="link-subtle text-sm">Privacy Policy</a>
+            <a href="../terms.html" class="link-subtle text-sm">Terms of Service</a>
+            <a href="../cookies.html" class="link-subtle text-sm">Cookie Policy</a>
+          </div>
         </div>
       </div>
     </footer>
