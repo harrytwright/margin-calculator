@@ -1,0 +1,9 @@
+<div id="content-area" class="flex-1 flex flex-col bg-base-200">
+  <!-- Header -->
+  <%- include('../partials/header', { currentView: view || 'dashboard' }) %>
+
+  <!-- Page Content -->
+  <main id="main-content" class="flex-1 p-6 overflow-auto">
+    <%- include(`../pages/${view}`) %>
+  </main>
+</div>

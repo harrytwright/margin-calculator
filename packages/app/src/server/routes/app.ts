@@ -1,6 +1,7 @@
-import { Router } from 'express'
+import { Router, Request, Response } from 'express'
 
 import {
+  Calculator,
   ConfigService,
   DashboardService,
   IngredientService,
@@ -8,9 +9,14 @@ import {
   SupplierService,
 } from '@menubook/core'
 import type { ServerConfig } from '../index'
+import { isDemoEnabled } from '../middleware/demo'
 
 const slugifyModule = require('@sindresorhus/slugify')
 const slugify = slugifyModule.default || slugifyModule
+
+type EntityType = 'suppliers' | 'ingredients' | 'recipes'
+
+const VALID_TYPES: EntityType[] = ['suppliers', 'ingredients', 'recipes']
 
 export function createAppRouter(config: ServerConfig): Router {
   const router = Router()
@@ -34,770 +40,702 @@ export function createAppRouter(config: ServerConfig): Router {
     configService
   )
 
-  // Helper function to render views with layout (or just content for HTMX)
-  function renderView(view: string, data: any = {}) {
-    return async (req: any, res: any) => {
-      const isHtmx = req.headers['hx-request'] === 'true'
+  // Helper to get database - uses demo database if available
+  function getDatabase(req: Request) {
+    return req.demoDatabase || config.database
+  }
 
-      if (isHtmx) {
-        // For HTMX requests, return only the content area
-        res.render('pages/' + view, {
-          ...data,
-        })
-      } else {
-        // For regular requests, return full layout
-        res.render('layouts/main', {
-          view,
-          pageTitle: `${view.charAt(0).toUpperCase() + view.slice(1)} - Menu Book`,
-          ...data,
-        })
-      }
+  // Helper to render page or partial based on HTMX request
+  function render(
+    res: Response,
+    req: Request,
+    view: string,
+    pageTitle: string,
+    data: Record<string, any> = {}
+  ) {
+    const isHtmx = req.headers['hx-request'] === 'true'
+    const target = req.headers['hx-target'] as string
+
+    if (isHtmx && target === 'content-area') {
+      // Navigation request - return content area with header and main
+      res.render('partials/content-area', { view, ...data })
+    } else if (isHtmx) {
+      // Component update - return just the component
+      const component = data._component || view
+      res.render(`components/${component}`, data)
+    } else {
+      // Full page load
+      res.render('layouts/main', {
+        view,
+        pageTitle,
+        isDemo: isDemoEnabled(),
+        ...data,
+      })
     }
   }
 
-  // Dashboard route
+  // ============================================
+  // Root redirect
+  // ============================================
+  router.get('/', (_req, res) => {
+    res.redirect('/management/suppliers')
+  })
+
+  // ============================================
+  // Dashboard (optional - redirect to management)
+  // ============================================
   router.get('/dashboard', async (req, res) => {
     try {
-      const isHtmx = req.headers['hx-request'] === 'true'
-      const stats = await dashboardService.getStatistics()
+      const db = getDatabase(req)
+      const stats = await new DashboardService(
+        db,
+        new RecipeService(
+          db,
+          new IngredientService(db, new SupplierService(db)),
+          configService
+        ),
+        new IngredientService(db, new SupplierService(db)),
+        configService
+      ).getStatistics()
 
-      if (isHtmx) {
-        res.render('pages/dashboard', { stats })
-      } else {
-        res.render('layouts/main', {
-          view: 'dashboard',
-          pageTitle: 'Dashboard - Menu Book',
-          stats,
-        })
-      }
+      render(res, req, 'dashboard', 'Dashboard - Menu Book', { stats })
     } catch (error) {
       console.error('Dashboard error:', error)
-      const isHtmx = req.headers['hx-request'] === 'true'
-
-      if (isHtmx) {
-        res.render('pages/dashboard', {
-          stats: null,
-          error: 'Failed to load dashboard statistics',
-        })
-      } else {
-        res.render('layouts/main', {
-          view: 'dashboard',
-          pageTitle: 'Dashboard - Menu Book',
-          stats: null,
-          error: 'Failed to load dashboard statistics',
-        })
-      }
+      render(res, req, 'dashboard', 'Dashboard - Menu Book', {
+        stats: null,
+        error: 'Failed to load dashboard statistics',
+      })
     }
   })
 
-  // Suppliers route with search support
-  router.get('/suppliers', async (req, res) => {
+  // ============================================
+  // Management routes - /management/:type
+  // ============================================
+
+  // List view
+  router.get('/management/:type', async (req, res) => {
+    const type = req.params.type as EntityType
+
+    if (!VALID_TYPES.includes(type)) {
+      return res.status(404).send('Invalid entity type')
+    }
+
     try {
+      const db = getDatabase(req)
       const search = (req.query.search as string) || ''
+      const data: Record<string, any> = { type, search }
 
-      let query = config.database.db.selectFrom('Supplier').selectAll()
-
-      // Apply search filter
-      if (search) {
-        query = query.where((eb) =>
-          eb.or([
-            eb('name', 'like', `%${search}%`),
-            eb('slug', 'like', `%${search}%`),
-          ])
-        )
+      switch (type) {
+        case 'suppliers':
+          data.items = await getSuppliers(db, search)
+          break
+        case 'ingredients':
+          const filterCategory = (req.query['filter-category'] as string) || ''
+          const filterSupplier = (req.query['filter-supplier'] as string) || ''
+          data.items = await getIngredients(db, search, filterCategory, filterSupplier)
+          data.categories = await getIngredientCategories(db)
+          data.suppliers = await getAllSuppliers(db)
+          data.filterCategory = filterCategory
+          data.filterSupplier = filterSupplier
+          break
+        case 'recipes':
+          const filterClass = (req.query['filter-class'] as string) || ''
+          const filterRecipeCategory = (req.query['filter-category'] as string) || ''
+          data.items = await getRecipes(db, search, filterClass, filterRecipeCategory)
+          data.categories = await getRecipeCategories(db)
+          data.filterClass = filterClass
+          data.filterCategory = filterRecipeCategory
+          break
       }
 
-      const suppliers = await query.execute()
-
-      // Get ingredient counts for all suppliers in ONE query
-      const counts = await config.database.db
-        .selectFrom('Ingredient')
-        .select((eb) => ['supplierId', eb.fn.count('id').as('count')])
-        .groupBy('supplierId')
-        .execute()
-
-      const countMap = new Map(
-        counts.map((c) => [c.supplierId, Number(c.count)])
-      )
-
-      const suppliersWithCounts = suppliers.map((supplier) => ({
-        ...supplier,
-        ingredientCount: countMap.get(supplier.id) || 0,
-      }))
-
-      // Check if this is an HTMX request (partial update)
       const isHtmx = req.headers['hx-request'] === 'true'
       const target = req.headers['hx-target'] as string
 
-      if (isHtmx && target === 'content-area') {
-        // Navigation request - return just page content
-        res.render('pages/suppliers', {
-          suppliers: suppliersWithCounts,
-        })
-      } else if (isHtmx) {
-        // Component update - return just the component
-        res.render('components/supplier-list', {
-          suppliers: suppliersWithCounts,
+      if (isHtmx && target === 'entity-list') {
+        // Just update the list component
+        res.render(`components/${type.slice(0, -1)}-list`, {
+          [type]: data.items,
+          ...(type === 'suppliers' ? { suppliers: data.items } : {}),
+          ...(type === 'ingredients' ? { ingredients: data.items } : {}),
+          ...(type === 'recipes' ? { recipes: data.items } : {}),
         })
       } else {
-        // Initial load - return full page with layout
-        res.render('layouts/main', {
-          view: 'suppliers',
-          pageTitle: 'Suppliers - Menu Book',
-          suppliers: suppliersWithCounts,
-        })
+        render(res, req, 'management', `${capitalize(type)} - Menu Book`, data)
       }
     } catch (error) {
-      console.error('Suppliers error:', error)
-      res.status(500).send('Failed to load suppliers')
+      console.error(`${type} error:`, error)
+      res.status(500).send(`Failed to load ${type}`)
     }
   })
 
-  // Supplier form routes
-  router.get('/suppliers/new', async (req, res) => {
+  // New form
+  router.get('/management/:type/new', async (req, res) => {
+    const type = req.params.type as EntityType
+
+    if (!VALID_TYPES.includes(type)) {
+      return res.status(404).send('Invalid entity type')
+    }
+
     try {
-      res.render('components/supplier-form', {
-        supplier: null,
+      const db = getDatabase(req)
+      const data: Record<string, any> = { type }
+
+      if (type === 'ingredients') {
+        data.suppliers = await getAllSuppliers(db)
+      }
+
+      res.render(`components/${type.slice(0, -1)}-form`, {
+        [type.slice(0, -1)]: null,
+        ...data,
       })
     } catch (error) {
-      console.error('Supplier form error:', error)
+      console.error(`${type} form error:`, error)
       res.status(500).send('Failed to load form')
     }
   })
 
-  router.get('/suppliers/:slug/edit', async (req, res) => {
+  // Edit form
+  router.get('/management/:type/:slug/edit', async (req, res) => {
+    const type = req.params.type as EntityType
+    const { slug } = req.params
+
+    if (!VALID_TYPES.includes(type)) {
+      return res.status(404).send('Invalid entity type')
+    }
+
     try {
-      const supplier = await config.database.db
-        .selectFrom('Supplier')
+      const db = getDatabase(req)
+      const tableName = getTableName(type)
+      const item = await db.db
+        .selectFrom(tableName as any)
         .selectAll()
-        .where('slug', '=', req.params.slug)
+        .where('slug', '=', slug)
         .executeTakeFirst()
 
-      if (!supplier) {
-        return res.status(404).send('Supplier not found')
+      if (!item) {
+        return res.status(404).send(`${capitalize(type.slice(0, -1))} not found`)
       }
-      res.render('components/supplier-form', {
-        supplier,
+
+      const data: Record<string, any> = { type }
+      if (type === 'ingredients') {
+        data.suppliers = await getAllSuppliers(db)
+      }
+
+      res.render(`components/${type.slice(0, -1)}-form`, {
+        [type.slice(0, -1)]: item,
+        ...data,
       })
     } catch (error) {
-      console.error('Supplier edit form error:', error)
+      console.error(`${type} edit form error:`, error)
       res.status(500).send('Failed to load form')
     }
   })
 
-  // Create supplier
-  router.post('/suppliers', async (req, res) => {
-    try {
-      const { name, contactName, contactEmail, contactPhone, notes } = req.body
-      const slug = slugify(name)
+  // Create
+  router.post('/management/:type', async (req, res) => {
+    const type = req.params.type as EntityType
 
-      await config.database.db
-        .insertInto('Supplier')
-        .values({
-          slug,
-          name,
-          contactName: contactName || null,
-          contactEmail: contactEmail || null,
-          contactPhone: contactPhone || null,
-          notes: notes || null,
-        })
-        .onConflict((oc) =>
-          oc.column('slug').doUpdateSet({
-            name,
-            contactName: contactName || null,
-            contactEmail: contactEmail || null,
-            contactPhone: contactPhone || null,
-            notes: notes || null,
-          })
-        )
-        .executeTakeFirst()
-
-      // Return updated suppliers list
-      const suppliers = await config.database.db
-        .selectFrom('Supplier')
-        .selectAll()
-        .execute()
-
-      const counts = await config.database.db
-        .selectFrom('Ingredient')
-        .select((eb) => ['supplierId', eb.fn.count('id').as('count')])
-        .groupBy('supplierId')
-        .execute()
-
-      const countMap = new Map(
-        counts.map((c) => [c.supplierId, Number(c.count)])
-      )
-      const suppliersWithCounts = suppliers.map((supplier) => ({
-        ...supplier,
-        ingredientCount: countMap.get(supplier.id) || 0,
-      }))
-
-      res.render('components/supplier-list', {
-        suppliers: suppliersWithCounts,
-      })
-    } catch (error) {
-      console.error('Supplier create error:', error)
-      res.status(500).send('Failed to create supplier')
+    if (!VALID_TYPES.includes(type)) {
+      return res.status(404).send('Invalid entity type')
     }
-  })
 
-  // Update supplier
-  router.put('/suppliers/:slug', async (req, res) => {
     try {
-      const { name, contactName, contactEmail, contactPhone, notes } = req.body
+      const db = getDatabase(req)
 
-      await config.database.db
-        .updateTable('Supplier')
-        .set({
-          name,
-          contactName: contactName || null,
-          contactEmail: contactEmail || null,
-          contactPhone: contactPhone || null,
-          notes: notes || null,
-        })
-        .where('slug', '=', req.params.slug)
-        .executeTakeFirst()
-
-      // Return updated suppliers list
-      const suppliers = await config.database.db
-        .selectFrom('Supplier')
-        .selectAll()
-        .execute()
-
-      const counts = await config.database.db
-        .selectFrom('Ingredient')
-        .select((eb) => ['supplierId', eb.fn.count('id').as('count')])
-        .groupBy('supplierId')
-        .execute()
-
-      const countMap = new Map(
-        counts.map((c) => [c.supplierId, Number(c.count)])
-      )
-      const suppliersWithCounts = suppliers.map((supplier) => ({
-        ...supplier,
-        ingredientCount: countMap.get(supplier.id) || 0,
-      }))
-
-      res.render('components/supplier-list', {
-        suppliers: suppliersWithCounts,
-      })
-    } catch (error) {
-      console.error('Supplier update error:', error)
-      res.status(500).send('Failed to update supplier')
-    }
-  })
-
-  // Delete supplier
-  router.delete('/suppliers/:slug', async (req, res) => {
-    try {
-      await config.database.db
-        .deleteFrom('Supplier')
-        .where('slug', '=', req.params.slug)
-        .execute()
-
-      // Return updated suppliers list
-      const suppliers = await config.database.db
-        .selectFrom('Supplier')
-        .selectAll()
-        .execute()
-
-      const counts = await config.database.db
-        .selectFrom('Ingredient')
-        .select((eb) => ['supplierId', eb.fn.count('id').as('count')])
-        .groupBy('supplierId')
-        .execute()
-
-      const countMap = new Map(
-        counts.map((c) => [c.supplierId, Number(c.count)])
-      )
-      const suppliersWithCounts = suppliers.map((supplier) => ({
-        ...supplier,
-        ingredientCount: countMap.get(supplier.id) || 0,
-      }))
-
-      res.render('components/supplier-list', {
-        suppliers: suppliersWithCounts,
-      })
-    } catch (error) {
-      console.error('Supplier delete error:', error)
-      res.status(500).send('Failed to delete supplier')
-    }
-  })
-
-  // Ingredients route with search and supplier filter
-  router.get('/ingredients', async (req, res) => {
-    try {
-      const search = (req.query.search as string) || ''
-      const filterCategory = (req.query['filter-category'] as string) || ''
-      const filterSupplier = (req.query['filter-supplier'] as string) || ''
-
-      let query = config.database.db
-        .selectFrom('Ingredient')
-        .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
-        .select([
-          'Ingredient.id',
-          'Ingredient.slug',
-          'Ingredient.name',
-          'Ingredient.category',
-          'Ingredient.purchaseCost',
-          'Ingredient.purchaseUnit',
-          'Ingredient.includesVat',
-          'Ingredient.supplierId',
-          'Supplier.name as supplierName',
-        ])
-
-      // Apply search filter
-      if (search) {
-        query = query.where((eb) =>
-          eb.or([
-            eb('Ingredient.name', 'like', `%${search}%`),
-            eb('Ingredient.slug', 'like', `%${search}%`),
-          ])
-        )
+      switch (type) {
+        case 'suppliers':
+          await createSupplier(db, req.body)
+          break
+        case 'ingredients':
+          await createIngredient(db, req.body)
+          break
+        case 'recipes':
+          await createRecipe(db, req.body)
+          break
       }
 
-      // Apply category filter
-      if (filterCategory) {
-        query = query.where('Ingredient.category', '=', filterCategory)
+      // Return updated list
+      const items = await getEntityList(db, type)
+      res.render(`components/${type.slice(0, -1)}-list`, formatListData(type, items))
+    } catch (error) {
+      console.error(`${type} create error:`, error)
+      res.status(500).send(`Failed to create ${type.slice(0, -1)}`)
+    }
+  })
+
+  // Update
+  router.put('/management/:type/:slug', async (req, res) => {
+    const type = req.params.type as EntityType
+    const { slug } = req.params
+
+    if (!VALID_TYPES.includes(type)) {
+      return res.status(404).send('Invalid entity type')
+    }
+
+    try {
+      const db = getDatabase(req)
+
+      switch (type) {
+        case 'suppliers':
+          await updateSupplier(db, slug, req.body)
+          break
+        case 'ingredients':
+          await updateIngredient(db, slug, req.body)
+          break
+        case 'recipes':
+          await updateRecipe(db, slug, req.body)
+          break
       }
 
-      // Apply supplier filter
-      if (filterSupplier) {
-        query = query.where(
-          'Ingredient.supplierId',
-          '=',
-          parseInt(filterSupplier)
-        )
-      }
-
-      const ingredients = await query.execute()
-
-      // Get unique categories and suppliers for filters
-      const categories = await config.database.db
-        .selectFrom('Ingredient')
-        .select('category')
-        .distinct()
-        .execute()
-
-      const suppliers = await config.database.db
-        .selectFrom('Supplier')
-        .select(['id', 'name'])
-        .execute()
-
-      const uniqueCategories = categories
-        .map((r) => r.category)
-        .filter((c): c is string => c !== null)
-        .sort()
-
-      // Check if this is an HTMX request (partial update)
-      const isHtmx = req.headers['hx-request'] === 'true'
-      const target = req.headers['hx-target'] as string
-
-      if (isHtmx && target === 'content-area') {
-        // Navigation request - return just page content
-        res.render('pages/ingredients', {
-          ingredients,
-          categories: uniqueCategories,
-          suppliers,
-        })
-      } else if (isHtmx) {
-        // Component update - return just the component
-        res.render('components/ingredient-list', { ingredients })
-      } else {
-        // Initial load - return full page with layout
-        res.render('layouts/main', {
-          view: 'ingredients',
-          pageTitle: 'Ingredients - Menu Book',
-          ingredients,
-          categories: uniqueCategories,
-          suppliers,
-        })
-      }
+      // Return updated list
+      const items = await getEntityList(db, type)
+      res.render(`components/${type.slice(0, -1)}-list`, formatListData(type, items))
     } catch (error) {
-      console.error('Ingredients error:', error)
-      res.status(500).send('Failed to load ingredients')
+      console.error(`${type} update error:`, error)
+      res.status(500).send(`Failed to update ${type.slice(0, -1)}`)
     }
   })
 
-  // Ingredient form routes
-  router.get('/ingredients/new', async (req, res) => {
-    try {
-      const suppliers = await config.database.db
-        .selectFrom('Supplier')
-        .select(['id', 'name'])
-        .execute()
+  // Delete
+  router.delete('/management/:type/:slug', async (req, res) => {
+    const type = req.params.type as EntityType
+    const { slug } = req.params
 
-      res.render('components/ingredient-form', {
-        ingredient: null,
-        suppliers,
-      })
+    if (!VALID_TYPES.includes(type)) {
+      return res.status(404).send('Invalid entity type')
+    }
+
+    try {
+      const db = getDatabase(req)
+      const tableName = getTableName(type)
+
+      await db.db.deleteFrom(tableName as any).where('slug', '=', slug).execute()
+
+      // Return updated list
+      const items = await getEntityList(db, type)
+      res.render(`components/${type.slice(0, -1)}-list`, formatListData(type, items))
     } catch (error) {
-      console.error('Ingredient form error:', error)
-      res.status(500).send('Failed to load form')
+      console.error(`${type} delete error:`, error)
+      res.status(500).send(`Failed to delete ${type.slice(0, -1)}`)
     }
   })
 
-  router.get('/ingredients/:slug/edit', async (req, res) => {
+  // ============================================
+  // Margin route - /margin
+  // ============================================
+  router.get('/margin', async (req, res) => {
     try {
-      const ingredient = await config.database.db
-        .selectFrom('Ingredient')
-        .selectAll()
-        .where('slug', '=', req.params.slug)
-        .executeTakeFirst()
-
-      if (!ingredient) {
-        return res.status(404).send('Ingredient not found')
-      }
-
-      const suppliers = await config.database.db
-        .selectFrom('Supplier')
-        .select(['id', 'name'])
-        .execute()
-
-      res.render('components/ingredient-form', {
-        ingredient,
-        suppliers,
-      })
-    } catch (error) {
-      console.error('Ingredient edit form error:', error)
-      res.status(500).send('Failed to load form')
-    }
-  })
-
-  // Create ingredient
-  router.post('/ingredients', async (req, res) => {
-    try {
-      const {
-        name,
-        category,
-        supplierId,
-        purchaseCost,
-        purchaseUnit,
-        includesVat,
-        conversionRule,
-        notes,
-      } = req.body
-      const slug = slugify(name)
-
-      await config.database.db
-        .insertInto('Ingredient')
-        .values({
-          slug,
-          name,
-          category,
-          supplierId: Number(supplierId),
-          purchaseCost: Number(purchaseCost),
-          purchaseUnit,
-          includesVat: includesVat === '1' ? 1 : 0,
-          conversionRule: conversionRule || null,
-          notes: notes || null,
-          lastPurchased: null,
-        })
-        .onConflict((oc) =>
-          oc.column('slug').doUpdateSet({
-            name,
-            category,
-            purchaseCost: Number(purchaseCost),
-            purchaseUnit,
-            includesVat: includesVat === '1' ? 1 : 0,
-            conversionRule: conversionRule || null,
-            notes: notes || null,
-          })
-        )
-        .executeTakeFirst()
-
-      // Return updated ingredients list
-      const ingredients = await config.database.db
-        .selectFrom('Ingredient')
-        .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
-        .select([
-          'Ingredient.id',
-          'Ingredient.slug',
-          'Ingredient.name',
-          'Ingredient.category',
-          'Ingredient.purchaseCost',
-          'Ingredient.purchaseUnit',
-          'Ingredient.includesVat',
-          'Ingredient.supplierId',
-          'Supplier.name as supplierName',
-        ])
-        .execute()
-
-      res.render('components/ingredient-list', { ingredients })
-    } catch (error) {
-      console.error('Ingredient create error:', error)
-      res.status(500).send('Failed to create ingredient')
-    }
-  })
-
-  // Update ingredient
-  router.put('/ingredients/:slug', async (req, res) => {
-    try {
-      const {
-        name,
-        category,
-        purchaseCost,
-        purchaseUnit,
-        includesVat,
-        conversionRule,
-        notes,
-      } = req.body
-
-      await config.database.db
-        .updateTable('Ingredient')
-        .set({
-          name,
-          category,
-          purchaseCost: Number(purchaseCost),
-          purchaseUnit,
-          includesVat: includesVat === '1' ? 1 : 0,
-          conversionRule: conversionRule || null,
-          notes: notes || null,
-        })
-        .where('slug', '=', req.params.slug)
-        .executeTakeFirst()
-
-      // Return updated ingredients list
-      const ingredients = await config.database.db
-        .selectFrom('Ingredient')
-        .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
-        .select([
-          'Ingredient.id',
-          'Ingredient.slug',
-          'Ingredient.name',
-          'Ingredient.category',
-          'Ingredient.purchaseCost',
-          'Ingredient.purchaseUnit',
-          'Ingredient.includesVat',
-          'Ingredient.supplierId',
-          'Supplier.name as supplierName',
-        ])
-        .execute()
-
-      res.render('components/ingredient-list', { ingredients })
-    } catch (error) {
-      console.error('Ingredient update error:', error)
-      res.status(500).send('Failed to update ingredient')
-    }
-  })
-
-  // Delete ingredient
-  router.delete('/ingredients/:slug', async (req, res) => {
-    try {
-      await config.database.db
-        .deleteFrom('Ingredient')
-        .where('slug', '=', req.params.slug)
-        .execute()
-
-      // Return updated ingredients list
-      const ingredients = await config.database.db
-        .selectFrom('Ingredient')
-        .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
-        .select([
-          'Ingredient.id',
-          'Ingredient.slug',
-          'Ingredient.name',
-          'Ingredient.category',
-          'Ingredient.purchaseCost',
-          'Ingredient.purchaseUnit',
-          'Ingredient.includesVat',
-          'Ingredient.supplierId',
-          'Supplier.name as supplierName',
-        ])
-        .execute()
-
-      res.render('components/ingredient-list', { ingredients })
-    } catch (error) {
-      console.error('Ingredient delete error:', error)
-      res.status(500).send('Failed to delete ingredient')
-    }
-  })
-
-  // Recipes route with search/filter support
-  router.get('/recipes', async (req, res) => {
-    try {
+      const db = getDatabase(req)
       const search = (req.query.search as string) || ''
       const filterClass = (req.query['filter-class'] as string) || ''
-      const filterCategory = (req.query['filter-category'] as string) || ''
 
-      let query = config.database.db.selectFrom('Recipe').selectAll()
+      // Fetch recipes based on filters
+      let query = db.db
+        .selectFrom('Recipe')
+        .selectAll()
+        .where('sellPrice', 'is not', null)
+        .where('sellPrice', '>', 0)
 
-      // Apply search filter
-      if (search) {
-        query = query.where((eb) =>
-          eb.or([
-            eb('name', 'like', `%${search}%`),
-            eb('slug', 'like', `%${search}%`),
-          ])
-        )
-      }
-
-      // Apply class filter
-      if (
-        filterClass &&
-        (filterClass === 'menu_item' ||
-          filterClass === 'base_template' ||
-          filterClass === 'sub_recipe')
-      ) {
+      if (filterClass && (filterClass === 'menu_item' || filterClass === 'sub_recipe' || filterClass === 'base_template')) {
         query = query.where('class', '=', filterClass as any)
       }
 
-      // Apply category filter
-      if (filterCategory) {
-        query = query.where('category', '=', filterCategory)
+      if (search) {
+        query = query.where((eb) =>
+          eb.or([
+            eb('name', 'like', `%${search}%`),
+            eb('slug', 'like', `%${search}%`),
+          ])
+        )
       }
 
       const recipes = await query.execute()
 
-      // Get unique categories for filter dropdown
-      const allRecipes = await config.database.db
-        .selectFrom('Recipe')
-        .select('category')
-        .distinct()
-        .execute()
-      const categories = allRecipes
-        .map((r) => r.category)
-        .filter((c): c is string => c !== null)
-        .sort()
+      // Calculate margins for each recipe
+      const calculator = new Calculator(
+        new RecipeService(db, ingredientService, configService),
+        ingredientService,
+        configService
+      )
 
-      // Check if this is an HTMX request (partial update)
-      const isHtmx = req.headers['hx-request'] === 'true'
-      const target = req.headers['hx-target'] as string
-
-      if (isHtmx && target === 'content-area') {
-        // Navigation request - return just page content
-        res.render('pages/recipes', {
-          recipes,
-          categories,
+      const marginData = await Promise.allSettled(
+        recipes.map(async (recipe) => {
+          try {
+            const costResult = await calculator.cost(recipe.slug)
+            const marginResult = await calculator.margin(costResult)
+            return {
+              name: recipe.name,
+              slug: recipe.slug,
+              class: recipe.class,
+              category: recipe.category,
+              includesVat: recipe.includesVat,
+              targetMargin: recipe.targetMargin || (await configService.getMarginTarget()),
+              foodCost: marginResult.cost,
+              actualMargin: marginResult.actualMargin,
+              profit: marginResult.profit,
+              sellPrice: marginResult.sellPrice,
+            }
+          } catch (error) {
+            return {
+              name: recipe.name,
+              slug: recipe.slug,
+              class: recipe.class,
+              category: recipe.category,
+              sellPrice: recipe.sellPrice!,
+              includesVat: recipe.includesVat,
+              targetMargin: recipe.targetMargin || (await configService.getMarginTarget()),
+              foodCost: 0,
+              actualMargin: 0,
+              profit: 0,
+              error: error instanceof Error ? error.message : 'Calculation failed',
+            }
+          }
         })
-      } else if (isHtmx) {
-        // Component update - return just the component
-        res.render('components/recipe-list', { recipes })
-      } else {
-        // Initial load - return full page with layout
-        res.render('layouts/main', {
-          view: 'recipes',
-          pageTitle: 'Recipes - Menu Book',
-          recipes,
-          categories,
-        })
-      }
-    } catch (error) {
-      console.error('Recipes error:', error)
-      res.status(500).send('Failed to load recipes')
-    }
-  })
+      )
 
-  // Recipe form routes
-  router.get('/recipes/new', async (req, res) => {
-    try {
-      res.render('components/recipe-form', {
-        recipe: null,
-      })
-    } catch (error) {
-      console.error('Recipe form error:', error)
-      res.status(500).send('Failed to load form')
-    }
-  })
-
-  router.get('/recipes/:slug/edit', async (req, res) => {
-    try {
-      const recipe = await config.database.db
-        .selectFrom('Recipe')
-        .selectAll()
-        .where('slug', '=', req.params.slug)
-        .executeTakeFirst()
-
-      if (!recipe) {
-        return res.status(404).send('Recipe not found')
-      }
-
-      res.render('components/recipe-form', {
-        recipe,
-      })
-    } catch (error) {
-      console.error('Recipe edit form error:', error)
-      res.status(500).send('Failed to load form')
-    }
-  })
-
-  // Create recipe
-  router.post('/recipes', async (req, res) => {
-    try {
-      const {
-        name,
-        category,
-        class: recipeClass,
-        sellPrice,
-        targetMargin,
-        includesVat,
-        stage,
-        yieldAmount,
-        yieldUnit,
-      } = req.body
-      const slug = slugify(name)
-
-      await config.database.db
-        .insertInto('Recipe')
-        .values({
-          slug,
-          name,
-          category: category || null,
-          class: recipeClass || 'menu_item',
-          sellPrice: Number(sellPrice),
-          targetMargin: targetMargin ? Number(targetMargin) : undefined,
-          includesVat: includesVat === '1' ? 1 : 0,
-          stage: stage || 'active',
-          yieldAmount: yieldAmount ? Number(yieldAmount) : undefined,
-          yieldUnit: yieldUnit || null,
-          parentId: null,
-        })
-        .onConflict((oc) =>
-          oc.column('slug').doUpdateSet({
-            name,
-            category: category || null,
-            class: recipeClass || 'menu_item',
-            sellPrice: Number(sellPrice),
-            targetMargin: targetMargin ? Number(targetMargin) : undefined,
-            includesVat: includesVat === '1' ? 1 : 0,
-            stage: stage || 'active',
-            yieldAmount: yieldAmount ? Number(yieldAmount) : undefined,
-            yieldUnit: yieldUnit || null,
-          })
+      const margins = marginData
+        .filter(
+          (result): result is PromiseFulfilledResult<any> =>
+            result.status === 'fulfilled'
         )
-        .executeTakeFirst()
+        .map((result) => result.value)
+        .sort((a, b) => b.actualMargin - a.actualMargin)
 
-      // Return updated recipes list
-      const recipes = await config.database.db
-        .selectFrom('Recipe')
-        .selectAll()
-        .execute()
-
-      res.render('components/recipe-list', { recipes })
+      render(res, req, 'margin', 'Margin Calculator - Menu Book', {
+        margins,
+        search,
+        filterClass,
+      })
     } catch (error) {
-      console.error('Recipe create error:', error)
-      res.status(500).send('Failed to create recipe')
+      console.error('Margin error:', error)
+      render(res, req, 'margin', 'Margin Calculator - Menu Book', {
+        margins: [],
+        search: '',
+        filterClass: '',
+        error: 'Failed to calculate margins',
+      })
     }
   })
 
-  // Update recipe
-  router.put('/recipes/:slug', async (req, res) => {
-    try {
-      const {
+  // ============================================
+  // Settings & Help (disabled for demo)
+  // ============================================
+  router.get('/settings', (req, res) => {
+    if (isDemoEnabled()) {
+      return res.redirect('/management/suppliers')
+    }
+    render(res, req, 'settings', 'Settings - Menu Book', {})
+  })
+
+  router.get('/help', (req, res) => {
+    if (isDemoEnabled()) {
+      return res.redirect('/management/suppliers')
+    }
+    render(res, req, 'help', 'Help - Menu Book', {})
+  })
+
+  // ============================================
+  // Legacy route redirects (for backwards compat)
+  // ============================================
+  router.get('/suppliers', (_req, res) => res.redirect('/management/suppliers'))
+  router.get('/ingredients', (_req, res) => res.redirect('/management/ingredients'))
+  router.get('/recipes', (_req, res) => res.redirect('/management/recipes'))
+  router.get('/margins', (_req, res) => res.redirect('/margin'))
+
+  // ============================================
+  // Helper functions
+  // ============================================
+
+  function capitalize(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
+
+  function getTableName(type: EntityType): string {
+    switch (type) {
+      case 'suppliers': return 'Supplier'
+      case 'ingredients': return 'Ingredient'
+      case 'recipes': return 'Recipe'
+    }
+  }
+
+  async function getSuppliers(db: any, search: string) {
+    let query = db.db.selectFrom('Supplier').selectAll()
+
+    if (search) {
+      query = query.where((eb: any) =>
+        eb.or([
+          eb('name', 'like', `%${search}%`),
+          eb('slug', 'like', `%${search}%`),
+        ])
+      )
+    }
+
+    const suppliers = await query.execute()
+
+    // Get ingredient counts
+    const counts = await db.db
+      .selectFrom('Ingredient')
+      .select((eb: any) => ['supplierId', eb.fn.count('id').as('count')])
+      .groupBy('supplierId')
+      .execute()
+
+    const countMap = new Map(counts.map((c: any) => [c.supplierId, Number(c.count)]))
+
+    return suppliers.map((supplier: any) => ({
+      ...supplier,
+      ingredientCount: countMap.get(supplier.id) || 0,
+    }))
+  }
+
+  async function getIngredients(db: any, search: string, category: string, supplierId: string) {
+    let query = db.db
+      .selectFrom('Ingredient')
+      .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
+      .select([
+        'Ingredient.id',
+        'Ingredient.slug',
+        'Ingredient.name',
+        'Ingredient.category',
+        'Ingredient.purchaseCost',
+        'Ingredient.purchaseUnit',
+        'Ingredient.includesVat',
+        'Ingredient.supplierId',
+        'Supplier.name as supplierName',
+      ])
+
+    if (search) {
+      query = query.where((eb: any) =>
+        eb.or([
+          eb('Ingredient.name', 'like', `%${search}%`),
+          eb('Ingredient.slug', 'like', `%${search}%`),
+        ])
+      )
+    }
+
+    if (category) {
+      query = query.where('Ingredient.category', '=', category)
+    }
+
+    if (supplierId) {
+      query = query.where('Ingredient.supplierId', '=', parseInt(supplierId))
+    }
+
+    return query.execute()
+  }
+
+  async function getRecipes(db: any, search: string, filterClass: string, category: string) {
+    let query = db.db.selectFrom('Recipe').selectAll()
+
+    if (search) {
+      query = query.where((eb: any) =>
+        eb.or([
+          eb('name', 'like', `%${search}%`),
+          eb('slug', 'like', `%${search}%`),
+        ])
+      )
+    }
+
+    if (filterClass && ['menu_item', 'base_template', 'sub_recipe'].includes(filterClass)) {
+      query = query.where('class', '=', filterClass as any)
+    }
+
+    if (category) {
+      query = query.where('category', '=', category)
+    }
+
+    return query.execute()
+  }
+
+  async function getAllSuppliers(db: any) {
+    return db.db.selectFrom('Supplier').select(['id', 'name']).execute()
+  }
+
+  async function getIngredientCategories(db: any) {
+    const results = await db.db
+      .selectFrom('Ingredient')
+      .select('category')
+      .distinct()
+      .execute()
+    return results
+      .map((r: any) => r.category)
+      .filter((c: string | null): c is string => c !== null)
+      .sort()
+  }
+
+  async function getRecipeCategories(db: any) {
+    const results = await db.db
+      .selectFrom('Recipe')
+      .select('category')
+      .distinct()
+      .execute()
+    return results
+      .map((r: any) => r.category)
+      .filter((c: string | null): c is string => c !== null)
+      .sort()
+  }
+
+  async function getEntityList(db: any, type: EntityType) {
+    switch (type) {
+      case 'suppliers':
+        return getSuppliers(db, '')
+      case 'ingredients':
+        return getIngredients(db, '', '', '')
+      case 'recipes':
+        return getRecipes(db, '', '', '')
+    }
+  }
+
+  function formatListData(type: EntityType, items: any[]) {
+    switch (type) {
+      case 'suppliers':
+        return { suppliers: items }
+      case 'ingredients':
+        return { ingredients: items }
+      case 'recipes':
+        return { recipes: items }
+    }
+  }
+
+  async function createSupplier(db: any, body: any) {
+    const { name, contactName, contactEmail, contactPhone, notes } = body
+    const slug = slugify(name)
+
+    await db.db
+      .insertInto('Supplier')
+      .values({
+        slug,
+        name,
+        contactName: contactName || null,
+        contactEmail: contactEmail || null,
+        contactPhone: contactPhone || null,
+        notes: notes || null,
+      })
+      .onConflict((oc: any) =>
+        oc.column('slug').doUpdateSet({
+          name,
+          contactName: contactName || null,
+          contactEmail: contactEmail || null,
+          contactPhone: contactPhone || null,
+          notes: notes || null,
+        })
+      )
+      .executeTakeFirst()
+  }
+
+  async function updateSupplier(db: any, slug: string, body: any) {
+    const { name, contactName, contactEmail, contactPhone, notes } = body
+
+    await db.db
+      .updateTable('Supplier')
+      .set({
+        name,
+        contactName: contactName || null,
+        contactEmail: contactEmail || null,
+        contactPhone: contactPhone || null,
+        notes: notes || null,
+      })
+      .where('slug', '=', slug)
+      .executeTakeFirst()
+  }
+
+  async function createIngredient(db: any, body: any) {
+    const {
+      name,
+      category,
+      supplierId,
+      purchaseCost,
+      purchaseUnit,
+      includesVat,
+      conversionRule,
+      notes,
+    } = body
+    const slug = slugify(name)
+
+    await db.db
+      .insertInto('Ingredient')
+      .values({
+        slug,
         name,
         category,
-        class: recipeClass,
-        sellPrice,
-        targetMargin,
-        includesVat,
-        stage,
-        yieldAmount,
-        yieldUnit,
-      } = req.body
+        supplierId: Number(supplierId),
+        purchaseCost: Number(purchaseCost),
+        purchaseUnit,
+        includesVat: includesVat === '1' ? 1 : 0,
+        conversionRule: conversionRule || null,
+        notes: notes || null,
+        lastPurchased: null,
+      })
+      .onConflict((oc: any) =>
+        oc.column('slug').doUpdateSet({
+          name,
+          category,
+          purchaseCost: Number(purchaseCost),
+          purchaseUnit,
+          includesVat: includesVat === '1' ? 1 : 0,
+          conversionRule: conversionRule || null,
+          notes: notes || null,
+        })
+      )
+      .executeTakeFirst()
+  }
 
-      await config.database.db
-        .updateTable('Recipe')
-        .set({
+  async function updateIngredient(db: any, slug: string, body: any) {
+    const {
+      name,
+      category,
+      purchaseCost,
+      purchaseUnit,
+      includesVat,
+      conversionRule,
+      notes,
+    } = body
+
+    await db.db
+      .updateTable('Ingredient')
+      .set({
+        name,
+        category,
+        purchaseCost: Number(purchaseCost),
+        purchaseUnit,
+        includesVat: includesVat === '1' ? 1 : 0,
+        conversionRule: conversionRule || null,
+        notes: notes || null,
+      })
+      .where('slug', '=', slug)
+      .executeTakeFirst()
+  }
+
+  async function createRecipe(db: any, body: any) {
+    const {
+      name,
+      category,
+      class: recipeClass,
+      sellPrice,
+      targetMargin,
+      includesVat,
+      stage,
+      yieldAmount,
+      yieldUnit,
+    } = body
+    const slug = slugify(name)
+
+    await db.db
+      .insertInto('Recipe')
+      .values({
+        slug,
+        name,
+        category: category || null,
+        class: recipeClass || 'menu_item',
+        sellPrice: Number(sellPrice),
+        targetMargin: targetMargin ? Number(targetMargin) : undefined,
+        includesVat: includesVat === '1' ? 1 : 0,
+        stage: stage || 'active',
+        yieldAmount: yieldAmount ? Number(yieldAmount) : undefined,
+        yieldUnit: yieldUnit || null,
+        parentId: null,
+      })
+      .onConflict((oc: any) =>
+        oc.column('slug').doUpdateSet({
           name,
           category: category || null,
           class: recipeClass || 'menu_item',
@@ -808,56 +746,39 @@ export function createAppRouter(config: ServerConfig): Router {
           yieldAmount: yieldAmount ? Number(yieldAmount) : undefined,
           yieldUnit: yieldUnit || null,
         })
-        .where('slug', '=', req.params.slug)
-        .executeTakeFirst()
+      )
+      .executeTakeFirst()
+  }
 
-      // Return updated recipes list
-      const recipes = await config.database.db
-        .selectFrom('Recipe')
-        .selectAll()
-        .execute()
+  async function updateRecipe(db: any, slug: string, body: any) {
+    const {
+      name,
+      category,
+      class: recipeClass,
+      sellPrice,
+      targetMargin,
+      includesVat,
+      stage,
+      yieldAmount,
+      yieldUnit,
+    } = body
 
-      res.render('components/recipe-list', { recipes })
-    } catch (error) {
-      console.error('Recipe update error:', error)
-      res.status(500).send('Failed to update recipe')
-    }
-  })
-
-  // Delete recipe
-  router.delete('/recipes/:slug', async (req, res) => {
-    try {
-      await config.database.db
-        .deleteFrom('Recipe')
-        .where('slug', '=', req.params.slug)
-        .execute()
-
-      // Return updated recipes list
-      const recipes = await config.database.db
-        .selectFrom('Recipe')
-        .selectAll()
-        .execute()
-
-      res.render('components/recipe-list', { recipes })
-    } catch (error) {
-      console.error('Recipe delete error:', error)
-      res.status(500).send('Failed to delete recipe')
-    }
-  })
-
-  // Margins route
-  router.get('/margins', renderView('margins'))
-
-  // Settings route
-  router.get('/settings', renderView('settings'))
-
-  // Help route
-  router.get('/help', renderView('help'))
-
-  // Default redirect to dashboard
-  router.get('/', (_req, res) => {
-    res.redirect('/app/dashboard')
-  })
+    await db.db
+      .updateTable('Recipe')
+      .set({
+        name,
+        category: category || null,
+        class: recipeClass || 'menu_item',
+        sellPrice: Number(sellPrice),
+        targetMargin: targetMargin ? Number(targetMargin) : undefined,
+        includesVat: includesVat === '1' ? 1 : 0,
+        stage: stage || 'active',
+        yieldAmount: yieldAmount ? Number(yieldAmount) : undefined,
+        yieldUnit: yieldUnit || null,
+      })
+      .where('slug', '=', slug)
+      .executeTakeFirst()
+  }
 
   return router
 }
