@@ -36,6 +36,9 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm --filter @menubook/app exec playwright install --with-deps chromium
 
+      - name: Initialise the application
+        run: bash scripts/cli.sh initialise
+
       - name: Run E2E tests
         run: pnpm --filter @menubook/app test:e2e
 
