@@ -65,3 +65,39 @@
 #tour-tooltip {
   animation: tour-fade-in 0.3s ease-out;
 }
+
+/* Form validation styles */
+input:required:not(:focus):invalid,
+select:required:not(:focus):invalid {
+  border-color: #fbbf24;
+}
+
+/* Smooth transitions for validation states */
+input,
+select,
+textarea {
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* HTMX Loading Indicators */
+.htmx-swapping {
+  opacity: 0;
+  transition: opacity 100ms ease-out;
+}
+
+.htmx-settling {
+  opacity: 1;
+  transition: opacity 100ms ease-in;
+}
+
+.htmx-indicator {
+  display: none;
+}
+
+.htmx-request .htmx-indicator {
+  display: inline-block;
+}
+
+.htmx-request.htmx-indicator {
+  display: inline-block;
+}

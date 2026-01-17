@@ -43,7 +43,7 @@
           type="text"
           id="search-input"
           name="search"
-          hx-get="/app/<%= currentView %>"
+          hx-get="/<%= currentView %>"
           hx-trigger="keyup changed delay:300ms"
           hx-target="#<%= currentView %>-list"
           hx-swap="innerHTML"
@@ -96,7 +96,7 @@
               <select
                 id="filter-supplier"
                 name="filter-supplier"
-                hx-get="/app/<%= currentView %>"
+                hx-get="/<%= currentView %>"
                 hx-trigger="change"
                 hx-target="#<%= currentView %>-list"
                 hx-swap="innerHTML"
@@ -122,7 +122,7 @@
               <select
                 id="filter-category"
                 name="filter-category"
-                hx-get="/app/<%= currentView %>"
+                hx-get="/<%= currentView %>"
                 hx-trigger="change"
                 hx-target="#<%= currentView %>-list"
                 hx-swap="innerHTML"
@@ -148,7 +148,7 @@
               <select
                 id="filter-class"
                 name="filter-class"
-                hx-get="/app/<%= currentView %>"
+                hx-get="/<%= currentView %>"
                 hx-trigger="change"
                 hx-target="#<%= currentView %>-list"
                 hx-swap="innerHTML"
@@ -172,7 +172,7 @@
               <select
                 id="filter-margin"
                 name="filter-margin"
-                hx-get="/app/<%= currentView %>"
+                hx-get="/<%= currentView %>"
                 hx-trigger="change"
                 hx-target="#<%= currentView %>-list"
                 hx-include="[name='search']"

@@ -46,7 +46,7 @@
     const message = `Are you sure you want to delete "${name}"? This action cannot be undone.`;
     showDeleteModal(message, () => {
       // Perform DELETE request using fetch
-      fetch(`/app/${entityType}s/${slug}`, {
+      fetch(`/management/${entityType}s/${slug}`, {
         method: 'DELETE',
         headers: {
           'HX-Request': 'true'
@@ -55,10 +55,7 @@
         .then(response => response.text())
         .then(html => {
           // Update the list with the new HTML
-          const listId = entityType === 'supplier' ? 'suppliers-list' :
-                         entityType === 'ingredient' ? 'ingredients-list' :
-                         'recipes-list';
-          const listElement = document.getElementById(listId);
+          const listElement = document.getElementById('entity-list');
           if (listElement) {
             listElement.innerHTML = html;
           }

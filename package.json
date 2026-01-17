@@ -15,7 +15,8 @@
     "lint": "turbo lint",
     "format": "prettier --write \"packages/**/*.{ts,tsx,js,jsx,json}\" \"apps/**/*.{ts,tsx,js,jsx,json}\"",
     "clean": "turbo clean && rm -rf node_modules",
-    "generate": "prisma generate"
+    "generate": "prisma generate",
+    "cli": "pnpm --filter @menubook/cli cli"
   },
   "devDependencies": {
     "@tsconfig/node16": "^16.1.8",

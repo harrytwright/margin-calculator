@@ -3,6 +3,7 @@ import express, { Express } from 'express'
 import fs from 'fs/promises'
 import { Server } from 'http'
 import path from 'path'
+import cookieParser from 'cookie-parser'
 
 import log from '@harrytwright/logger'
 
@@ -19,6 +20,10 @@ import {
   SupplierService,
 } from '@menubook/core'
 import { createApiRouter } from './routes/api'
+import { metricsMiddleware } from './middleware/metrics'
+import { metricsService } from './services/metrics'
+import { demoMiddleware, isDemoEnabled } from './middleware/demo'
+import { initDemoSessionManager } from './services/demo-session'
 
 export interface ServerConfig {
   port: number
@@ -29,6 +34,8 @@ export interface ServerConfig {
   openBrowser?: boolean
   watchFiles?: boolean
   events?: EventEmitter
+  /** Factory function to create in-memory databases for demo sessions */
+  demoDatabaseFactory?: () => Promise<DatabaseContext>
 }
 
 export function createServer(config: ServerConfig): Express {
@@ -41,26 +48,29 @@ export function createServer(config: ServerConfig): Express {
   // Middleware
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
+  app.use(cookieParser())
   app.use(express.static(path.join(__dirname, 'public')))
+  app.use(metricsMiddleware)
+  app.use(demoMiddleware)
+
+  // Metrics endpoint
+  app.get('/metrics', async (_req, res) => {
+    res.set('Content-Type', metricsService.getContentType())
+    res.send(await metricsService.getMetrics())
+  })
 
   // Make config available to all views
   app.locals.config = config
 
   // API routes
   app.use(
-    '/api',
     require('./middleware/morgan').morgan(require('@harrytwright/logger'))
   )
   app.use('/api', createApiRouter(config))
 
-  // New EJS-based app routes (parallel to legacy SPA)
+  // EJS-based app routes
   const { createAppRouter } = require('./routes/app')
-  app.use('/app', createAppRouter(config))
-
-  // Serve index.html for root (legacy SPA)
-  app.get('/', (_req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'))
-  })
+  app.use('/', createAppRouter(config))
 
   return app
 }
@@ -79,12 +89,22 @@ export async function startServer(
     events,
   }
 
+  // Initialize demo session manager if DEMO mode is enabled
+  let demoManager: ReturnType<typeof initDemoSessionManager> | undefined
+  if (isDemoEnabled() && config.demoDatabaseFactory) {
+    demoManager = initDemoSessionManager(config.demoDatabaseFactory)
+    log.info('demo', 'Demo mode enabled - session-based databases active')
+  }
+
   const app = createServer(runtimeConfig)
   const url = `http://localhost:${config.port}`
 
   const server = await listen(app, config.port)
 
   console.log(`\n🚀 Margin UI running at ${url}`)
+  if (isDemoEnabled()) {
+    console.log('   📋 Demo mode active (sessions expire after 30 minutes)')
+  }
   console.log(`   Press Ctrl+C to stop\n`)
 
   if (config.openBrowser !== false) {
@@ -105,6 +125,9 @@ export async function startServer(
       await closeServer(server)
       if (watcher) {
         await watcher.stop()
+      }
+      if (demoManager) {
+        await demoManager.shutdown()
       }
     },
   }

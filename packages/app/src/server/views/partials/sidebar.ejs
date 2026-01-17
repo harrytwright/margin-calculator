@@ -1,36 +1,21 @@
+<%
+  const isManagement = view === 'management'
+  const currentType = typeof type !== 'undefined' ? type : ''
+  const demoMode = typeof isDemo !== 'undefined' && isDemo
+%>
+
 <!-- Sidebar -->
 <aside class="w-64 bg-base-100 border-r border-base-300 flex flex-col">
   <!-- Logo/Header -->
   <div class="px-6 py-4 border-b border-base-300">
-    <h1 class="text-xl font-bold text-base-content">📖 Menu Book</h1>
+    <h1 class="text-xl font-bold text-base-content">Menu Book</h1>
+    <% if (demoMode) { %>
+      <span class="badge badge-warning badge-sm mt-1">Demo</span>
+    <% } %>
   </div>
 
   <!-- Navigation -->
   <nav class="flex-1 px-4 py-6 space-y-1">
-    <!-- Dashboard -->
-    <a
-      href="/app/dashboard"
-      hx-get="/app/dashboard"
-      hx-target="#content-area"
-      hx-push-url="true"
-      class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md <%= currentView === 'dashboard' ? 'text-primary-content bg-primary hover:bg-primary-focus' : 'text-base-content hover:bg-base-200' %>"
-    >
-      <svg
-        class="w-5 h-5 mr-3"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-        />
-      </svg>
-      Dashboard
-    </a>
-
     <!-- Management Section -->
     <div class="space-y-1">
       <button
@@ -55,7 +40,7 @@
         </span>
         <svg
           id="management-chevron"
-          class="w-4 h-4 transform transition-transform <%= ['suppliers', 'ingredients', 'recipes'].includes(currentView) ? 'rotate-180' : '' %>"
+          class="w-4 h-4 transform transition-transform <%= isManagement ? 'rotate-180' : '' %>"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -70,44 +55,44 @@
       </button>
 
       <!-- Sub-navigation -->
-      <div id="management-subnav" class="<%= ['suppliers', 'ingredients', 'recipes'].includes(currentView) ? '' : 'hidden' %> pl-11 space-y-1">
+      <div id="management-subnav" class="<%= isManagement ? '' : 'hidden' %> pl-11 space-y-1">
         <a
-          href="/app/suppliers"
-          hx-get="/app/suppliers"
+          href="/management/suppliers"
+          hx-get="/management/suppliers"
           hx-target="#content-area"
           hx-push-url="true"
-          class="nav-link block px-3 py-2 text-sm font-medium rounded-md <%= currentView === 'suppliers' ? 'text-base-content bg-base-200' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content' %>"
+          class="nav-link block px-3 py-2 text-sm font-medium rounded-md <%= (isManagement && currentType === 'suppliers') ? 'text-base-content bg-base-200' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content' %>"
         >
           Suppliers
         </a>
         <a
-          href="/app/ingredients"
-          hx-get="/app/ingredients"
+          href="/management/ingredients"
+          hx-get="/management/ingredients"
           hx-target="#content-area"
           hx-push-url="true"
-          class="nav-link block px-3 py-2 text-sm font-medium rounded-md <%= currentView === 'ingredients' ? 'text-base-content bg-base-200' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content' %>"
+          class="nav-link block px-3 py-2 text-sm font-medium rounded-md <%= (isManagement && currentType === 'ingredients') ? 'text-base-content bg-base-200' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content' %>"
         >
           Ingredients
         </a>
         <a
-          href="/app/recipes"
-          hx-get="/app/recipes"
+          href="/management/recipes"
+          hx-get="/management/recipes"
           hx-target="#content-area"
           hx-push-url="true"
-          class="nav-link block px-3 py-2 text-sm font-medium rounded-md <%= currentView === 'recipes' ? 'text-base-content bg-base-200' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content' %>"
+          class="nav-link block px-3 py-2 text-sm font-medium rounded-md <%= (isManagement && currentType === 'recipes') ? 'text-base-content bg-base-200' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content' %>"
         >
           Recipes
         </a>
       </div>
     </div>
 
-    <!-- Margins -->
+    <!-- Margin Calculator -->
     <a
-      href="/app/margins"
-      hx-get="/app/margins"
+      href="/margin"
+      hx-get="/margin"
       hx-target="#content-area"
       hx-push-url="true"
-      class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md <%= currentView === 'margins' ? 'text-primary-content bg-primary hover:bg-primary-focus' : 'text-base-content hover:bg-base-200' %>"
+      class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md <%= view === 'margin' ? 'text-primary-content bg-primary hover:bg-primary-focus' : 'text-base-content hover:bg-base-200' %>"
     >
       <svg
         class="w-5 h-5 mr-3"
@@ -122,16 +107,17 @@
           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       </svg>
-      Margins
+      Margin
     </a>
 
-    <!-- Settings -->
+    <% if (!demoMode) { %>
+    <!-- Settings (hidden in demo mode) -->
     <a
-      href="/app/settings"
-      hx-get="/app/settings"
+      href="/settings"
+      hx-get="/settings"
       hx-target="#content-area"
       hx-push-url="true"
-      class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md <%= currentView === 'settings' ? 'text-primary-content bg-primary hover:bg-primary-focus' : 'text-base-content hover:bg-base-200' %>"
+      class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md <%= view === 'settings' ? 'text-primary-content bg-primary hover:bg-primary-focus' : 'text-base-content hover:bg-base-200' %>"
     >
       <svg
         class="w-5 h-5 mr-3"
@@ -155,13 +141,13 @@
       Settings
     </a>
 
-    <!-- Help -->
+    <!-- Help (hidden in demo mode) -->
     <a
-      href="/app/help"
-      hx-get="/app/help"
+      href="/help"
+      hx-get="/help"
       hx-target="#content-area"
       hx-push-url="true"
-      class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md <%= currentView === 'help' ? 'text-primary-content bg-primary hover:bg-primary-focus' : 'text-base-content hover:bg-base-200' %>"
+      class="nav-link flex items-center px-3 py-2 text-sm font-medium rounded-md <%= view === 'help' ? 'text-primary-content bg-primary hover:bg-primary-focus' : 'text-base-content hover:bg-base-200' %>"
     >
       <svg
         class="w-5 h-5 mr-3"
@@ -178,6 +164,7 @@
       </svg>
       Help
     </a>
+    <% } %>
   </nav>
 
   <script>

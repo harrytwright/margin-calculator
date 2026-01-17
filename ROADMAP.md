@@ -77,6 +77,96 @@ Migrate what's needed for `REALM` support, no new features for 0.3.0. Core is th
 Since this migration will set up a working MVP to be hosted online for a closed alpha, this is the big next step, and
 needs to be fully thought out.
 
+### v0.4.0
+
+> May have made a mini mistake, 0.3.0 was already released, so any works for 0.4.0 will be tagged with the items 
+> above too.
+
+#### Core
+
+> @menubook/core
+
+Core will not be touched here.
+
+#### Webapp
+
+> @menubook/app
+
+Time to finish off the migration to the new dashboard. Very little to be added, just making sure we get the 
+migration sorted and linked
+
+- Remove old dashboard
+- Modernise the stack to be fully ESJ/HTMX. With DasiyUI and tailwind being the styling
+- e2e testing. Not 100% but covers the basic
+- Basic express prometheus metrics
+
+**Open Alpha - Demo**
+
+This will be a demo to display user work, to be close to fleshed out, but the idea would be an sqlite3 per session.
+Each session works independently, where the user can do minimal work, but has a quick LRUCache used, so if the
+sqlite3 database is not used after 30 mins the database will be removed?
+
+`REALM=cloud` will be used with a secret `DEMO=true` to be used as a feature flag to handle the sqlite3 database
+mapping and session handling.
+
+**Implementation:**
+
+- `:memory:` SQLite per session with LRU cache (max 100 sessions, 30min TTL)
+  - Session ID stored in cookie
+  - Fresh DB created on first access with migrations
+  - Automatic cleanup via LRU disposal (garbage collected, no file cleanup needed)
+- 410 Gone response for expired sessions
+  - Client shows "Your demo session expired. Refresh to start a new one." popup
+  - Seamless restart flow
+- Basic Prometheus metrics exposed at `/metrics`
+  - Session lifecycle: created, active, expired, duration
+  - User engagement: actions (create/calculate/export), recipes/ingredients created
+  - System health: 410 responses, LRU evictions, memory usage
+- PostHog integration for demo funnels (only when `DEMO=true`)
+  - Track feature adoption and conversion flows
+  - Identify drop-off points in onboarding
+  - Removed/disabled in production (`DEMO!=true`)
+- Migrate from SPA to endpointed routes.
+  - `/management/:type`
+  - `/margin`
+  - `/settings` - Disabled for demo
+  - `/help` - Disabled for demo
+
+#### CLI
+
+> @menubook/cli
+
+Changes to make sure the migration of the webapp go through correctly
+
+#### Landing Page
+
+> @menubook/web
+
+This will just be a few minor changes. Whilst we are going the SaaS route, this app will still be a simple B2B 
+application, we cannot forget out routes, offering an ease of use for a market that is often miss-understood. Where 
+when you google this concept you get basic calculators in a website, or a spreadsheet you do not know if it is a 
+virus, or if it will work for your specification
+
+- Turn the UI from generic AI designed to be closer to human-made
+  - Removing dependency on the purple that AI agents love
+  - removing emojis for icons
+  - Using https://saaslandingpage.com/tag/software/ as a good base for inspiration
+
+This does not effect anything else, I do get that we will be missing screenshots, but if we finish the webapp 
+migration first, we can use those for the website. Even if we understand we are in a beta stage. Could even offer 
+some nice looking terminal views to show that it works as a CLI too/eventually a stripped TUI 
+
+**Personal Preferences**
+
+I do like the idea of using mono fonts? Something to feel softwary, but not 90's style? Limited colours, using grays 
+in ways to make it feel fresh without being overpowered. Good use of spacing.
+
+### 0.5.0
+
+> TBC
+
+####
+
 ---
 
 ## Completed Features

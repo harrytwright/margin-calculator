@@ -54,7 +54,7 @@
         </td>
         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
           <button
-            hx-get="/app/recipes/<%= recipe.slug %>/edit"
+            hx-get="/management/recipes/<%= recipe.slug %>/edit"
             hx-target=".modal-content"
             onclick="openModal()"
             class="text-blue-600 hover:text-blue-900 mr-3"
@@ -90,7 +90,7 @@
   <h3 class="text-lg font-semibold text-gray-900 mb-2">No recipes found</h3>
   <p class="text-gray-600 mb-6">Get started by creating your first recipe.</p>
   <button
-    hx-get="/app/recipes/new"
+    hx-get="/management/recipes/new"
     hx-target=".modal-content"
     onclick="openModal()"
     class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"

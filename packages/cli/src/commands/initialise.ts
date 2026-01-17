@@ -14,6 +14,9 @@ export const initialise = new Command()
   .name('initialise')
   .description('Initialise the cli')
   .option('--force', 'Force the recreation', false)
+  .option('-y, --yes', 'Non-interactive mode, accept defaults', false)
+  .option('--vat-inclusive', 'Prices include VAT (UK/EU standard)')
+  .option('--vat-exclusive', 'Prices exclude VAT (US standard)')
   .action(async function (opts, cmd) {
     log.silly('cli', { args: cmd.parent?.rawArgs }, cmd.parent?.rawArgs || [])
     log.info('initialise', 'Initialising the cli')
@@ -24,7 +27,13 @@ export const initialise = new Command()
       workspace,
       database: dbPath,
       force,
+      yes: nonInteractive,
+      vatInclusive,
+      vatExclusive,
     } = cmd.optsWithGlobals()
+
+    // Detect CI environment for non-interactive mode
+    const isCI = nonInteractive || process.env.CI === 'true' || process.env.NONINTERACTIVE === 'true'
 
     // Use location if provided, otherwise fall back to working (deprecated)
     const locationDir = location || working
@@ -45,52 +54,74 @@ export const initialise = new Command()
       successText: 'Created workspace directories',
     })
 
-    // Ask user about pricing preference
-    const pricingPreference = await prompt({
-      type: 'select',
-      name: 'priceIncludesVat',
-      message: 'How are your product prices typically displayed?',
-      hint: 'This setting affects how VAT is handled in recipe pricing',
-      choices: [
-        {
-          value: true,
-          title: 'Prices include VAT/tax (UK/EU standard)',
-          description:
-            'Prices shown to customers already include VAT. Example: £6.00 includes VAT',
-        },
-        {
-          value: false,
-          title: 'Prices exclude tax (US standard)',
-          description:
-            'Sales tax is added at point of sale. Example: $6.00 + tax',
-        },
-      ],
-      initial: 0, // Default to VAT-inclusive (UK/EU)
-    })
+    // Ask user about pricing preference (or use CLI option / default in non-interactive mode)
+    let priceIncludesVat: boolean
+    if (vatInclusive) {
+      priceIncludesVat = true
+    } else if (vatExclusive) {
+      priceIncludesVat = false
+    } else if (isCI) {
+      // Default to VAT-inclusive in non-interactive mode
+      priceIncludesVat = true
+      log.info('initialise', 'Non-interactive mode: using VAT-inclusive pricing (default)')
+    } else {
+      const pricingPreference = await prompt({
+        type: 'select',
+        name: 'priceIncludesVat',
+        message: 'How are your product prices typically displayed?',
+        hint: 'This setting affects how VAT is handled in recipe pricing',
+        choices: [
+          {
+            value: true,
+            title: 'Prices include VAT/tax (UK/EU standard)',
+            description:
+              'Prices shown to customers already include VAT. Example: £6.00 includes VAT',
+          },
+          {
+            value: false,
+            title: 'Prices exclude tax (US standard)',
+            description:
+              'Sales tax is added at point of sale. Example: $6.00 + tax',
+          },
+        ],
+        initial: 0, // Default to VAT-inclusive (UK/EU)
+      })
+      priceIncludesVat = pricingPreference.priceIncludesVat
+    }
 
     // Create the config file with user's preference
     await writeDefaultConfiguration(locationBase, force, {
-      defaultPriceIncludesVat: pricingPreference.priceIncludesVat,
+      defaultPriceIncludesVat: priceIncludesVat,
     })
 
     // Delete the old database if force is enabled
     if (force) {
-      const databaseDeletion = await prompt({
-        type: 'select',
-        name: 'delete',
-        message:
-          'Force delete existing database. This is destructive. Do we proceed?',
-        hint: 'Setting to `No` will still run the migration. This is to check if you wish the database to be deleted',
-        choices: [
-          {
-            value: true,
-            title: 'Yes',
-          },
-          { value: false, title: 'No', selected: true },
-        ],
-      })
+      let shouldDelete: boolean
 
-      if (databaseDeletion.delete) {
+      if (isCI) {
+        // In non-interactive mode with --force, default to NOT deleting (safer)
+        // User can delete manually if needed
+        log.info('initialise', 'Non-interactive mode: skipping database deletion (use manual deletion if needed)')
+        shouldDelete = false
+      } else {
+        const databaseDeletion = await prompt({
+          type: 'select',
+          name: 'delete',
+          message:
+            'Force delete existing database. This is destructive. Do we proceed?',
+          hint: 'Setting to `No` will still run the migration. This is to check if you wish the database to be deleted',
+          choices: [
+            {
+              value: true,
+              title: 'Yes',
+            },
+            { value: false, title: 'No', selected: true },
+          ],
+        })
+        shouldDelete = databaseDeletion.delete
+      }
+
+      if (shouldDelete) {
         await fs
           .access(path.join(locationBase, dbPath))
           .then(() => fs.unlink(path.join(locationBase, dbPath)))
