@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('Suppliers CRUD', () => {
   test.beforeEach(async ({ page }) => {
@@ -40,8 +40,12 @@ test.describe('Suppliers CRUD', () => {
     await page.waitForTimeout(500)
 
     // Click edit button
-    const editButton = page.locator('button[hx-get*="Edit Test Supplier"], tr:has-text("Edit Test Supplier") button[title="Edit"]').first()
-    if (await editButton.count() > 0) {
+    const editButton = page
+      .locator(
+        'button[hx-get*="Edit Test Supplier"], tr:has-text("Edit Test Supplier") button[title="Edit"]'
+      )
+      .first()
+    if ((await editButton.count()) > 0) {
       await editButton.click()
       await page.waitForSelector('.modal-content form')
 
@@ -51,7 +55,9 @@ test.describe('Suppliers CRUD', () => {
 
       // Verify update
       await page.waitForTimeout(500)
-      await expect(page.locator('text=Edit Test Supplier Updated')).toBeVisible()
+      await expect(
+        page.locator('text=Edit Test Supplier Updated')
+      ).toBeVisible()
     }
   })
 
@@ -64,8 +70,10 @@ test.describe('Suppliers CRUD', () => {
     await page.waitForTimeout(500)
 
     // Find and click delete button
-    const deleteButton = page.locator('tr:has-text("Delete Test Supplier") button[title="Delete"]').first()
-    if (await deleteButton.count() > 0) {
+    const deleteButton = page
+      .locator('tr:has-text("Delete Test Supplier") button[title="Delete"]')
+      .first()
+    if ((await deleteButton.count()) > 0) {
       await deleteButton.click()
 
       // Confirm deletion
@@ -73,7 +81,9 @@ test.describe('Suppliers CRUD', () => {
 
       // Wait for deletion
       await page.waitForTimeout(500)
-      await expect(page.locator('td:has-text("Delete Test Supplier")')).not.toBeVisible()
+      await expect(
+        page.locator('td:has-text("Delete Test Supplier")')
+      ).not.toBeVisible()
     }
   })
 })

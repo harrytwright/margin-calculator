@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { metricsService } from '../services/metrics'
 
 export function metricsMiddleware(
@@ -20,7 +20,10 @@ export function metricsMiddleware(
     const status = res.statusCode.toString()
 
     metricsService.httpRequestsTotal.inc({ method, route, status })
-    metricsService.httpRequestDuration.observe({ method, route, status }, duration)
+    metricsService.httpRequestDuration.observe(
+      { method, route, status },
+      duration
+    )
   })
 
   next()

@@ -1,9 +1,9 @@
+import cookieParser from 'cookie-parser'
 import { EventEmitter } from 'events'
 import express, { Express } from 'express'
 import fs from 'fs/promises'
 import { Server } from 'http'
 import path from 'path'
-import cookieParser from 'cookie-parser'
 
 import log from '@harrytwright/logger'
 
@@ -19,11 +19,11 @@ import {
   RecipeService,
   SupplierService,
 } from '@menubook/core'
-import { createApiRouter } from './routes/api'
-import { metricsMiddleware } from './middleware/metrics'
-import { metricsService } from './services/metrics'
 import { demoMiddleware, isDemoEnabled } from './middleware/demo'
+import { metricsMiddleware } from './middleware/metrics'
+import { createApiRouter } from './routes/api'
 import { initDemoSessionManager } from './services/demo-session'
+import { metricsService } from './services/metrics'
 
 export interface ServerConfig {
   port: number

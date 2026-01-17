@@ -33,7 +33,10 @@ export const initialise = new Command()
     } = cmd.optsWithGlobals()
 
     // Detect CI environment for non-interactive mode
-    const isCI = nonInteractive || process.env.CI === 'true' || process.env.NONINTERACTIVE === 'true'
+    const isCI =
+      nonInteractive ||
+      process.env.CI === 'true' ||
+      process.env.NONINTERACTIVE === 'true'
 
     // Use location if provided, otherwise fall back to working (deprecated)
     const locationDir = location || working
@@ -63,7 +66,10 @@ export const initialise = new Command()
     } else if (isCI) {
       // Default to VAT-inclusive in non-interactive mode
       priceIncludesVat = true
-      log.info('initialise', 'Non-interactive mode: using VAT-inclusive pricing (default)')
+      log.info(
+        'initialise',
+        'Non-interactive mode: using VAT-inclusive pricing (default)'
+      )
     } else {
       const pricingPreference = await prompt({
         type: 'select',
@@ -101,7 +107,10 @@ export const initialise = new Command()
       if (isCI) {
         // In non-interactive mode with --force, default to NOT deleting (safer)
         // User can delete manually if needed
-        log.info('initialise', 'Non-interactive mode: skipping database deletion (use manual deletion if needed)')
+        log.info(
+          'initialise',
+          'Non-interactive mode: skipping database deletion (use manual deletion if needed)'
+        )
         shouldDelete = false
       } else {
         const databaseDeletion = await prompt({

@@ -79,7 +79,7 @@ needs to be fully thought out.
 
 ### v0.4.0
 
-> May have made a mini mistake, 0.3.0 was already released, so any works for 0.4.0 will be tagged with the items 
+> May have made a mini mistake, 0.3.0 was already released, so any works for 0.4.0 will be tagged with the items
 > above too.
 
 #### Core
@@ -92,7 +92,7 @@ Core will not be touched here.
 
 > @menubook/app
 
-Time to finish off the migration to the new dashboard. Very little to be added, just making sure we get the 
+Time to finish off the migration to the new dashboard. Very little to be added, just making sure we get the
 migration sorted and linked
 
 - Remove old dashboard
@@ -142,9 +142,9 @@ Changes to make sure the migration of the webapp go through correctly
 
 > @menubook/web
 
-This will just be a few minor changes. Whilst we are going the SaaS route, this app will still be a simple B2B 
-application, we cannot forget out routes, offering an ease of use for a market that is often miss-understood. Where 
-when you google this concept you get basic calculators in a website, or a spreadsheet you do not know if it is a 
+This will just be a few minor changes. Whilst we are going the SaaS route, this app will still be a simple B2B
+application, we cannot forget out routes, offering an ease of use for a market that is often miss-understood. Where
+when you google this concept you get basic calculators in a website, or a spreadsheet you do not know if it is a
 virus, or if it will work for your specification
 
 - Turn the UI from generic AI designed to be closer to human-made
@@ -152,13 +152,13 @@ virus, or if it will work for your specification
   - removing emojis for icons
   - Using https://saaslandingpage.com/tag/software/ as a good base for inspiration
 
-This does not effect anything else, I do get that we will be missing screenshots, but if we finish the webapp 
-migration first, we can use those for the website. Even if we understand we are in a beta stage. Could even offer 
-some nice looking terminal views to show that it works as a CLI too/eventually a stripped TUI 
+This does not effect anything else, I do get that we will be missing screenshots, but if we finish the webapp
+migration first, we can use those for the website. Even if we understand we are in a beta stage. Could even offer
+some nice looking terminal views to show that it works as a CLI too/eventually a stripped TUI
 
 **Personal Preferences**
 
-I do like the idea of using mono fonts? Something to feel softwary, but not 90's style? Limited colours, using grays 
+I do like the idea of using mono fonts? Something to feel softwary, but not 90's style? Limited colours, using grays
 in ways to make it feel fresh without being overpowered. Good use of spacing.
 
 ### 0.5.0

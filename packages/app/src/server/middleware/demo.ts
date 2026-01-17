@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express'
 import type { DatabaseContext } from '@menubook/core'
+import { NextFunction, Request, Response } from 'express'
 import { getDemoSessionManager } from '../services/demo-session'
 
 const DEMO_ENABLED = process.env.DEMO === 'true'

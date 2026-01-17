@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('Ingredients CRUD', () => {
   test.beforeEach(async ({ page }) => {
@@ -17,7 +17,7 @@ test.describe('Ingredients CRUD', () => {
 
   test('can search ingredients', async ({ page }) => {
     const searchInput = page.locator('input[name="search"]')
-    if (await searchInput.count() > 0) {
+    if ((await searchInput.count()) > 0) {
       await searchInput.fill('test')
       await page.keyboard.press('Enter')
       await page.waitForTimeout(500)
@@ -28,7 +28,7 @@ test.describe('Ingredients CRUD', () => {
 
   test('can filter ingredients by category', async ({ page }) => {
     const categoryFilter = page.locator('select[name="filter-category"]')
-    if (await categoryFilter.count() > 0) {
+    if ((await categoryFilter.count()) > 0) {
       const options = await categoryFilter.locator('option').all()
       if (options.length > 1) {
         await categoryFilter.selectOption({ index: 1 })
@@ -40,7 +40,7 @@ test.describe('Ingredients CRUD', () => {
 
   test('can filter ingredients by supplier', async ({ page }) => {
     const supplierFilter = page.locator('select[name="filter-supplier"]')
-    if (await supplierFilter.count() > 0) {
+    if ((await supplierFilter.count()) > 0) {
       const options = await supplierFilter.locator('option').all()
       if (options.length > 1) {
         await supplierFilter.selectOption({ index: 1 })

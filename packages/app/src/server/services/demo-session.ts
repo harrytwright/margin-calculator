@@ -1,5 +1,5 @@
-import { randomUUID } from 'crypto'
 import type { DatabaseContext } from '@menubook/core'
+import { randomUUID } from 'crypto'
 import { metricsService } from './metrics'
 
 interface Session {
@@ -26,7 +26,10 @@ export class DemoSessionManager {
     this.startCleanup()
   }
 
-  async createSession(): Promise<{ sessionId: string; database: DatabaseContext }> {
+  async createSession(): Promise<{
+    sessionId: string
+    database: DatabaseContext
+  }> {
     // Evict oldest if at capacity
     if (this.sessions.size >= MAX_SESSIONS) {
       await this.evictOldest()

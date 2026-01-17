@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test.describe('Recipes CRUD', () => {
   test.beforeEach(async ({ page }) => {
@@ -34,7 +34,7 @@ test.describe('Recipes CRUD', () => {
 
   test('can filter recipes by type', async ({ page }) => {
     const classFilter = page.locator('select[name="filter-class"]')
-    if (await classFilter.count() > 0) {
+    if ((await classFilter.count()) > 0) {
       await classFilter.selectOption('menu_item')
       await page.waitForTimeout(500)
       await expect(page.locator('main h1')).toContainText('Recipes')
@@ -43,7 +43,7 @@ test.describe('Recipes CRUD', () => {
 
   test('can search recipes', async ({ page }) => {
     const searchInput = page.locator('input[name="search"]')
-    if (await searchInput.count() > 0) {
+    if ((await searchInput.count()) > 0) {
       await searchInput.fill('test')
       await page.keyboard.press('Enter')
       await page.waitForTimeout(500)

@@ -1,9 +1,9 @@
 import {
   collectDefaultMetrics,
-  Registry,
   Counter,
-  Histogram,
   Gauge,
+  Histogram,
+  Registry,
 } from 'prom-client'
 
 export class MetricsService {

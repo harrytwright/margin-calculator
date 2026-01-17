@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express'
+import { Request, Response, Router } from 'express'
 
 import {
   Calculator,
@@ -132,7 +132,12 @@ export function createAppRouter(config: ServerConfig): Router {
         case 'ingredients':
           const filterCategory = (req.query['filter-category'] as string) || ''
           const filterSupplier = (req.query['filter-supplier'] as string) || ''
-          data.items = await getIngredients(db, search, filterCategory, filterSupplier)
+          data.items = await getIngredients(
+            db,
+            search,
+            filterCategory,
+            filterSupplier
+          )
           data.categories = await getIngredientCategories(db)
           data.suppliers = await getAllSuppliers(db)
           data.filterCategory = filterCategory
@@ -140,8 +145,14 @@ export function createAppRouter(config: ServerConfig): Router {
           break
         case 'recipes':
           const filterClass = (req.query['filter-class'] as string) || ''
-          const filterRecipeCategory = (req.query['filter-category'] as string) || ''
-          data.items = await getRecipes(db, search, filterClass, filterRecipeCategory)
+          const filterRecipeCategory =
+            (req.query['filter-category'] as string) || ''
+          data.items = await getRecipes(
+            db,
+            search,
+            filterClass,
+            filterRecipeCategory
+          )
           data.categories = await getRecipeCategories(db)
           data.filterClass = filterClass
           data.filterCategory = filterRecipeCategory
@@ -213,7 +224,9 @@ export function createAppRouter(config: ServerConfig): Router {
         .executeTakeFirst()
 
       if (!item) {
-        return res.status(404).send(`${capitalize(type.slice(0, -1))} not found`)
+        return res
+          .status(404)
+          .send(`${capitalize(type.slice(0, -1))} not found`)
       }
 
       const data: Record<string, any> = { type }
@@ -256,7 +269,10 @@ export function createAppRouter(config: ServerConfig): Router {
 
       // Return updated list
       const items = await getEntityList(db, type)
-      res.render(`components/${type.slice(0, -1)}-list`, formatListData(type, items))
+      res.render(
+        `components/${type.slice(0, -1)}-list`,
+        formatListData(type, items)
+      )
     } catch (error) {
       console.error(`${type} create error:`, error)
       res.status(500).send(`Failed to create ${type.slice(0, -1)}`)
@@ -289,7 +305,10 @@ export function createAppRouter(config: ServerConfig): Router {
 
       // Return updated list
       const items = await getEntityList(db, type)
-      res.render(`components/${type.slice(0, -1)}-list`, formatListData(type, items))
+      res.render(
+        `components/${type.slice(0, -1)}-list`,
+        formatListData(type, items)
+      )
     } catch (error) {
       console.error(`${type} update error:`, error)
       res.status(500).send(`Failed to update ${type.slice(0, -1)}`)
@@ -309,11 +328,17 @@ export function createAppRouter(config: ServerConfig): Router {
       const db = getDatabase(req)
       const tableName = getTableName(type)
 
-      await db.db.deleteFrom(tableName as any).where('slug', '=', slug).execute()
+      await db.db
+        .deleteFrom(tableName as any)
+        .where('slug', '=', slug)
+        .execute()
 
       // Return updated list
       const items = await getEntityList(db, type)
-      res.render(`components/${type.slice(0, -1)}-list`, formatListData(type, items))
+      res.render(
+        `components/${type.slice(0, -1)}-list`,
+        formatListData(type, items)
+      )
     } catch (error) {
       console.error(`${type} delete error:`, error)
       res.status(500).send(`Failed to delete ${type.slice(0, -1)}`)
@@ -336,7 +361,12 @@ export function createAppRouter(config: ServerConfig): Router {
         .where('sellPrice', 'is not', null)
         .where('sellPrice', '>', 0)
 
-      if (filterClass && (filterClass === 'menu_item' || filterClass === 'sub_recipe' || filterClass === 'base_template')) {
+      if (
+        filterClass &&
+        (filterClass === 'menu_item' ||
+          filterClass === 'sub_recipe' ||
+          filterClass === 'base_template')
+      ) {
         query = query.where('class', '=', filterClass as any)
       }
 
@@ -369,7 +399,8 @@ export function createAppRouter(config: ServerConfig): Router {
               class: recipe.class,
               category: recipe.category,
               includesVat: recipe.includesVat,
-              targetMargin: recipe.targetMargin || (await configService.getMarginTarget()),
+              targetMargin:
+                recipe.targetMargin || (await configService.getMarginTarget()),
               foodCost: marginResult.cost,
               actualMargin: marginResult.actualMargin,
               profit: marginResult.profit,
@@ -383,11 +414,13 @@ export function createAppRouter(config: ServerConfig): Router {
               category: recipe.category,
               sellPrice: recipe.sellPrice!,
               includesVat: recipe.includesVat,
-              targetMargin: recipe.targetMargin || (await configService.getMarginTarget()),
+              targetMargin:
+                recipe.targetMargin || (await configService.getMarginTarget()),
               foodCost: 0,
               actualMargin: 0,
               profit: 0,
-              error: error instanceof Error ? error.message : 'Calculation failed',
+              error:
+                error instanceof Error ? error.message : 'Calculation failed',
             }
           }
         })
@@ -438,7 +471,9 @@ export function createAppRouter(config: ServerConfig): Router {
   // Legacy route redirects (for backwards compat)
   // ============================================
   router.get('/suppliers', (_req, res) => res.redirect('/management/suppliers'))
-  router.get('/ingredients', (_req, res) => res.redirect('/management/ingredients'))
+  router.get('/ingredients', (_req, res) =>
+    res.redirect('/management/ingredients')
+  )
   router.get('/recipes', (_req, res) => res.redirect('/management/recipes'))
   router.get('/margins', (_req, res) => res.redirect('/margin'))
 
@@ -452,9 +487,12 @@ export function createAppRouter(config: ServerConfig): Router {
 
   function getTableName(type: EntityType): string {
     switch (type) {
-      case 'suppliers': return 'Supplier'
-      case 'ingredients': return 'Ingredient'
-      case 'recipes': return 'Recipe'
+      case 'suppliers':
+        return 'Supplier'
+      case 'ingredients':
+        return 'Ingredient'
+      case 'recipes':
+        return 'Recipe'
     }
   }
 
@@ -479,7 +517,9 @@ export function createAppRouter(config: ServerConfig): Router {
       .groupBy('supplierId')
       .execute()
 
-    const countMap = new Map(counts.map((c: any) => [c.supplierId, Number(c.count)]))
+    const countMap = new Map(
+      counts.map((c: any) => [c.supplierId, Number(c.count)])
+    )
 
     return suppliers.map((supplier: any) => ({
       ...supplier,
@@ -487,7 +527,12 @@ export function createAppRouter(config: ServerConfig): Router {
     }))
   }
 
-  async function getIngredients(db: any, search: string, category: string, supplierId: string) {
+  async function getIngredients(
+    db: any,
+    search: string,
+    category: string,
+    supplierId: string
+  ) {
     let query = db.db
       .selectFrom('Ingredient')
       .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
@@ -523,7 +568,12 @@ export function createAppRouter(config: ServerConfig): Router {
     return query.execute()
   }
 
-  async function getRecipes(db: any, search: string, filterClass: string, category: string) {
+  async function getRecipes(
+    db: any,
+    search: string,
+    filterClass: string,
+    category: string
+  ) {
     let query = db.db.selectFrom('Recipe').selectAll()
 
     if (search) {
@@ -535,7 +585,10 @@ export function createAppRouter(config: ServerConfig): Router {
       )
     }
 
-    if (filterClass && ['menu_item', 'base_template', 'sub_recipe'].includes(filterClass)) {
+    if (
+      filterClass &&
+      ['menu_item', 'base_template', 'sub_recipe'].includes(filterClass)
+    ) {
       query = query.where('class', '=', filterClass as any)
     }
 
