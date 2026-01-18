@@ -15,6 +15,10 @@ yarn-error.log*
 dist
 coverage
 
+# Playwright artifacts
+packages/app/playwright-report/
+packages/app/test-results/
+
 # Parcel build cache
 .parcel-cache
 
