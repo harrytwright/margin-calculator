@@ -10,7 +10,10 @@ test.describe('Ingredients CRUD', () => {
   })
 
   test('can open new ingredient form', async ({ page }) => {
-    const newButton = page.locator('button:has-text("Add Ingredient")')
+    const newButton = page
+      .locator('main')
+      .getByRole('button', { name: 'Add Ingredient', exact: true })
+      .first()
     await newButton.click()
     await expect(page.locator('.modal-content form')).toBeVisible()
   })

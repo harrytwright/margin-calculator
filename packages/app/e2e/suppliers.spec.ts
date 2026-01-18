@@ -10,7 +10,10 @@ test.describe('Suppliers CRUD', () => {
   })
 
   test('can open new supplier form', async ({ page }) => {
-    const newButton = page.locator('button:has-text("Add Supplier")')
+    const newButton = page
+      .locator('main')
+      .getByRole('button', { name: 'Add Supplier', exact: true })
+      .first()
     await newButton.click()
     await expect(page.locator('.modal-content form')).toBeVisible()
   })
