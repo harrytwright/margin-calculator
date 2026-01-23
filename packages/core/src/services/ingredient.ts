@@ -78,6 +78,23 @@ export class IngredientService {
       .executeTakeFirst()
   }
 
+  find() {
+    return this.database
+      .selectFrom('Ingredient')
+      .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
+      .select([
+        'Ingredient.id',
+        'Ingredient.slug',
+        'Ingredient.name',
+        'Ingredient.category',
+        'Ingredient.purchaseUnit',
+        'Ingredient.purchaseCost',
+        'Ingredient.includesVat',
+        'Supplier.slug as supplierSlug',
+      ])
+      .execute()
+  }
+
   async upsert(
     slug: string,
     data: IngredientImportData | IngredientResolvedImportData,

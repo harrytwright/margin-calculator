@@ -50,6 +50,13 @@ export class SupplierService {
     return result.numDeletedRows > 0n
   }
 
+  async find () {
+    return this.database
+      .selectFrom('Supplier')
+      .select(['id', 'slug', 'name'])
+      .execute()
+  }
+
   async processor(
     importer: Importer,
     data: SupplierResolvedImportData,

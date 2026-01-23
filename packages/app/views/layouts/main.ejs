@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Menu Book' %></title>
+
+    <!-- Compiled Tailwind CSS with DaisyUI -->
+    <link rel="stylesheet" href="/styles/output.css">
+
+    <!-- Chart.js for Dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- HTMX for SPA-like interactions -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <script>
+      // Theme switcher - load saved theme on page load
+      const savedTheme = localStorage.getItem('theme') || 'light'
+      document.documentElement.setAttribute('data-theme', savedTheme)
+    </script>
+  </head>
+  <body hx-ext="debug">
+    <!-- Modal Overlay -->
+    <div
+      id="modal-overlay"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity duration-200"
+    ></div>
+
+    <!-- Modal Container -->
+    <div id="modal-container">
+      <%- include('../partials/modal') %>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div
+      id="toast-container"
+      class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"
+    ></div>
+
+    <!-- Delete Confirmation Modal -->
+    <%- include('../partials/delete-modal') %>
+
+    <!-- Guided Tour Overlay -->
+    <%- include('../partials/tour-overlay') %>
+
+    <!-- Main App -->
+    <div id="app" class="min-h-screen flex">
+      <!-- Sidebar -->
+      <%- include('../partials/sidebar', { currentView: view || 'dashboard' }) %>
+
+      <!-- Main Content Area -->
+      <div id="content-area" class="flex-1 flex flex-col bg-base-200">
+        <!-- Header -->
+        <%- include('../partials/header', { currentView: view || 'dashboard' }) %>
+
+        <!-- Page Content -->
+        <main id="main-content" class="flex-1 p-6 overflow-auto">
+          <%- include(`../pages/${view}`) %>
+        </main>
+      </div>
+    </div>
+
+    <!-- Shared JavaScript for SSE, Modals, Toast, Tour -->
+    <script>
+      // Server-Sent Events for real-time updates
+      let eventSource = null;
+
+      function initializeSSE() {
+        eventSource = new EventSource('/api/events');
+
+        eventSource.addEventListener('entity', (event) => {
+          const data = JSON.parse(event.data);
+          console.log('Entity update:', data);
+
+          // Trigger HTMX refresh on relevant elements
+          const entityType = data.type;
+          const listElement = document.getElementById(`${entityType}-list`);
+          if (listElement) {
+            htmx.trigger(listElement, 'refresh');
+          }
+
+          // Show toast notification
+          showToast(`${data.action} ${data.type}: ${data.slug}`, 'info');
+        });
+
+        eventSource.addEventListener('error', (error) => {
+          console.error('SSE error:', error);
+          // Reconnect after delay
+          setTimeout(initializeSSE, 5000);
+        });
+      }
+
+      // Toast notification function
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+
+        const bgColors = {
+          success: 'bg-green-500',
+          error: 'bg-red-500',
+          warning: 'bg-yellow-500',
+          info: 'bg-blue-500'
+        };
+
+        toast.className = `${bgColors[type]} text-white px-6 py-3 rounded-lg shadow-lg pointer-events-auto transform transition-all duration-300 translate-x-0 opacity-100`;
+        toast.textContent = message;
+
+        container.appendChild(toast);
+
+        // Animate in
+        setTimeout(() => {
+          toast.style.transform = 'translateX(0)';
+          toast.style.opacity = '1';
+        }, 10);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+          toast.style.transform = 'translateX(100%)';
+          toast.style.opacity = '0';
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Modal functions
+      function openModal() {
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modal-overlay');
+        const modalContent = modal.querySelector('.modal-content');
+
+        modal.classList.remove('hidden');
+        overlay.classList.remove('hidden');
+        modal.classList.add('pointer-events-auto');
+
+        // Trigger animation
+        setTimeout(() => {
+          modalContent.classList.remove('scale-95', 'opacity-0');
+          modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+      }
+
+      function closeModal() {
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modal-overlay');
+        const modalContent = modal.querySelector('.modal-content');
+
+        // Trigger close animation
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+          modal.classList.add('hidden');
+          overlay.classList.add('hidden');
+          modal.classList.remove('pointer-events-auto');
+
+          // Clear modal content
+          modalContent.innerHTML = '';
+        }, 200);
+      }
+
+      // Close modal when clicking overlay
+      document.getElementById('modal-overlay')?.addEventListener('click', closeModal);
+
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        initializeSSE();
+      });
+
+      // HTMX configuration
+      document.body.addEventListener('htmx:configRequest', (event) => {
+        // Add custom headers if needed
+        event.detail.headers['X-Requested-With'] = 'htmx';
+      });
+
+      // Handle HTMX errors
+      document.body.addEventListener('htmx:responseError', (event) => {
+        showToast('An error occurred. Please try again.', 'error');
+      });
+
+      // Handle HTMX success
+      document.body.addEventListener('htmx:afterSwap', (event) => {
+        // Re-initialize any JavaScript components in the swapped content
+        // e.g., Chart.js charts, form validation, etc.
+      });
+    </script>
+  </body>
+</html>

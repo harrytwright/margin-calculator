@@ -1,0 +1,27 @@
+<div class="space-y-6">
+  <!-- Header with Add Button -->
+  <div class="flex justify-between items-center">
+    <div>
+      <h3 class="text-lg font-semibold text-gray-900">Recipes</h3>
+      <p class="text-sm text-gray-600 mt-1">
+        <%= typeof recipes !== 'undefined' ? recipes.length : 0 %> recipe<%= (typeof recipes !== 'undefined' && recipes.length !== 1) ? 's' : '' %>
+      </p>
+    </div>
+    <button
+      hx-get="/recipes/new"
+      hx-target=".modal-content"
+      onclick="openModal()"
+      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add Recipe
+    </button>
+  </div>
+
+  <!-- Recipe List (updates via HTMX) -->
+  <div id="recipes-list">
+    <%- include('../components/recipe-list', { recipes: typeof recipes !== 'undefined' ? recipes : [] }) %>
+  </div>
+</div>

@@ -1,0 +1,304 @@
+<% if (typeof stats !== 'undefined' && stats) { %>
+<div class="space-y-6">
+  <!-- Summary Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <!-- Total Recipes -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Total Recipes</p>
+          <p class="text-3xl font-semibold text-gray-900 mt-2"><%= stats.totalRecipes %></p>
+        </div>
+        <div class="bg-blue-100 rounded-full p-3">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Average Margin -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Average Margin</p>
+          <p class="text-3xl font-semibold text-gray-900 mt-2"><%= stats.averageMargin.toFixed(1) %>%</p>
+        </div>
+        <div class="bg-green-100 rounded-full p-3">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Below Target -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Below Target</p>
+          <p class="text-3xl font-semibold text-red-600 mt-2"><%= stats.belowTarget %></p>
+          <p class="text-xs text-gray-500 mt-1">recipes need attention</p>
+        </div>
+        <div class="bg-red-100 rounded-full p-3">
+          <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meets Target -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-600">Meets Target</p>
+          <p class="text-3xl font-semibold text-green-600 mt-2"><%= stats.meetsTarget %></p>
+          <p class="text-xs text-gray-500 mt-1">recipes on track</p>
+        </div>
+        <div class="bg-green-100 rounded-full p-3">
+          <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Margin Distribution Chart -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Margin Distribution</h3>
+      <div style="height: 250px;">
+        <canvas id="marginDistributionChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top 5 Profitable Recipes -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Top 5 Most Profitable</h3>
+      <div style="height: 250px;">
+        <canvas id="topProfitableChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Breakdown -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Recipe Categories</h3>
+      <div style="height: 250px;">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+      <div class="space-y-3">
+        <a
+          href="/recipes"
+          hx-get="/recipes"
+          hx-target="#main-content"
+          hx-push-url="true"
+          class="block w-full px-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-center font-medium"
+        >
+          📋 View All Recipes
+        </a>
+        <a
+          href="/margins"
+          hx-get="/margins"
+          hx-target="#main-content"
+          hx-push-url="true"
+          class="block w-full px-4 py-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-center font-medium"
+        >
+          💰 Margins Report
+        </a>
+        <a
+          href="/ingredients"
+          hx-get="/ingredients"
+          hx-target="#main-content"
+          hx-push-url="true"
+          class="block w-full px-4 py-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors text-center font-medium"
+        >
+          🥕 Manage Ingredients
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Store chart instances globally to prevent memory leaks
+  window.dashboardCharts = window.dashboardCharts || {};
+
+  function initDashboardCharts() {
+    // Only init if we're on the dashboard
+    if (!document.getElementById('marginDistributionChart')) return;
+
+    // Destroy existing charts before creating new ones
+    if (window.dashboardCharts.marginChart) {
+      window.dashboardCharts.marginChart.destroy();
+    }
+    if (window.dashboardCharts.topProfitChart) {
+      window.dashboardCharts.topProfitChart.destroy();
+    }
+    if (window.dashboardCharts.categoryChart) {
+      window.dashboardCharts.categoryChart.destroy();
+    }
+
+    // Margin Distribution Chart
+    const marginCtx = document.getElementById('marginDistributionChart');
+    if (marginCtx) {
+      window.dashboardCharts.marginChart = new Chart(marginCtx, {
+        type: 'bar',
+        data: {
+          labels: <%- JSON.stringify(stats.marginDistribution.map(d => d.range)) %>,
+          datasets: [{
+            label: 'Number of Recipes',
+            data: <%- JSON.stringify(stats.marginDistribution.map(d => d.count)) %>,
+            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          },
+          layout: {
+            padding: 10
+          }
+        }
+      });
+    }
+
+    // Top Profitable Recipes Chart
+    const topProfitCtx = document.getElementById('topProfitableChart');
+    if (topProfitCtx && <%= stats.topProfitable.length > 0 %>) {
+      window.dashboardCharts.topProfitChart = new Chart(topProfitCtx, {
+        type: 'bar',
+        data: {
+          labels: <%- JSON.stringify(stats.topProfitable.map(r => r.name)) %>,
+          datasets: [{
+            label: 'Margin (%)',
+            data: <%- JSON.stringify(stats.topProfitable.map(r => r.margin.toFixed(1))) %>,
+            backgroundColor: 'rgba(16, 185, 129, 0.5)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true
+            }
+          },
+          layout: {
+            padding: 10
+          }
+        }
+      });
+    }
+
+    // Category Breakdown Chart
+    const categoryCtx = document.getElementById('categoryChart');
+    if (categoryCtx && <%= stats.categoryBreakdown.length > 0 %>) {
+      window.dashboardCharts.categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+          labels: <%- JSON.stringify(stats.categoryBreakdown.map(c => c.category)) %>,
+          datasets: [{
+            data: <%- JSON.stringify(stats.categoryBreakdown.map(c => c.count)) %>,
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.5)',
+              'rgba(16, 185, 129, 0.5)',
+              'rgba(249, 115, 22, 0.5)',
+              'rgba(168, 85, 247, 0.5)',
+              'rgba(236, 72, 153, 0.5)',
+            ],
+            borderColor: [
+              'rgba(59, 130, 246, 1)',
+              'rgba(16, 185, 129, 1)',
+              'rgba(249, 115, 22, 1)',
+              'rgba(168, 85, 247, 1)',
+              'rgba(236, 72, 153, 1)',
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          },
+          layout: {
+            padding: 10
+          }
+        }
+      });
+    }
+  }
+
+  // Call init immediately since this script runs when content is swapped
+  initDashboardCharts();
+</script>
+
+<% } else { %>
+<!-- Empty State -->
+<div class="space-y-6">
+  <div class="bg-white rounded-lg shadow p-12 text-center">
+    <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+      <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">No recipes yet</h3>
+    <p class="text-gray-600 mb-6">Get started by adding suppliers, ingredients, and recipes.</p>
+    <div class="flex justify-center gap-3">
+      <a
+        href="/suppliers"
+        hx-get="/suppliers"
+        hx-target="#main-content"
+        hx-push-url="true"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+      >
+        Add Supplier
+      </a>
+      <a
+        href="/ingredients"
+        hx-get="/ingredients"
+        hx-target="#main-content"
+        hx-push-url="true"
+        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+      >
+        Add Ingredient
+      </a>
+    </div>
+  </div>
+</div>
+<% } %>
