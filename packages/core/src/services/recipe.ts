@@ -76,6 +76,27 @@ export class RecipeService {
       .executeTakeFirst())
   }
 
+  find() {
+    return this.database
+      .selectFrom('Recipe')
+      .leftJoin('Recipe as ParentRecipe', 'Recipe.parentId', 'ParentRecipe.id')
+      .select([
+        'Recipe.id',
+        'Recipe.slug',
+        'Recipe.name',
+        'Recipe.stage',
+        'Recipe.class',
+        'Recipe.category',
+        'Recipe.sellPrice',
+        'Recipe.includesVat',
+        'Recipe.targetMargin',
+        'Recipe.yieldAmount',
+        'Recipe.yieldUnit',
+        'ParentRecipe.slug as parent',
+      ])
+      .execute()
+  }
+
   findById(slug: string): Promise<RecipeWithIngredients<true> | undefined>
   findById(
     slug: string,

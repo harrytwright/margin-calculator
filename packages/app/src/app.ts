@@ -10,9 +10,12 @@ import { NotFound as HTTPNotFound } from '@hndlr/errors'
 import express from 'express'
 
 import {
+  AnalyticsController,
+  EventsController,
   HealthcheckController,
   InfoController,
   IngredientsController,
+  RecipesController,
   SuppliersController,
 } from './controllers'
 
@@ -30,7 +33,10 @@ import { expressRequestHandler } from './modules/sentry/middleware/wrapper'
   HealthcheckController,
   MetricsController,
   SuppliersController,
-  IngredientsController
+  IngredientsController,
+  RecipesController,
+  AnalyticsController,
+  EventsController
 )
 @useMiddleware(expressRequestHandler())
 @useMiddleware(require('./modules/metrics/middleware/morgan').morgan)

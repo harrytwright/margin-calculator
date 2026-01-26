@@ -1,6 +1,7 @@
-import { controller, path } from '@harrytwright/api/dist/core'
+import { controller, Inject, path } from '@harrytwright/api/dist/core'
 import { BadRequest, Conflict, NotFound } from '@hndlr/errors'
 import { slugify } from '@menubook/core'
+import type { EventEmitter } from 'events'
 import express from 'express'
 import { SupplierApiData, supplierApiSchema, toSupplierData } from '../schemas'
 import SupplierServiceImpl from '../services/supplier.service'
@@ -8,7 +9,10 @@ import type { ServerRequest } from '../types/response.json.type'
 
 @controller('/api/suppliers')
 export class SuppliersController {
-  constructor(private readonly service: SupplierServiceImpl) {}
+  constructor(
+    private readonly service: SupplierServiceImpl,
+    @Inject('events') private readonly events: EventEmitter
+  ) {}
 
   @path('/')
   async getSuppliers(req: express.Request, res: express.Response) {
@@ -34,6 +38,7 @@ export class SuppliersController {
       await this.service.upsert(slug, data)
 
       const result = await this.service.findById(slug)
+      this.events.emit('supplier.created', result)
       return res.status(201).json(result)
     } catch (error) {
       return next(error)
@@ -76,6 +81,7 @@ export class SuppliersController {
       await this.service.upsert(slug, data)
 
       const result = await this.service.findById(slug)
+      this.events.emit('supplier.updated', result)
       return res.status(200).json(result)
     } catch (error) {
       return next(error)
@@ -97,6 +103,7 @@ export class SuppliersController {
 
       await this.service.delete(slug)
 
+      this.events.emit('supplier.deleted', slug)
       return res.status(204).end()
     } catch (error) {
       return next(error)

@@ -27,16 +27,17 @@ import { Container } from '@harrytwright/api/dist/core/injection/container'
 import { Container as BaseContainer } from '@harrytwright/api/dist/injection'
 import { ServiceIdentifier } from '@harrytwright/api/dist/injection/types/service-identifier.type'
 import { AppConfig } from '../src/config'
-import { KyselyDatastore } from '../src/datastore/kysely.datastore'
+// import { KyselyDatastore } from '../src/datastore/kysely.datastore'
 import handler from '../src/middleware/error-handler'
-import { Auth, isValidPrivateKey } from '../src/modules/auth/auth.module'
+import { Auth, isValidPrivateKey } from '../src/modules/auth/module'
 import { Authentication } from '../src/modules/auth/middleware/authentication'
-import { BullHandler } from '../src/modules/bull-mq/client/bull.handler'
-import { RabbitmqClient } from '../src/modules/events/client/rabbitmq.client'
-import { inflight } from '../src/modules/prometheus/middleware/inflight'
+// import { BullHandler } from '../src/modules/bull-mq/client/bull.handler'
+// import { RabbitmqClient } from '../src/modules/events/client/rabbitmq.client'
+import { inflight } from '../src/modules/metrics/middleware/inflight'
 import { expressRequestHandler } from '../src/modules/sentry/middleware/wrapper'
 import { Abort } from '../src/utils/abort'
 import setupLog from '../src/utils/setup-log'
+import {DatabaseContext} from "@menubook/core";
 
 export { __unsafe_TestingSuite as TestingSuite } from '@harrytwright/api/dist/test/testing-suite'
 export type { ITestingSuite } from '@harrytwright/api/dist/test/testing-suite'
@@ -495,30 +496,30 @@ export async function cleanup(
   const closers = []
 
   try {
-    const database = container?.get<KyselyDatastore>(KyselyDatastore)
+    const database = container?.get<DatabaseContext>('database')
 
     if (database) {
-      closers.push(database?.destroy())
+      closers.push(database?.db.destroy())
     }
   } catch (err) {}
 
-  try {
-    // RabbitmqClient
-    const events = container?.get<RabbitmqClient>(RabbitmqClient)
-
-    if (events) {
-      closers.push((<RabbitmqClient>events).destroy())
-    }
-  } catch (err) {}
-
-  try {
-    // Abort
-    const bullmq = container?.get<BullHandler>(BullHandler)
-
-    if (bullmq) {
-      closers.push(bullmq.close(true))
-    }
-  } catch (err) {}
+  // try {
+  //   // RabbitmqClient
+  //   const events = container?.get<RabbitmqClient>(RabbitmqClient)
+  //
+  //   if (events) {
+  //     closers.push((<RabbitmqClient>events).destroy())
+  //   }
+  // } catch (err) {}
+  //
+  // try {
+  //   // Abort
+  //   const bullmq = container?.get<BullHandler>(BullHandler)
+  //
+  //   if (bullmq) {
+  //     closers.push(bullmq.close(true))
+  //   }
+  // } catch (err) {}
 
   try {
     // Abort

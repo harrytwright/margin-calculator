@@ -94,4 +94,18 @@ export default class RecipeServiceImpl {
     const service = ctx ? this.#createDemoService(ctx) : this.recipe
     return service.findById(slug, withIngredients)
   }
+
+  find(ctx?: DatabaseContext) {
+    const service = ctx ? this.#createDemoService(ctx) : this.recipe
+    return service.find()
+  }
+
+  upsertIngredients(
+    recipeId: number,
+    data: RecipeResolvedImportData,
+    ctx?: DatabaseContext
+  ) {
+    const service = ctx ? this.#createDemoService(ctx) : this.recipe
+    return service.upsertIngredients(recipeId, data)
+  }
 }

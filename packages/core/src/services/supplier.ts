@@ -1,7 +1,11 @@
+import { Selectable } from 'kysely'
+
 import type { DatabaseContext } from '../datastore/context'
 import { Importer, type ImportOutcome } from '../lib/importer'
 import type { SupplierImportData, SupplierResolvedImportData } from '../schema'
-import { hasChanges } from '../utils/has-changes'
+import { hasChanges } from '../utils'
+import {Supplier} from "@menubook/types";
+import {handleError} from "../datastore/handleError";
 
 export class SupplierService {
   constructor(private context: DatabaseContext) {}
@@ -18,12 +22,12 @@ export class SupplierService {
       .executeTakeFirst())
   }
 
-  findById(slug: string) {
+  findById(slug: string): Promise<Selectable<Supplier>> {
     return this.database
       .selectFrom('Supplier')
-      .select(['id', 'name'])
+      .select(['id', 'slug', 'name', 'contactEmail', 'contactName', 'contactPhone', 'notes'])
       .where('slug', '=', slug)
-      .executeTakeFirst()
+      .executeTakeFirstOrThrow(handleError({ slug }))
   }
 
   upsert(slug: string, data: SupplierImportData | SupplierResolvedImportData) {

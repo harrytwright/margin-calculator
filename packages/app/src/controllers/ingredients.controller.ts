@@ -1,6 +1,7 @@
-import { controller, path } from '@harrytwright/api/dist/core'
+import { controller, Inject, path } from '@harrytwright/api/dist/core'
 import { BadRequest, Conflict, NotFound } from '@hndlr/errors'
 import { slugify } from '@menubook/core'
+import type { EventEmitter } from 'events'
 import express from 'express'
 import {
   IngredientApiData,
@@ -15,7 +16,8 @@ import type { ServerRequest } from '../types/response.json.type'
 export class IngredientsController {
   constructor(
     private readonly service: IngredientServiceImpl,
-    private readonly suppliers: SupplierServiceImpl
+    private readonly suppliers: SupplierServiceImpl,
+    @Inject('events') private readonly events: EventEmitter
   ) {}
 
   @path('/')
@@ -47,6 +49,7 @@ export class IngredientsController {
       await this.service.upsert(slug, data, supplierSlug)
 
       const result = await this.service.findById(slug)
+      this.events.emit('ingredient.created', result)
       return res.status(201).json(result)
     } catch (error) {
       return next(error)
@@ -94,6 +97,7 @@ export class IngredientsController {
       await this.service.upsert(slug, data, supplierSlug)
 
       const result = await this.service.findById(slug)
+      this.events.emit('ingredient.updated', result)
       return res.status(200).json(result)
     } catch (error) {
       return next(error)
@@ -114,7 +118,7 @@ export class IngredientsController {
       }
 
       await this.service.delete(slug)
-
+      this.events.emit('ingredient.deleted', slug)
       return res.status(204).end()
     } catch (error) {
       return next(error)

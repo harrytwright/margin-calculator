@@ -1,5 +1,5 @@
 import { ConfigService, DatabaseContext } from '@menubook/core'
-import type { EventEmitter } from 'events'
+import { EventEmitter } from 'events'
 
 import { App } from './app'
 
@@ -48,7 +48,7 @@ export async function main(conf: ServerConfig) {
     name
   )
 
-  // Set up the logging and resume, and sentry, this is done here as it is
+  // Set up the logging and resume, and sentry; this is done here as it is
   // separate to the rest of the application, w/o any DI
   require('./utils/setup-log').default(config)
   require('./modules/sentry/module').sentryModule(config)
@@ -58,6 +58,7 @@ export async function main(conf: ServerConfig) {
   const [applet] = await API.register(App)
     .register('globalConfig', new ConfigService(conf.location))
     .register('database', conf.database)
+    .register('events', conf.event || new EventEmitter())
     .load(config)
     .listen()
 

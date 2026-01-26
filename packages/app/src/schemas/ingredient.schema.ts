@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import type { IngredientResolvedImportData } from '@menubook/core'
+import { z } from 'zod'
 
 /**
  * API schema for ingredient creation/update
@@ -13,7 +13,9 @@ export const ingredientApiSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   purchase: z.object({
     cost: z.number().positive('Purchase cost must be positive'),
-    unit: z.string().min(1, "Purchase unit is required (e.g., '120g', '1 loaf')"),
+    unit: z
+      .string()
+      .min(1, "Purchase unit is required (e.g., '120g', '1 loaf')"),
     vat: z.boolean().optional().default(false),
   }),
   supplier: z.string().optional(), // Just a slug, defaults to 'generic'

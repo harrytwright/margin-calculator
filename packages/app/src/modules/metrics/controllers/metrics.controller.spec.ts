@@ -14,7 +14,7 @@ describe('MetricsController', () => {
 
   beforeAll(async () => {
     try {
-      const { config } = await import('../../../config.js')
+      const { config } = await import('../../../config')
       config.load()
 
       applet = API.create(generateApplet(MetricsController), config)

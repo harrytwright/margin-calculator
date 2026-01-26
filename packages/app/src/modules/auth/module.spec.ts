@@ -43,7 +43,7 @@ v/Ow5T0q5gIJAiEAyS4RaI9YG8EWx/2w0T67ZUVAw8eOMB6BIUg0Xcu+3okCIBOs
     var fakeJWKURI = 'http://localhost:9876/jwt/jwk.json'
 
     beforeAll(async () => {
-      const { config } = await import('../../config.js')
+      const { config } = await import('../../config')
       config.load()
 
       // Override this w/ a fake URI
