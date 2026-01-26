@@ -1,24 +1,10 @@
 {
-  "extends": "@tsconfig/node16/tsconfig.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "preserveConstEnums": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
-    "stripInternal": true,
-    "moduleResolution": "Node16",
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "outDir": "dist",
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
-    "skipLibCheck": true,
-    // Set `sourceRoot` to  "/" to strip the build path prefix
-    // from generated source code references.
-    // This improves issue grouping in Sentry.
     "sourceRoot": "/"
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "src/**/*.test.ts", "src/interfaces"]
+  }
 }

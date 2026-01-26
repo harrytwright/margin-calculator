@@ -9,7 +9,7 @@ export class Abort {
     this.controller = new AbortController()
   }
 
-  get signal() {
+  get signal(): AbortSignal {
     return this.controller.signal
   }
 

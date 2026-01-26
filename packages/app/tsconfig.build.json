@@ -1,8 +1,9 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../tsconfig.build.json",
   "compilerOptions": {
-    "moduleResolution": "Node16",
-    "isolatedModules": true
+    "rootDir": "src",
+    "outDir": "dist"
   },
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/__tests__/**", "**/*.spec.ts"]
 }
