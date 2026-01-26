@@ -106,7 +106,7 @@ export function createApiRouter(config: ServerConfig): Router {
         return res.status(404).json({ error: 'Supplier not found' })
       }
 
-      res.json({ slug: req.params.slug, ...record })
+      res.json(record)
     } catch (error: any) {
       res.status(500).json({ error: error.message })
     }

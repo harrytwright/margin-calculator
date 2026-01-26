@@ -8,8 +8,6 @@ module.exports = {
   extensionsToTreatAsEsm: ['.ts'],
   collectCoverageFrom: [
     'src/**/*.ts',
-    '!src/**/*.d.ts',
-    '!src/**/__tests__/**',
   ],
   transform: {
     '^.+\\.tsx?$': ['ts-jest', { useESM: false, diagnostics: false, }],

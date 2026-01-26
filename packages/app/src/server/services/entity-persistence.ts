@@ -66,7 +66,7 @@ export class EntityPersistence {
       throw new HttpError(500, 'Failed to retrieve created supplier')
     }
 
-    return { slug, ...record }
+    return record
   }
 
   async createIngredient(data: IngredientImportData) {
@@ -175,7 +175,7 @@ export class EntityPersistence {
       throw new HttpError(500, 'Failed to retrieve updated supplier')
     }
 
-    return { slug, ...record }
+    return record
   }
 
   async updateIngredient(slug: string, data: IngredientImportData) {
