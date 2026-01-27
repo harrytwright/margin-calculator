@@ -2,6 +2,8 @@
 // stored inside a TTLCache for session usage. With a 30min session, once they have
 //  gone, they have gone. To be injected into the request route though a middleware
 
+import { AsyncLocalStorage } from 'async_hooks'
+
 import { register } from '@harrytwright/api/dist/core'
 import log from '@harrytwright/logger'
 import { ServiceUnavailable } from '@hndlr/errors'
@@ -42,12 +44,22 @@ export class DemoPersistenceManager {
     },
   })
 
+  private readonly storage = new AsyncLocalStorage<DatabaseContext>()
+
   constructor(private readonly metrics: Prometheus) {}
 
-  get(sessionId: string): DatabaseContext | null {
+  run<T>(ctx: DatabaseContext, fn: () => T | Promise<T>): T | Promise<T> {
+    return this.storage.run(ctx, fn)
+  }
+
+  ctx(): DatabaseContext | undefined {
+    return this.storage.getStore()
+  }
+
+  get(sessionId: string): DatabaseContext | undefined {
     // Might as well update the sessions here.
     this.metrics.activeSessions.set(this.sessions.size)
-    return this.sessions.get(sessionId)?.database ?? null
+    return this.sessions.get(sessionId)?.database ?? undefined
   }
 
   // Should we purge or handle the max ourselves? Think we handle ourselves

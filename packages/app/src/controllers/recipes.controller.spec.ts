@@ -2,17 +2,17 @@ import { afterAll, beforeAll, describe, expect, test } from '@jest/globals'
 
 import { BuilderContext } from '@harrytwright/api/dist/builders/builder'
 import { API } from '@harrytwright/api/dist/core'
-import supertest from 'supertest'
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/sqlite'
+import supertest from 'supertest'
 
-import { cleanup, generateApplet } from '../../jest/testing-suite'
-import { RecipesController } from './recipes.controller'
+import { ConfigService } from '@menubook/core'
 import { createDatabase, migrate } from '@menubook/sqlite'
 import { EventEmitter } from 'events'
-import { ConfigService } from '@menubook/core'
-import SupplierServiceImpl from '../services/supplier.service'
+import { cleanup, generateApplet } from '../../jest/testing-suite'
 import IngredientServiceImpl from '../services/ingredient.service'
 import RecipeServiceImpl from '../services/recipe.service'
+import SupplierServiceImpl from '../services/supplier.service'
+import { RecipesController } from './recipes.controller'
 
 describe('RecipesController', () => {
   let applet: BuilderContext
@@ -26,14 +26,13 @@ describe('RecipesController', () => {
       const database = createDatabase()
       await migrate(database, 'up')
 
-      applet = API
-        .register('database', {
-          db: database,
-          helpers: {
-            jsonArrayFrom,
-            jsonObjectFrom,
-          },
-        })
+      applet = API.register('database', {
+        db: database,
+        helpers: {
+          jsonArrayFrom,
+          jsonObjectFrom,
+        },
+      })
         .register('events', new EventEmitter())
         .register('globalConfig', new ConfigService('./tmp/dir'))
         .create(generateApplet(RecipesController), config)
@@ -60,9 +59,8 @@ describe('RecipesController', () => {
         )
 
       // Create test recipe
-      const recipeService = applet.container.get<RecipeServiceImpl>(
-        RecipeServiceImpl
-      )!
+      const recipeService =
+        applet.container.get<RecipeServiceImpl>(RecipeServiceImpl)!
       const recipeId = await recipeService.upsert('test-bread', {
         slug: 'test-bread',
         name: 'Test Bread',
@@ -168,7 +166,9 @@ describe('RecipesController', () => {
         })
 
         expect(response.status).toBe(400)
-        expect(response.body.error.message).toContain('costing.price is required')
+        expect(response.body.error.message).toContain(
+          'costing.price is required'
+        )
       })
 
       test('should return 404 for non-existent parent recipe', async () => {
@@ -238,9 +238,8 @@ describe('RecipesController', () => {
         })
 
         // Reset for other tests
-        const recipeService = applet.container.get<RecipeServiceImpl>(
-          RecipeServiceImpl
-        )!
+        const recipeService =
+          applet.container.get<RecipeServiceImpl>(RecipeServiceImpl)!
         const recipeId = await recipeService.upsert('test-bread', {
           slug: 'test-bread',
           name: 'Test Bread',
@@ -259,7 +258,11 @@ describe('RecipesController', () => {
             class: 'menu_item',
             costing: { price: 500, margin: 30, vat: true },
             ingredients: [
-              { slug: 'test-flour', type: 'ingredient', with: { unit: '500g' } },
+              {
+                slug: 'test-flour',
+                type: 'ingredient',
+                with: { unit: '500g' },
+              },
             ],
           })
         }
@@ -296,9 +299,8 @@ describe('RecipesController', () => {
     describe('DELETE', () => {
       test('should delete a recipe and return 204', async () => {
         // Create a recipe to delete
-        const recipeService = applet.container.get<RecipeServiceImpl>(
-          RecipeServiceImpl
-        )!
+        const recipeService =
+          applet.container.get<RecipeServiceImpl>(RecipeServiceImpl)!
         await recipeService.upsert('to-delete', {
           slug: 'to-delete',
           name: 'To Delete',
@@ -340,7 +342,9 @@ describe('RecipesController', () => {
       })
 
       test('should return 404 for non-existent recipe', async () => {
-        const response = await request.get('/api/recipes/non-existent/calculate')
+        const response = await request.get(
+          '/api/recipes/non-existent/calculate'
+        )
 
         expect(response.status).toBe(404)
         expect(response.body.error).toBeDefined()

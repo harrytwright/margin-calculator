@@ -1,22 +1,22 @@
-import { controller, Inject, path } from '@harrytwright/api/dist/core'
-import { BadRequest, Conflict, NotFound } from '@hndlr/errors'
+import { controller, path } from '@harrytwright/api/dist/core'
+import { NotFound } from '@hndlr/errors'
 import { slugify } from '@menubook/core'
-import type { EventEmitter } from 'events'
 import express from 'express'
-import { SupplierApiData, supplierApiSchema, toSupplierData } from '../schemas'
+
+import { SupplierApiData, supplierApiSchema } from '../schemas'
 import SupplierServiceImpl from '../services/supplier.service'
 import type { ServerRequest } from '../types/response.json.type'
 
 @controller('/api/suppliers')
 export class SuppliersController {
-  constructor(
-    private readonly service: SupplierServiceImpl,
-    @Inject('events') private readonly events: EventEmitter
-  ) {}
+  constructor(private readonly service: SupplierServiceImpl) {}
 
   @path('/')
   async getSuppliers(req: express.Request, res: express.Response) {
     const data = await this.service.find()
+
+    // Todo: add an export mapper here, converting database objects to JSONObjects based on OpenAPI Spec
+
     return res.status(200).json(data)
   }
 
@@ -30,15 +30,10 @@ export class SuppliersController {
       const parsed = supplierApiSchema.parse(req.body)
       const slug = parsed.slug || (await slugify(parsed.name))
 
-      if (await this.service.exists(slug)) {
-        throw new Conflict(`Supplier with slug '${slug}' already exists`)
-      }
+      const result = await this.service.create(slug, parsed)
 
-      const data = toSupplierData(parsed, slug)
-      await this.service.upsert(slug, data)
+      // Todo: add an export mapper here, converting database objects to JSONObjects based on OpenAPI Spec
 
-      const result = await this.service.findById(slug)
-      this.events.emit('supplier.created', result)
       return res.status(201).json(result)
     } catch (error) {
       return next(error)
@@ -54,6 +49,8 @@ export class SuppliersController {
       throw new NotFound(`Supplier with slug '${slug}' not found`)
     }
 
+    // Todo: add an export mapper here, converting database objects to JSONObjects based on OpenAPI Spec
+
     return res.status(200).json(data)
   }
 
@@ -67,21 +64,10 @@ export class SuppliersController {
       const { slug } = req.params
       const parsed = supplierApiSchema.parse(req.body)
 
-      if (parsed.slug && parsed.slug !== slug) {
-        throw new BadRequest(
-          `Slug mismatch: expected '${slug}' but received '${parsed.slug}'`
-        )
-      }
+      const result = await this.service.update(slug, parsed)
 
-      if (!(await this.service.exists(slug))) {
-        throw new NotFound(`Supplier with slug '${slug}' not found`)
-      }
+      // Todo: add an export mapper here, converting database objects to JSONObjects based on OpenAPI Spec
 
-      const data = toSupplierData(parsed, slug)
-      await this.service.upsert(slug, data)
-
-      const result = await this.service.findById(slug)
-      this.events.emit('supplier.updated', result)
       return res.status(200).json(result)
     } catch (error) {
       return next(error)
@@ -97,13 +83,8 @@ export class SuppliersController {
     try {
       const { slug } = req.params
 
-      if (!(await this.service.exists(slug))) {
-        throw new NotFound(`Supplier with slug '${slug}' not found`)
-      }
-
       await this.service.delete(slug)
 
-      this.events.emit('supplier.deleted', slug)
       return res.status(204).end()
     } catch (error) {
       return next(error)

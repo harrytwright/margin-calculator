@@ -2,16 +2,16 @@ import { afterAll, beforeAll, describe, expect, test } from '@jest/globals'
 
 import { BuilderContext } from '@harrytwright/api/dist/builders/builder'
 import { API } from '@harrytwright/api/dist/core'
-import supertest from 'supertest'
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/sqlite'
+import supertest from 'supertest'
 
-import { cleanup, generateApplet } from '../../jest/testing-suite'
-import { IngredientsController } from './ingredients.controller'
+import { ConfigService } from '@menubook/core'
 import { createDatabase, migrate } from '@menubook/sqlite'
 import { EventEmitter } from 'events'
-import { ConfigService } from '@menubook/core'
-import SupplierServiceImpl from '../services/supplier.service'
+import { cleanup, generateApplet } from '../../jest/testing-suite'
 import IngredientServiceImpl from '../services/ingredient.service'
+import SupplierServiceImpl from '../services/supplier.service'
+import { IngredientsController } from './ingredients.controller'
 
 describe('IngredientsController', () => {
   let applet: BuilderContext
@@ -25,14 +25,13 @@ describe('IngredientsController', () => {
       const database = createDatabase()
       await migrate(database, 'up')
 
-      applet = API
-        .register('database', {
-          db: database,
-          helpers: {
-            jsonArrayFrom,
-            jsonObjectFrom,
-          },
-        })
+      applet = API.register('database', {
+        db: database,
+        helpers: {
+          jsonArrayFrom,
+          jsonObjectFrom,
+        },
+      })
         .register('events', new EventEmitter())
         .register('globalConfig', new ConfigService('./tmp/dir'))
         .create(generateApplet(IngredientsController), config)
@@ -200,11 +199,13 @@ describe('IngredientsController', () => {
       })
 
       test('should return 404 for non-existent ingredient', async () => {
-        const response = await request.put('/api/ingredients/non-existent').send({
-          name: 'Test',
-          category: 'Dry Goods',
-          purchase: { cost: 100, unit: '1kg', vat: false },
-        })
+        const response = await request
+          .put('/api/ingredients/non-existent')
+          .send({
+            name: 'Test',
+            category: 'Dry Goods',
+            purchase: { cost: 100, unit: '1kg', vat: false },
+          })
 
         expect(response.status).toBe(404)
         expect(response.body.error).toBeDefined()

@@ -2,14 +2,14 @@ import { afterAll, beforeAll, describe, expect, test } from '@jest/globals'
 
 import { BuilderContext } from '@harrytwright/api/dist/builders/builder'
 import { API } from '@harrytwright/api/dist/core'
-import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/sqlite'
 import http from 'http'
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/sqlite'
 
-import { cleanup, generateApplet } from '../../jest/testing-suite'
-import { EventsController } from './events.controller'
+import { ConfigService } from '@menubook/core'
 import { createDatabase, migrate } from '@menubook/sqlite'
 import { EventEmitter } from 'events'
-import { ConfigService } from '@menubook/core'
+import { cleanup, generateApplet } from '../../jest/testing-suite'
+import { EventsController } from './events.controller'
 
 describe('EventsController', () => {
   let applet: BuilderContext
@@ -25,14 +25,13 @@ describe('EventsController', () => {
 
       events = new EventEmitter()
 
-      applet = API
-        .register('database', {
-          db: database,
-          helpers: {
-            jsonArrayFrom,
-            jsonObjectFrom,
-          },
-        })
+      applet = API.register('database', {
+        db: database,
+        helpers: {
+          jsonArrayFrom,
+          jsonObjectFrom,
+        },
+      })
         .register('events', events)
         .register('globalConfig', new ConfigService('./tmp/dir'))
         .create(generateApplet(EventsController), config)
@@ -127,7 +126,11 @@ describe('EventsController', () => {
               if (!completed) {
                 completed = true
                 req.destroy()
-                done(new Error('Timeout waiting for connected event. Data: ' + data))
+                done(
+                  new Error(
+                    'Timeout waiting for connected event. Data: ' + data
+                  )
+                )
               }
             }, 4000)
           }
@@ -135,7 +138,10 @@ describe('EventsController', () => {
 
         req.on('error', (err) => {
           // Ignore ECONNRESET since we deliberately destroy the connection
-          if ((err as NodeJS.ErrnoException).code !== 'ECONNRESET' && !completed) {
+          if (
+            (err as NodeJS.ErrnoException).code !== 'ECONNRESET' &&
+            !completed
+          ) {
             completed = true
             clearTimeout(timeoutId)
             done(err)

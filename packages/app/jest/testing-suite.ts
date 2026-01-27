@@ -29,15 +29,15 @@ import { ServiceIdentifier } from '@harrytwright/api/dist/injection/types/servic
 import { AppConfig } from '../src/config'
 // import { KyselyDatastore } from '../src/datastore/kysely.datastore'
 import handler from '../src/middleware/error-handler'
-import { Auth, isValidPrivateKey } from '../src/modules/auth/module'
 import { Authentication } from '../src/modules/auth/middleware/authentication'
+import { Auth, isValidPrivateKey } from '../src/modules/auth/module'
 // import { BullHandler } from '../src/modules/bull-mq/client/bull.handler'
 // import { RabbitmqClient } from '../src/modules/events/client/rabbitmq.client'
+import { DatabaseContext } from '@menubook/core'
 import { inflight } from '../src/modules/metrics/middleware/inflight'
 import { expressRequestHandler } from '../src/modules/sentry/middleware/wrapper'
 import { Abort } from '../src/utils/abort'
 import setupLog from '../src/utils/setup-log'
-import {DatabaseContext} from "@menubook/core";
 
 export { __unsafe_TestingSuite as TestingSuite } from '@harrytwright/api/dist/test/testing-suite'
 export type { ITestingSuite } from '@harrytwright/api/dist/test/testing-suite'

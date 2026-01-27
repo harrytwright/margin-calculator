@@ -2,15 +2,15 @@ import { afterAll, beforeAll, describe, expect, test } from '@jest/globals'
 
 import { BuilderContext } from '@harrytwright/api/dist/builders/builder'
 import { API } from '@harrytwright/api/dist/core'
-import supertest from 'supertest'
-import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/sqlite'
 import type { Kysely } from 'kysely'
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/sqlite'
+import supertest from 'supertest'
 
-import { cleanup, generateApplet } from '../../jest/testing-suite'
-import { AnalyticsController } from './analytics.controller'
+import { ConfigService, type DatabaseContext, type DB } from '@menubook/core'
 import { createDatabase, migrate } from '@menubook/sqlite'
 import { EventEmitter } from 'events'
-import { ConfigService, type DatabaseContext, type DB } from '@menubook/core'
+import { cleanup, generateApplet } from '../../jest/testing-suite'
+import { AnalyticsController } from './analytics.controller'
 
 describe('AnalyticsController', () => {
   let applet: BuilderContext
@@ -35,8 +35,7 @@ describe('AnalyticsController', () => {
 
       db = database
 
-      applet = API
-        .register('database', dbContext)
+      applet = API.register('database', dbContext)
         .register('events', new EventEmitter())
         .register('globalConfig', new ConfigService('./tmp/dir'))
         .create(generateApplet(AnalyticsController), config)
