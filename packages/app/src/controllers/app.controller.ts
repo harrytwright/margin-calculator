@@ -116,6 +116,55 @@ export class AppController {
   }
 
   /**
+   * GET /recipes/new - New recipe form
+   */
+  @path('/recipes/new')
+  async getNewRecipeForm(req: express.Request, res: express.Response) {
+    return res.render('components/recipe-form', {
+      recipe: null,
+    })
+  }
+
+  /**
+   * POST /recipes - Create recipe
+   */
+  @path('/recipes')
+  async postRecipe(
+    req: ServerRequest<never, unknown, Record<string, any>>,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      const parsed = recipeApiSchema.parse(req.body)
+      const slug = parsed.slug || (await slugify(parsed.name))
+      await this.recipes.create(slug, parsed)
+
+      // Use HX-Redirect to navigate to the new recipe
+      res.setHeader('HX-Redirect', `/recipes/${slug}`)
+      return res.status(201).send('')
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
+   * GET /recipes/:slug/edit - Edit recipe form
+   */
+  @path('/recipes/:slug/edit')
+  async getEditRecipeForm(req: express.Request, res: express.Response) {
+    const { slug } = req.params
+    const recipe = await this.recipes.findById(slug, true)
+
+    if (!recipe) {
+      return res.status(404).send('Recipe not found')
+    }
+
+    return res.render('components/recipe-form', {
+      recipe,
+    })
+  }
+
+  /**
    * GET /recipes/:slug - View/edit a specific recipe
    */
   @path('/recipes/:slug')
@@ -150,6 +199,74 @@ export class AppController {
   }
 
   /**
+   * PUT /recipes/:slug - Update recipe
+   */
+  @path('/recipes/:slug')
+  async putRecipe(
+    req: ServerRequest<{ slug: string }, unknown, Record<string, any>>,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    const { slug } = req.params
+
+    try {
+      const parsed = recipeApiSchema.parse(req.body)
+      await this.recipes.update(slug, parsed)
+
+      // Re-fetch and return updated editor
+      const recipes = await this.recipes.find()
+      const recipe = await this.recipes.findById(slug, true)
+
+      let cost = null
+      try {
+        const costResult = await this.calculator.cost(slug)
+        const marginResult = await this.calculator.margin(costResult)
+        cost = {
+          total: costResult.totalCost,
+          breakdown: costResult.tree,
+          margin: marginResult,
+        }
+      } catch (error) {
+        // Cost calculation failed
+      }
+
+      // Close modal via header
+      res.setHeader('HX-Trigger', 'closeModal')
+      return res.render('islands/recipe-editor', { recipes, recipe, cost })
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
+   * DELETE /recipes/:slug - Delete recipe
+   */
+  @path('/recipes/:slug')
+  async deleteRecipe(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    const { slug } = req.params
+
+    try {
+      await this.recipes.delete(slug)
+
+      // Return updated browser list
+      const recipes = await this.recipes.find()
+
+      return res.render('islands/browser', {
+        type: 'recipes',
+        items: recipes,
+        selectedSlug: null,
+        groupBy: 'category',
+      })
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
    * GET /ingredients - List all ingredients
    */
   @path('/ingredients')
@@ -158,6 +275,59 @@ export class AppController {
     const suppliers = await this.suppliers.find()
     return this.render(req, res, 'ingredients', 'Ingredients', {
       ingredients,
+      suppliers,
+    })
+  }
+
+  /**
+   * GET /ingredients/new - New ingredient form
+   */
+  @path('/ingredients/new')
+  async getNewIngredientForm(req: express.Request, res: express.Response) {
+    const suppliers = await this.suppliers.find()
+    return res.render('components/ingredient-form', {
+      ingredient: null,
+      suppliers,
+    })
+  }
+
+  /**
+   * POST /ingredients - Create ingredient
+   */
+  @path('/ingredients')
+  async postIngredient(
+    req: ServerRequest<never, unknown, Record<string, any>>,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      const parsed = ingredientApiSchema.parse(req.body)
+      const slug = parsed.slug || (await slugify(parsed.name))
+      const supplierSlug = req.body.supplierId || 'generic'
+      await this.ingredients.create(slug, parsed, supplierSlug)
+
+      res.setHeader('HX-Redirect', `/ingredients/${slug}`)
+      return res.status(201).send('')
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
+   * GET /ingredients/:slug/edit - Edit ingredient form
+   */
+  @path('/ingredients/:slug/edit')
+  async getEditIngredientForm(req: express.Request, res: express.Response) {
+    const { slug } = req.params
+    const ingredient = await this.ingredients.findById(slug)
+    const suppliers = await this.suppliers.find()
+
+    if (!ingredient) {
+      return res.status(404).send('Ingredient not found')
+    }
+
+    return res.render('components/ingredient-form', {
+      ingredient,
       suppliers,
     })
   }
@@ -199,6 +369,63 @@ export class AppController {
   }
 
   /**
+   * PUT /ingredients/:slug - Update ingredient
+   */
+  @path('/ingredients/:slug')
+  async putIngredient(
+    req: ServerRequest<{ slug: string }, unknown, Record<string, any>>,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    const { slug } = req.params
+
+    try {
+      const parsed = ingredientApiSchema.parse(req.body)
+      const supplierSlug = req.body.supplierId || 'generic'
+      await this.ingredients.update(slug, parsed, supplierSlug)
+
+      const ingredients = await this.ingredients.find()
+      const ingredient = await this.ingredients.findById(slug)
+      const suppliers = await this.suppliers.find()
+
+      res.setHeader('HX-Trigger', 'closeModal')
+      return res.render('islands/ingredient-editor', {
+        ingredients,
+        ingredient,
+        suppliers,
+      })
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
+   * DELETE /ingredients/:slug - Delete ingredient
+   */
+  @path('/ingredients/:slug')
+  async deleteIngredient(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    const { slug } = req.params
+
+    try {
+      await this.ingredients.delete(slug)
+      const ingredients = await this.ingredients.find()
+
+      return res.render('islands/browser', {
+        type: 'ingredients',
+        items: ingredients,
+        selectedSlug: null,
+        groupBy: 'category',
+      })
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
    * GET /suppliers - List all suppliers
    */
   @path('/suppliers')
@@ -213,6 +440,54 @@ export class AppController {
     }))
     return this.render(req, res, 'suppliers', 'Suppliers', {
       suppliers: suppliersWithCounts,
+    })
+  }
+
+  /**
+   * GET /suppliers/new - New supplier form
+   */
+  @path('/suppliers/new')
+  async getNewSupplierForm(req: express.Request, res: express.Response) {
+    return res.render('components/supplier-form', {
+      supplier: null,
+    })
+  }
+
+  /**
+   * POST /suppliers - Create supplier
+   */
+  @path('/suppliers')
+  async postSupplier(
+    req: ServerRequest<never, unknown, Record<string, any>>,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      const parsed = supplierApiSchema.parse(req.body)
+      const slug = parsed.slug || (await slugify(parsed.name))
+      await this.suppliers.create(slug, parsed)
+
+      res.setHeader('HX-Redirect', `/suppliers/${slug}`)
+      return res.status(201).send('')
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
+   * GET /suppliers/:slug/edit - Edit supplier form
+   */
+  @path('/suppliers/:slug/edit')
+  async getEditSupplierForm(req: express.Request, res: express.Response) {
+    const { slug } = req.params
+    const supplier = await this.suppliers.findById(slug)
+
+    if (!supplier) {
+      return res.status(404).send('Supplier not found')
+    }
+
+    return res.render('components/supplier-form', {
+      supplier,
     })
   }
 
@@ -245,6 +520,76 @@ export class AppController {
       supplier,
       ingredients,
     })
+  }
+
+  /**
+   * PUT /suppliers/:slug - Update supplier
+   */
+  @path('/suppliers/:slug')
+  async putSupplier(
+    req: ServerRequest<{ slug: string }, unknown, Record<string, any>>,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    const { slug } = req.params
+
+    try {
+      const parsed = supplierApiSchema.parse(req.body)
+      await this.suppliers.update(slug, parsed)
+
+      const allSuppliers = await this.suppliers.find()
+      const supplier = await this.suppliers.findById(slug)
+      const allIngredients = await this.ingredients.find()
+      const ingredients = allIngredients.filter((i) => i.supplierSlug === slug)
+
+      const suppliers = allSuppliers.map((s) => ({
+        ...s,
+        ingredientCount: allIngredients.filter((i) => i.supplierSlug === s.slug)
+          .length,
+      }))
+
+      res.setHeader('HX-Trigger', 'closeModal')
+      return res.render('pages/suppliers', {
+        suppliers,
+        supplier,
+        ingredients,
+      })
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
+   * DELETE /suppliers/:slug - Delete supplier
+   */
+  @path('/suppliers/:slug')
+  async deleteSupplier(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    const { slug } = req.params
+
+    try {
+      await this.suppliers.delete(slug)
+      const suppliers = await this.suppliers.find()
+      const ingredients = await this.ingredients.find()
+
+      const suppliersWithCounts = suppliers.map((s) => ({
+        ...s,
+        ingredientCount: ingredients.filter((i) => i.supplierSlug === s.slug)
+          .length,
+      }))
+
+      return res.render('islands/browser', {
+        type: 'suppliers',
+        items: suppliersWithCounts,
+        selectedSlug: null,
+        groupBy: null,
+      })
+    } catch (error) {
+      return next(error)
+    }
   }
 
   /**
