@@ -175,7 +175,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: Run demo integration tests
-        run: pnpm test --test-regex=demo.integration.test.ts --config ./demo.jest.config.ts
+        run: pnpm test --test-regex=demo.integration.test.ts --config ./demo.jest.config.js
         working-directory: packages/app
         env:
           NODE_ENV: test
