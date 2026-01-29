@@ -15,11 +15,11 @@ export class SupplierService {
   }
 
   async exists(slug: string, trx?: Transaction<DB>) {
-    return !!(await ((trx ?? this.database)
+    return !!(await (trx ?? this.database)
       .selectFrom('Supplier')
       .select('id')
       .where('slug', '=', slug)
-      .executeTakeFirst()))
+      .executeTakeFirst())
   }
 
   findById(slug: string, trx?: Transaction<DB>): Promise<Selectable<Supplier>> {
@@ -38,7 +38,11 @@ export class SupplierService {
       .executeTakeFirstOrThrow(handleError({ slug }))
   }
 
-  upsert(slug: string, data: SupplierImportData | SupplierResolvedImportData, trx?: Transaction<DB>) {
+  upsert(
+    slug: string,
+    data: SupplierImportData | SupplierResolvedImportData,
+    trx?: Transaction<DB>
+  ) {
     return (trx ?? this.database)
       .insertInto('Supplier')
       .values({
@@ -54,10 +58,10 @@ export class SupplierService {
   }
 
   async delete(slug: string, trx?: Transaction<DB>) {
-    const result = await ((trx ?? this.database)
+    const result = await (trx ?? this.database)
       .deleteFrom('Supplier')
       .where('slug', '=', slug)
-      .executeTakeFirst())
+      .executeTakeFirst()
 
     return result.numDeletedRows > 0n
   }
@@ -87,7 +91,8 @@ export class SupplierService {
       if (prev && !hasChanged) return 'ignored'
 
       const res = await this.upsert(data.slug, data, trx)
-      if (res.insertId === undefined) throw new Error('Failed to upsert supplier')
+      if (res.insertId === undefined)
+        throw new Error('Failed to upsert supplier')
 
       return prev ? 'upserted' : 'created'
     }

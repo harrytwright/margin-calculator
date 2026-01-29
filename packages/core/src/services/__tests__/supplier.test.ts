@@ -10,8 +10,6 @@ import { Importer } from '../../lib/importer'
 import { SupplierResolvedImportData } from '../../schema'
 import { SupplierService } from '../supplier'
 
-import { handle } from  '../../../../app/jest/testing-suite'
-
 describe('SupplierService', () => {
   let context: DatabaseContext
   let service: SupplierService

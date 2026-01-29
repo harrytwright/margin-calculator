@@ -1,15 +1,12 @@
 import { controller, Inject, path } from '@harrytwright/api/dist/core'
-import { ConfigService, DashboardService, slugify } from '@menubook/core'
 import type { DatabaseContext } from '@menubook/core'
+import { ConfigService, slugify } from '@menubook/core'
 import express from 'express'
 
 import { DemoPersistenceManager } from '../datastore/sqlite.demo'
 import {
-  IngredientApiData,
   ingredientApiSchema,
-  RecipeApiData,
   recipeApiSchema,
-  SupplierApiData,
   supplierApiSchema,
 } from '../schemas'
 import CalculatorImpl from '../services/calculator.service'
@@ -72,13 +69,22 @@ export class AppController {
     } else if (isHtmx && target === '#entity-list') {
       // Entity list partial rendering
       return res.render(`components/${data.listView || view}`, data)
-    } else if (isHtmx && (target === '#recipes-editor' || target === 'recipes-editor')) {
+    } else if (
+      isHtmx &&
+      (target === '#recipes-editor' || target === 'recipes-editor')
+    ) {
       // Recipe editor partial - only render the editor content
       return res.render('islands/recipe-editor', data)
-    } else if (isHtmx && (target === '#ingredients-editor' || target === 'ingredients-editor')) {
+    } else if (
+      isHtmx &&
+      (target === '#ingredients-editor' || target === 'ingredients-editor')
+    ) {
       // Ingredient editor partial - only render the editor content
       return res.render('islands/ingredient-editor', data)
-    } else if (isHtmx && (target?.startsWith('#') || target?.endsWith('-editor'))) {
+    } else if (
+      isHtmx &&
+      (target?.startsWith('#') || target?.endsWith('-editor'))
+    ) {
       // Other island-specific partial rendering
       return res.render(`pages/${view}`, data)
     } else {
@@ -136,7 +142,11 @@ export class AppController {
       // Cost calculation failed, continue without it
     }
 
-    return this.render(req, res, 'recipes', 'Recipes', { recipes, recipe, cost })
+    return this.render(req, res, 'recipes', 'Recipes', {
+      recipes,
+      recipe,
+      cost,
+    })
   }
 
   /**
@@ -146,7 +156,10 @@ export class AppController {
   async getIngredients(req: express.Request, res: express.Response) {
     const ingredients = await this.ingredients.find()
     const suppliers = await this.suppliers.find()
-    return this.render(req, res, 'ingredients', 'Ingredients', { ingredients, suppliers })
+    return this.render(req, res, 'ingredients', 'Ingredients', {
+      ingredients,
+      suppliers,
+    })
   }
 
   /**
@@ -195,9 +208,12 @@ export class AppController {
     const ingredientsList = await this.ingredients.find()
     const suppliersWithCounts = suppliers.map((s) => ({
       ...s,
-      ingredientCount: ingredientsList.filter((i) => i.supplierSlug === s.slug).length,
+      ingredientCount: ingredientsList.filter((i) => i.supplierSlug === s.slug)
+        .length,
     }))
-    return this.render(req, res, 'suppliers', 'Suppliers', { suppliers: suppliersWithCounts })
+    return this.render(req, res, 'suppliers', 'Suppliers', {
+      suppliers: suppliersWithCounts,
+    })
   }
 
   /**
@@ -220,7 +236,8 @@ export class AppController {
     // Add ingredient count to suppliers
     const suppliers = allSuppliers.map((s) => ({
       ...s,
-      ingredientCount: allIngredients.filter((i) => i.supplierSlug === s.slug).length,
+      ingredientCount: allIngredients.filter((i) => i.supplierSlug === s.slug)
+        .length,
     }))
 
     return this.render(req, res, 'suppliers', 'Suppliers', {
@@ -253,11 +270,17 @@ export class AppController {
     const items = await this.getEntityList(type)
     const additionalData = await this.getAdditionalListData(type)
 
-    return this.render(req, res, 'management', `${this.capitalize(type)} Management`, {
-      type,
-      items,
-      ...additionalData,
-    })
+    return this.render(
+      req,
+      res,
+      'management',
+      `${this.capitalize(type)} Management`,
+      {
+        type,
+        items,
+        ...additionalData,
+      }
+    )
   }
 
   /**
@@ -340,7 +363,11 @@ export class AppController {
    */
   @path('/management/:type/:slug')
   async putEntity(
-    req: ServerRequest<{ type: string; slug: string }, unknown, Record<string, any>>,
+    req: ServerRequest<
+      { type: string; slug: string },
+      unknown,
+      Record<string, any>
+    >,
     res: express.Response,
     next: express.NextFunction
   ) {
@@ -465,7 +492,11 @@ export class AppController {
    */
   @path('/settings')
   async postSettings(
-    req: ServerRequest<never, unknown, { vat?: string; marginTarget?: string; defaultPriceIncludesVat?: string }>,
+    req: ServerRequest<
+      never,
+      unknown,
+      { vat?: string; marginTarget?: string; defaultPriceIncludesVat?: string }
+    >,
     res: express.Response,
     next: express.NextFunction
   ) {
@@ -484,7 +515,8 @@ export class AppController {
       }
 
       // Checkbox: present = true, absent = false
-      updates.defaultPriceIncludesVat = defaultPriceIncludesVat === 'on' || defaultPriceIncludesVat === '1'
+      updates.defaultPriceIncludesVat =
+        defaultPriceIncludesVat === 'on' || defaultPriceIncludesVat === '1'
 
       const settings = await this.config.update(updates)
 
@@ -495,7 +527,10 @@ export class AppController {
       if (isHtmx) {
         // If targeting modal, return modal with success
         if (target === '.modal-content') {
-          return res.render('modals/settings-modal', { settings, success: true })
+          return res.render('modals/settings-modal', {
+            settings,
+            success: true,
+          })
         }
         return res.render('pages/settings', { settings, success: true })
       }
@@ -555,7 +590,9 @@ export class AppController {
     }
   }
 
-  private async getAdditionalListData(type: EntityType): Promise<Record<string, any>> {
+  private async getAdditionalListData(
+    type: EntityType
+  ): Promise<Record<string, any>> {
     switch (type) {
       case 'ingredients':
         const suppliers = await this.suppliers.find()
@@ -600,7 +637,11 @@ export class AppController {
     }
   }
 
-  private async updateEntity(type: EntityType, slug: string, data: Record<string, any>) {
+  private async updateEntity(
+    type: EntityType,
+    slug: string,
+    data: Record<string, any>
+  ) {
     switch (type) {
       case 'suppliers': {
         const parsed = supplierApiSchema.parse(data)

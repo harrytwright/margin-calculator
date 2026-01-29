@@ -11,10 +11,10 @@ module.exports = {
         '2xs': ['0.625rem', { lineHeight: '0.75rem' }],
       },
       spacing: {
-        '4.5': '1.125rem',
-        '13': '3.25rem',
-        '15': '3.75rem',
-        '18': '4.5rem',
+        4.5: '1.125rem',
+        13: '3.25rem',
+        15: '3.75rem',
+        18: '4.5rem',
       },
       animation: {
         'fade-in': 'fadeIn 0.2s ease-out',
@@ -22,8 +22,8 @@ module.exports = {
         'slide-in-right': 'slideInRight 0.2s ease-out',
         'slide-in-left': 'slideInLeft 0.2s ease-out',
         'scale-in': 'scaleIn 0.15s ease-out',
-        'collapse': 'collapse 0.2s ease-out',
-        'expand': 'expand 0.2s ease-out',
+        collapse: 'collapse 0.2s ease-out',
+        expand: 'expand 0.2s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -56,15 +56,16 @@ module.exports = {
         },
       },
       boxShadow: {
-        'island': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-        'island-hover': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        island: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+        'island-hover':
+          '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
       },
       borderRadius: {
-        'island': '0.75rem',
+        island: '0.75rem',
       },
       transitionProperty: {
-        'width': 'width',
-        'spacing': 'margin, padding',
+        width: 'width',
+        spacing: 'margin, padding',
       },
     },
   },
