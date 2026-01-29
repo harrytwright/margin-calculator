@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en" class="<%= typeof darkMode !== 'undefined' && darkMode ? 'dark' : '' %>">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' | Menu Book' : 'Menu Book' %></title>
+
+    <!-- Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Compiled Tailwind CSS -->
+    <link rel="stylesheet" href="/styles/output.css">
+
+    <!-- HTMX for SPA-like interactions -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <script>
+      // Theme switcher - load saved theme on page load
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      }
+    </script>
+  </head>
+  <body class="font-sans antialiased bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 h-screen overflow-hidden flex flex-col">
+    <%
+      const demoMode = typeof isDemo !== 'undefined' && isDemo
+      const currentView = typeof view !== 'undefined' ? view : 'recipes'
+    %>
+
+    <!-- Top Bar (48px) -->
+    <%- include('../components/top-bar', { demoMode, currentView }) %>
+
+    <!-- Main Container -->
+    <div class="flex-1 flex overflow-hidden min-h-0">
+      <!-- Nav Rail (56px) -->
+      <%- include('../components/nav-rail', { currentView, demoMode }) %>
+
+      <!-- Main Content Area -->
+      <main id="main-content" class="flex-1 overflow-hidden p-3 min-h-0">
+        <div class="h-full animate-fade-in min-h-0">
+          <%- include(`../pages/${view}`) %>
+        </div>
+      </main>
+    </div>
+
+    <!-- Status Bar (24px) -->
+    <%- include('../components/status-bar', { currentView, breadcrumb: typeof breadcrumb !== 'undefined' ? breadcrumb : null }) %>
+
+    <!-- Modal Overlay -->
+    <div
+      id="modal-overlay"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-40 transition-opacity duration-200"
+      onclick="closeModal()"
+    ></div>
+
+    <!-- Modal Container -->
+    <div
+      id="modal"
+      class="fixed inset-0 flex items-center justify-center z-50 hidden pointer-events-none"
+    >
+      <div class="modal-content bg-white dark:bg-gray-800 rounded-island shadow-xl max-w-lg w-full mx-4 pointer-events-auto transform transition-all duration-200 scale-95 opacity-0">
+        <!-- Modal content will be loaded here via HTMX -->
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div
+      id="toast-container"
+      class="fixed top-14 right-4 z-50 space-y-2 pointer-events-none"
+    ></div>
+
+    <!-- Shared JavaScript -->
+    <script>
+      // Server-Sent Events for real-time updates
+      let eventSource = null;
+
+      function initializeSSE() {
+        eventSource = new EventSource('/api/events/sse');
+
+        eventSource.addEventListener('entity', (event) => {
+          const data = JSON.parse(event.data);
+          console.log('Entity update:', data);
+
+          // Trigger HTMX refresh on relevant elements
+          const entityType = data.type;
+          const listElement = document.getElementById(`${entityType}-browser`);
+          if (listElement) {
+            htmx.trigger(listElement, 'refresh');
+          }
+
+          // Show toast notification
+          showToast(`${data.action} ${data.type}: ${data.slug}`, 'info');
+        });
+
+        eventSource.addEventListener('error', (error) => {
+          console.error('SSE error:', error);
+          setTimeout(initializeSSE, 5000);
+        });
+      }
+
+      // Toast notification function
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+
+        const styles = {
+          success: 'bg-green-600 text-white',
+          error: 'bg-red-600 text-white',
+          warning: 'bg-amber-500 text-white',
+          info: 'bg-blue-600 text-white'
+        };
+
+        toast.className = `${styles[type]} px-4 py-2 rounded-lg shadow-lg pointer-events-auto transform transition-all duration-200 text-sm font-medium`;
+        toast.textContent = message;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(100%)';
+          setTimeout(() => toast.remove(), 200);
+        }, 3000);
+      }
+
+      // Modal functions
+      function openModal() {
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modal-overlay');
+        const modalContent = modal.querySelector('.modal-content');
+
+        modal.classList.remove('hidden');
+        overlay.classList.remove('hidden');
+
+        setTimeout(() => {
+          modalContent.classList.remove('scale-95', 'opacity-0');
+          modalContent.classList.add('scale-100', 'opacity-100');
+        }, 10);
+      }
+
+      function closeModal() {
+        const modal = document.getElementById('modal');
+        const overlay = document.getElementById('modal-overlay');
+        const modalContent = modal.querySelector('.modal-content');
+
+        modalContent.classList.remove('scale-100', 'opacity-100');
+        modalContent.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+          modal.classList.add('hidden');
+          overlay.classList.add('hidden');
+          modalContent.innerHTML = '';
+        }, 200);
+      }
+
+      // Close modal on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeModal();
+        }
+      });
+
+      // Theme switcher function
+      function setTheme(theme) {
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark')
+        } else {
+          document.documentElement.classList.remove('dark')
+        }
+        localStorage.setItem('theme', theme)
+      }
+
+      function toggleTheme() {
+        const isDark = document.documentElement.classList.contains('dark')
+        setTheme(isDark ? 'light' : 'dark')
+      }
+
+      // Panel collapse/expand
+      function togglePanel(panelId) {
+        const panel = document.getElementById(panelId);
+        const isCollapsed = panel.classList.contains('w-0');
+
+        if (isCollapsed) {
+          panel.classList.remove('w-0', 'overflow-hidden');
+          panel.classList.add('w-60');
+        } else {
+          panel.classList.add('w-0', 'overflow-hidden');
+          panel.classList.remove('w-60');
+        }
+
+        // Save state to localStorage
+        localStorage.setItem(`panel-${panelId}`, isCollapsed ? 'expanded' : 'collapsed');
+      }
+
+      // Restore panel states on load
+      function restorePanelStates() {
+        document.querySelectorAll('[data-panel]').forEach(panel => {
+          const state = localStorage.getItem(`panel-${panel.id}`);
+          if (state === 'collapsed') {
+            panel.classList.add('w-0', 'overflow-hidden');
+            panel.classList.remove('w-60');
+          }
+        });
+      }
+
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', () => {
+        initializeSSE();
+        restorePanelStates();
+      });
+
+      // HTMX configuration
+      document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-Requested-With'] = 'htmx';
+      });
+
+      document.body.addEventListener('htmx:responseError', (event) => {
+        showToast('An error occurred. Please try again.', 'error');
+      });
+
+      // Handle selection in tree views
+      function selectItem(type, slug) {
+        // Remove selection from all items
+        document.querySelectorAll(`[data-${type}-item]`).forEach(el => {
+          el.classList.remove('bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-700', 'dark:text-blue-300');
+          el.classList.add('text-gray-700', 'dark:text-gray-300');
+        });
+
+        // Add selection to clicked item
+        const item = document.querySelector(`[data-${type}-item="${slug}"]`);
+        if (item) {
+          item.classList.add('bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-700', 'dark:text-blue-300');
+          item.classList.remove('text-gray-700', 'dark:text-gray-300');
+        }
+      }
+
+      // Filter tree items
+      function filterTree(type) {
+        const input = document.getElementById(`${type}-filter`);
+        if (!input) return;
+
+        const filter = input.value.toLowerCase();
+        const items = document.querySelectorAll(`.${type}-tree-item`);
+
+        items.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          item.style.display = text.includes(filter) ? '' : 'none';
+        });
+
+        // Show/hide groups based on visible items
+        document.querySelectorAll(`.${type}-tree-group`).forEach(group => {
+          const visibleItems = group.querySelectorAll(`.${type}-tree-item:not([style*="display: none"])`);
+          group.style.display = visibleItems.length > 0 ? '' : 'none';
+        });
+      }
+
+      // Toggle group collapse
+      function toggleGroup(button) {
+        const itemsContainer = button.nextElementSibling;
+        const chevron = button.querySelector('svg');
+
+        if (itemsContainer.style.display === 'none') {
+          itemsContainer.style.display = '';
+          chevron.style.transform = '';
+        } else {
+          itemsContainer.style.display = 'none';
+          chevron.style.transform = 'rotate(-90deg)';
+        }
+      }
+
+      // Confirm delete with type-specific handling
+      function confirmDelete(type, slug, name) {
+        if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+          htmx.ajax('DELETE', `/${type}/${slug}`, {
+            target: `#${type}-browser`,
+            swap: 'innerHTML'
+          }).then(() => {
+            // Clear the editor
+            const editor = document.getElementById(`${type}-editor`);
+            if (editor) {
+              editor.innerHTML = `
+                <div class="flex-1 flex items-center justify-center">
+                  <div class="text-center px-8">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+                      </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-1">Select an item</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Choose an item from the list to view and edit its details</p>
+                  </div>
+                </div>
+              `;
+            }
+            showToast('Deleted successfully', 'success');
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

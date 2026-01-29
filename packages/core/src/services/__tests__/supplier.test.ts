@@ -48,9 +48,8 @@ describe('SupplierService', () => {
   })
 
   describe('findById', () => {
-    test('should return undefined for non-existent supplier', async () => {
-      const result = await service.findById('asda')
-      expect(result).toBeUndefined()
+    test('should throw for for non-existent supplier', async () => {
+      await expect(service.findById('asda')).rejects.toThrow()
     })
 
     test('should return supplier data for existing supplier', async () => {

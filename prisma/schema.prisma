@@ -32,7 +32,7 @@ model Ingredient {
 
   // Purchase details
   purchaseUnit String // "1kg", "1 box", "1 keg", "500ml bottle"
-  purchaseCost Decimal
+  purchaseCost Int // in pence
   includesVat  Boolean
 
   // Optional: for custom units that convert-units can't handle

@@ -1,0 +1,166 @@
+<%
+  const entityType = typeof type !== 'undefined' ? type : 'suppliers'
+  const singular = entityType.slice(0, -1)
+  const capitalizedType = entityType.charAt(0).toUpperCase() + entityType.slice(1)
+  const capitalizedSingular = singular.charAt(0).toUpperCase() + singular.slice(1)
+  const itemCount = typeof items !== 'undefined' ? items.length : 0
+%>
+
+<div class="space-y-6">
+  <!-- Header with Add Button -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-display text-base-content"><%= capitalizedType %></h1>
+      <p class="text-base-content/60 mt-1">
+        <span class="font-medium"><%= itemCount %></span> <%= singular %><%= itemCount !== 1 ? 's' : '' %> in your collection
+      </p>
+    </div>
+    <button
+      hx-get="/management/<%= entityType %>/new"
+      hx-target=".modal-content"
+      onclick="openModal()"
+      class="btn btn-primary gap-2 shadow-warm hover:shadow-warm-lg transition-shadow"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Add <%= capitalizedSingular %>
+    </button>
+  </div>
+
+  <!-- Search & Filters -->
+  <% if (entityType === 'ingredients') { %>
+  <div class="card bg-base-100 shadow-warm">
+    <div class="card-body py-4">
+      <form
+        hx-get="/management/ingredients"
+        hx-target="#entity-list"
+        hx-trigger="change, submit"
+        hx-push-url="true"
+        class="flex flex-wrap gap-4"
+      >
+        <div class="form-control flex-1 min-w-[200px]">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search ingredients..."
+              value="<%= typeof search !== 'undefined' ? search : '' %>"
+              class="input input-bordered w-full pl-10"
+            />
+          </div>
+        </div>
+        <div class="form-control">
+          <select name="filter-category" class="select select-bordered">
+            <option value="">All Categories</option>
+            <% if (typeof categories !== 'undefined') { %>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat %>" <%= (typeof filterCategory !== 'undefined' && filterCategory === cat) ? 'selected' : '' %>><%= cat %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+        <div class="form-control">
+          <select name="filter-supplier" class="select select-bordered">
+            <option value="">All Suppliers</option>
+            <% if (typeof suppliers !== 'undefined') { %>
+              <% suppliers.forEach(s => { %>
+                <option value="<%= s.id %>" <%= (typeof filterSupplier !== 'undefined' && filterSupplier == s.id) ? 'selected' : '' %>><%= s.name %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+  <% } else if (entityType === 'recipes') { %>
+  <div class="card bg-base-100 shadow-warm">
+    <div class="card-body py-4">
+      <form
+        hx-get="/management/recipes"
+        hx-target="#entity-list"
+        hx-trigger="change, submit"
+        hx-push-url="true"
+        class="flex flex-wrap gap-4"
+      >
+        <div class="form-control flex-1 min-w-[200px]">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search recipes..."
+              value="<%= typeof search !== 'undefined' ? search : '' %>"
+              class="input input-bordered w-full pl-10"
+            />
+          </div>
+        </div>
+        <div class="form-control">
+          <select name="filter-class" class="select select-bordered">
+            <option value="">All Types</option>
+            <option value="menu_item" <%= (typeof filterClass !== 'undefined' && filterClass === 'menu_item') ? 'selected' : '' %>>Menu Items</option>
+            <option value="sub_recipe" <%= (typeof filterClass !== 'undefined' && filterClass === 'sub_recipe') ? 'selected' : '' %>>Sub Recipes</option>
+            <option value="base_template" <%= (typeof filterClass !== 'undefined' && filterClass === 'base_template') ? 'selected' : '' %>>Base Templates</option>
+          </select>
+        </div>
+        <div class="form-control">
+          <select name="filter-category" class="select select-bordered">
+            <option value="">All Categories</option>
+            <% if (typeof categories !== 'undefined') { %>
+              <% categories.forEach(cat => { %>
+                <option value="<%= cat %>" <%= (typeof filterCategory !== 'undefined' && filterCategory === cat) ? 'selected' : '' %>><%= cat %></option>
+              <% }) %>
+            <% } %>
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+  <% } else if (entityType === 'suppliers') { %>
+  <div class="card bg-base-100 shadow-warm">
+    <div class="card-body py-4">
+      <form
+        hx-get="/management/suppliers"
+        hx-target="#entity-list"
+        hx-trigger="submit"
+        hx-push-url="true"
+        class="flex gap-4"
+      >
+        <div class="form-control flex-1">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search suppliers..."
+              value="<%= typeof search !== 'undefined' ? search : '' %>"
+              class="input input-bordered w-full pl-10"
+            />
+          </div>
+        </div>
+        <button type="submit" class="btn btn-ghost">
+          Search
+        </button>
+      </form>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Entity List -->
+  <div id="entity-list">
+    <% if (entityType === 'suppliers') { %>
+      <%- include('../components/supplier-list', { suppliers: items || [] }) %>
+    <% } else if (entityType === 'ingredients') { %>
+      <%- include('../components/ingredient-list', { ingredients: items || [] }) %>
+    <% } else if (entityType === 'recipes') { %>
+      <%- include('../components/recipe-list', { recipes: items || [] }) %>
+    <% } %>
+  </div>
+</div>

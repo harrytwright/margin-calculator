@@ -1,0 +1,45 @@
+<%
+  /**
+   * Cost Breakdown Panel Content
+   *
+   * Props:
+   * - recipe: The selected recipe (or null)
+   * - cost: The calculated cost data (or null)
+   */
+
+  const selectedRecipe = typeof recipe !== 'undefined' ? recipe : null
+  const recipeCost = typeof cost !== 'undefined' ? cost : null
+%>
+
+<% if (selectedRecipe && recipeCost) { %>
+<div class="p-3 space-y-4">
+  <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+    <p class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Food Cost</p>
+    <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">&pound;<%= (recipeCost.total / 100).toFixed(2) %></p>
+  </div>
+  <% if (recipeCost.margin) { %>
+  <div class="p-3 rounded-lg <%= recipeCost.margin.actualMargin >= recipeCost.margin.targetMargin ? 'bg-green-50 dark:bg-green-900/20' : 'bg-amber-50 dark:bg-amber-900/20' %>">
+    <p class="text-xs font-medium mb-1 <%= recipeCost.margin.actualMargin >= recipeCost.margin.targetMargin ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400' %>">Actual Margin</p>
+    <p class="text-2xl font-bold <%= recipeCost.margin.actualMargin >= recipeCost.margin.targetMargin ? 'text-green-700 dark:text-green-300' : 'text-amber-700 dark:text-amber-300' %>"><%= recipeCost.margin.actualMargin.toFixed(1) %>%</p>
+    <p class="text-xs mt-1 <%= recipeCost.margin.actualMargin >= recipeCost.margin.targetMargin ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400' %>">Target: <%= recipeCost.margin.targetMargin %>%</p>
+  </div>
+  <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Profit per Sale</p>
+    <p class="text-xl font-bold text-gray-900 dark:text-white">&pound;<%= (recipeCost.margin.profit / 100).toFixed(2) %></p>
+  </div>
+  <% } %>
+</div>
+<% } else if (selectedRecipe) { %>
+<div class="text-center py-8 px-3">
+  <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+    </svg>
+  </div>
+  <p class="text-sm text-gray-500 dark:text-gray-400">Add ingredients to see cost breakdown</p>
+</div>
+<% } else { %>
+<div class="text-center py-8 px-3">
+  <p class="text-sm text-gray-500 dark:text-gray-400">Select a recipe to view costs</p>
+</div>
+<% } %>

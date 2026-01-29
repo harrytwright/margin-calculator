@@ -1,0 +1,72 @@
+<%
+  const pageTitles = {
+    dashboard: 'Dashboard',
+    suppliers: 'Suppliers',
+    ingredients: 'Ingredients',
+    recipes: 'Recipes',
+    management: 'Management',
+    margin: 'Margin Report',
+    settings: 'Settings',
+    help: 'Help & Support'
+  }
+  const pageTitle = pageTitles[currentView] || 'Menu Book'
+
+  const pageDescriptions = {
+    dashboard: 'Overview of your recipe costing and margins',
+    suppliers: 'Manage your ingredient suppliers',
+    ingredients: 'Track costs and inventory',
+    recipes: 'Create and cost your recipes',
+    management: 'Manage your data',
+    margin: 'Analyze profitability across recipes',
+    settings: 'Configure your preferences',
+    help: 'Documentation and resources'
+  }
+  const pageDescription = pageDescriptions[currentView] || ''
+%>
+
+<!-- Header Bar -->
+<header class="bg-base-100 border-b border-base-300">
+  <div class="px-8 py-5">
+    <div class="flex items-center justify-between">
+      <!-- Page Title -->
+      <div>
+        <h2 class="text-2xl font-display text-base-content tracking-tight">
+          <%= pageTitle %>
+        </h2>
+        <% if (pageDescription) { %>
+        <p class="text-sm text-base-content/60 mt-0.5"><%= pageDescription %></p>
+        <% } %>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="flex items-center gap-4">
+        <!-- Quick Add Button (context-aware) -->
+        <% if (['suppliers', 'ingredients', 'recipes', 'management'].includes(currentView)) { %>
+        <% const entityType = currentView === 'management' ? (typeof type !== 'undefined' ? type : 'suppliers') : currentView %>
+        <button
+          hx-get="/management/<%= entityType %>/new"
+          hx-target=".modal-content"
+          onclick="openModal()"
+          class="btn btn-primary btn-sm gap-2 shadow-warm hover:shadow-warm-lg transition-shadow"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Add New
+        </button>
+        <% } %>
+
+        <!-- Breadcrumb indicator for management -->
+        <% if (currentView === 'management' && typeof type !== 'undefined') { %>
+        <div class="flex items-center gap-2 text-sm">
+          <span class="text-base-content/40">Management</span>
+          <svg class="w-4 h-4 text-base-content/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+          <span class="font-medium text-base-content capitalize"><%= type %></span>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</header>

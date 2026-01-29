@@ -88,13 +88,13 @@ export const ui = new Command()
 
     try {
       const server = await startServer({
-        port: parseInt(port, 10),
+        // port: parseInt(port, 10),
         database: context,
-        locationDir,
-        workspaceDir,
-        storageMode: realmConfig.storageMode,
+        location: locationDir,
+        // workspaceDir,
+        // storageMode: realmConfig.storageMode,
         openBrowser: open,
-        watchFiles: realmConfig.watchFiles,
+        // watchFiles: realmConfig.watchFiles,
       })
 
       // Keep process alive

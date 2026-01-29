@@ -1,0 +1,55 @@
+{
+  "readinessCheck": [
+    {
+      "auth": false,
+      "route": "/-/",
+      "method": "GET",
+      "test": {
+        "status": 200
+      }
+    },
+    {
+      "auth": false,
+      "route": "/-/health",
+      "method": "GET",
+      "test": {
+        "status": 200
+      }
+    },
+    {
+      "auth": false,
+      "route": "/-/health/readiness",
+      "method": "GET",
+      "test": {
+        "status": 200
+      }
+    }
+  ],
+  "demoIsolation": [
+    {
+      "name": "Create supplier in session A",
+      "session": "A",
+      "auth": false,
+      "route": "/api/suppliers",
+      "method": "POST",
+      "body": { "name": "Demo Supplier", "slug": "demo-supplier" },
+      "tests": { "status": 201 }
+    },
+    {
+      "name": "Verify NOT visible in session B",
+      "session": "B",
+      "auth": false,
+      "route": "/api/suppliers",
+      "method": "GET",
+      "tests": { "status": 200, "body": [] }
+    },
+    {
+      "name": "Verify visible in session A",
+      "session": "A",
+      "auth": false,
+      "route": "/api/suppliers",
+      "method": "GET",
+      "tests": { "status": 200 }
+    }
+  ]
+}

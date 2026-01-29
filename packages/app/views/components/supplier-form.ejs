@@ -1,0 +1,148 @@
+<!-- Supplier Form Modal Content -->
+<div class="bg-base-200/50 px-6 py-4 border-b border-base-300 rounded-t-xl">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+        <svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-display text-base-content">
+          <%= supplier ? 'Edit Supplier' : 'Add Supplier' %>
+        </h3>
+        <p class="text-sm text-base-content/50">
+          <%= supplier ? 'Update supplier details' : 'Add a new ingredient supplier' %>
+        </p>
+      </div>
+    </div>
+    <button
+      onclick="closeModal()"
+      class="btn btn-ghost btn-sm btn-square text-base-content/40 hover:text-base-content"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<form
+  hx-<%= supplier ? 'put' : 'post' %>="/management/suppliers<%= supplier ? '/' + supplier.slug : '' %>"
+  hx-target="#entity-list"
+  hx-swap="innerHTML"
+  class="flex-1 overflow-y-auto"
+>
+  <div class="px-6 py-6 space-y-5">
+    <!-- Name -->
+    <div class="form-control">
+      <label for="name" class="label pb-1">
+        <span class="label-text font-medium text-base-content">
+          Supplier Name <span class="text-error">*</span>
+        </span>
+      </label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        value="<%= supplier ? supplier.name : '' %>"
+        required
+        class="input input-bordered"
+        placeholder="e.g., ASDA, Tesco, Costco"
+      />
+    </div>
+
+    <div class="divider text-xs text-base-content/40">Contact Information</div>
+
+    <!-- Contact Name -->
+    <div class="form-control">
+      <label for="contactName" class="label pb-1">
+        <span class="label-text font-medium text-base-content">Contact Name</span>
+      </label>
+      <input
+        type="text"
+        id="contactName"
+        name="contactName"
+        value="<%= supplier ? (supplier.contactName || '') : '' %>"
+        class="input input-bordered"
+        placeholder="e.g., John Smith"
+      />
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Contact Email -->
+      <div class="form-control">
+        <label for="contactEmail" class="label pb-1">
+          <span class="label-text font-medium text-base-content">Email</span>
+        </label>
+        <input
+          type="email"
+          id="contactEmail"
+          name="contactEmail"
+          value="<%= supplier ? (supplier.contactEmail || '') : '' %>"
+          class="input input-bordered"
+          placeholder="orders@supplier.com"
+        />
+      </div>
+
+      <!-- Contact Phone -->
+      <div class="form-control">
+        <label for="contactPhone" class="label pb-1">
+          <span class="label-text font-medium text-base-content">Phone</span>
+        </label>
+        <input
+          type="tel"
+          id="contactPhone"
+          name="contactPhone"
+          value="<%= supplier ? (supplier.contactPhone || '') : '' %>"
+          class="input input-bordered"
+          placeholder="+44 20 1234 5678"
+        />
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="form-control">
+      <label for="notes" class="label pb-1">
+        <span class="label-text font-medium text-base-content">Notes</span>
+      </label>
+      <textarea
+        id="notes"
+        name="notes"
+        rows="3"
+        class="textarea textarea-bordered"
+        placeholder="Additional notes about this supplier..."
+      ><%= supplier ? (supplier.notes || '') : '' %></textarea>
+    </div>
+  </div>
+
+  <!-- Modal Footer -->
+  <div class="bg-base-200/50 px-6 py-4 border-t border-base-300 rounded-b-xl flex justify-end gap-3">
+    <button
+      type="button"
+      onclick="closeModal()"
+      class="btn btn-ghost"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="btn btn-primary shadow-warm"
+    >
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+      <%= supplier ? 'Update Supplier' : 'Create Supplier' %>
+    </button>
+  </div>
+</form>
+
+<script>
+  // Close modal after successful form submission
+  document.body.addEventListener('htmx:afterRequest', function(event) {
+    if (event.detail.successful && event.target.tagName === 'FORM') {
+      closeModal();
+      showToast('<%= supplier ? 'Supplier updated successfully' : 'Supplier created successfully' %>', 'success');
+    }
+  });
+</script>

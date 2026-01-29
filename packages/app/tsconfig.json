@@ -2,8 +2,16 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "moduleResolution": "Node",
+    "isolatedModules": false
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/__tests__/**"]
+  "exclude": [
+    "node_modules",
+    "jest",
+    "dist",
+    "**/__tests__/**",
+    "src/**/*.spec.ts"
+  ]
 }
