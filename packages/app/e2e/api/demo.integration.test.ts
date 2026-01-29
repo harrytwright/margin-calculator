@@ -36,7 +36,7 @@ describe('App', () => {
       {
         before: async () => {
           await migrate(database, 'up')
-        },
+        }, // @ts-ignore
         beforeEach: async (
           req,
           flow: WorkFlow & { session?: string },
