@@ -25,6 +25,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm exec prettier --check "packages/**/*.{ts,js,json}"
 
   types:
@@ -45,6 +46,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm turbo build
   unit-tests:
     name: Test ${{ matrix.package }} (Node ${{ matrix.node }}, ${{ matrix.os }})
@@ -76,6 +78,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Build dependencies
         run: pnpm turbo build --filter=@menubook/${{ matrix.package }}^...
       - name: Run tests
@@ -102,6 +105,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm audit --audit-level=high
         continue-on-error: true
   build:
@@ -123,6 +127,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm turbo build
       - uses: actions/upload-artifact@v4
         with:
@@ -150,6 +155,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Run demo integration tests
         run: DEMO=true pnpm --filter @menubook/app exec jest --config demo.jest.config.ts
         env:
