@@ -1,5 +1,6 @@
 import { Selectable, Transaction } from 'kysely'
 
+import { NotFound } from '@hndlr/errors'
 import { DB, Supplier } from '@menubook/types'
 import type { DatabaseContext } from '../datastore/context'
 import { handleError } from '../datastore/handleError'
@@ -80,8 +81,14 @@ export class SupplierService {
     trx?: Transaction<DB>
   ): Promise<ImportOutcome> {
     const query = async (trx: Transaction<DB>) => {
-      // Load up the previous data if it exists
-      const prev = await this.findById(data.slug, trx)
+      // Workaround for the throwing on findById
+      let prev: Selectable<Supplier> | undefined = undefined
+      try {
+        // Load up the previous data if it exists
+        prev = await this.findById(data.slug, trx)
+      } catch (e) {
+        if (!(e instanceof NotFound)) throw e
+      }
 
       // Check if any mutable fields have changed
       const hasChanged = hasChanges(prev, data, {

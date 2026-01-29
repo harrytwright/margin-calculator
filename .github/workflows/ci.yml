@@ -22,6 +22,10 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
+      - name: Set publishing config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
@@ -42,6 +46,10 @@ jobs:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-
+      - name: Set publishing config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
@@ -73,6 +81,10 @@ jobs:
           path: .turbo
           key: turbo-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: turbo-${{ runner.os }}-
+      - name: Set publishing config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
@@ -102,6 +114,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: Set publishing config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: pnpm audit --audit-level=high
         continue-on-error: true
   build:
@@ -120,6 +136,10 @@ jobs:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-
+      - name: Set publishing config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
@@ -147,6 +167,10 @@ jobs:
         with:
           name: build-dist
           path: .
+      - name: Set publishing config
+        run: pnpm config set '//registry.npmjs.org/:_authToken' "${NODE_AUTH_TOKEN}"
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
