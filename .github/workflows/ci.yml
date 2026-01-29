@@ -23,6 +23,8 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm exec prettier --check "packages/**/*.{ts,js,json}"
 
   types:
@@ -41,6 +43,8 @@ jobs:
           key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm turbo build
   unit-tests:
     name: Test ${{ matrix.package }} (Node ${{ matrix.node }}, ${{ matrix.os }})
@@ -70,6 +74,8 @@ jobs:
           key: turbo-${{ runner.os }}-node${{ matrix.node }}-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Build dependencies
         run: pnpm turbo build --filter=@menubook/${{ matrix.package }}^...
       - name: Run tests
@@ -94,10 +100,10 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm audit --audit-level=high
         continue-on-error: true
-
-  # ===== STAGE 3: Build =====
   build:
     name: Build
     needs: [unit-tests]
@@ -115,6 +121,8 @@ jobs:
           key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: turbo-${{ runner.os }}-
       - run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - run: pnpm turbo build
       - uses: actions/upload-artifact@v4
         with:
@@ -140,6 +148,8 @@ jobs:
           name: build-dist
           path: .
       - run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Run demo integration tests
         run: DEMO=true pnpm --filter @menubook/app exec jest --config demo.jest.config.ts
         env:
