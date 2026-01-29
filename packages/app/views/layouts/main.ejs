@@ -1,9 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="menubook">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Menu Book' %></title>
+    <title><%= typeof pageTitle !== 'undefined' ? pageTitle + ' | Menu Book' : 'Menu Book' %></title>
+
+    <!-- Google Fonts: DM Serif Display + Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Compiled Tailwind CSS with DaisyUI -->
     <link rel="stylesheet" href="/styles/output.css">
@@ -14,17 +19,96 @@
     <!-- HTMX for SPA-like interactions -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 
+    <style>
+      /* Custom font application */
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      }
+
+      h1, h2, h3, .font-display {
+        font-family: 'DM Serif Display', Georgia, serif;
+      }
+
+      /* Subtle texture overlay for warmth */
+      .texture-overlay {
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        opacity: 0.02;
+        pointer-events: none;
+      }
+
+      /* Smooth page transitions */
+      .page-transition {
+        animation: slideUp 0.4s ease-out;
+      }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Card hover effects */
+      .card-hover {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px -8px rgba(200, 90, 56, 0.15);
+      }
+
+      /* Link underline animation */
+      .link-underline {
+        position: relative;
+      }
+      .link-underline::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -2px;
+        left: 0;
+        background: currentColor;
+        transition: width 0.2s ease;
+      }
+      .link-underline:hover::after {
+        width: 100%;
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d4c5b3;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #c4b5a3;
+      }
+
+      /* Table row hover */
+      .table-row-hover:hover {
+        background: linear-gradient(90deg, transparent, rgba(200, 90, 56, 0.04), transparent);
+      }
+    </style>
+
     <script>
       // Theme switcher - load saved theme on page load
-      const savedTheme = localStorage.getItem('theme') || 'light'
+      const savedTheme = localStorage.getItem('theme') || 'menubook'
       document.documentElement.setAttribute('data-theme', savedTheme)
     </script>
   </head>
-  <body hx-ext="debug">
+  <body class="font-sans antialiased">
+    <!-- Subtle texture overlay -->
+    <div class="fixed inset-0 texture-overlay z-[-1]"></div>
+
     <!-- Modal Overlay -->
     <div
       id="modal-overlay"
-      class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 transition-opacity duration-200"
+      class="fixed inset-0 bg-neutral/60 backdrop-blur-sm hidden z-40 transition-all duration-300"
     ></div>
 
     <!-- Modal Container -->
@@ -55,8 +139,10 @@
         <%- include('../partials/header', { currentView: view || 'dashboard' }) %>
 
         <!-- Page Content -->
-        <main id="main-content" class="flex-1 p-6 overflow-auto">
-          <%- include(`../pages/${view}`) %>
+        <main id="main-content" class="flex-1 p-8 overflow-auto">
+          <div class="page-transition">
+            <%- include(`../pages/${view}`) %>
+          </div>
         </main>
       </div>
     </div>
@@ -67,7 +153,7 @@
       let eventSource = null;
 
       function initializeSSE() {
-        eventSource = new EventSource('/api/events');
+        eventSource = new EventSource('/api/events/sse');
 
         eventSource.addEventListener('entity', (event) => {
           const data = JSON.parse(event.data);
@@ -96,14 +182,14 @@
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
 
-        const bgColors = {
-          success: 'bg-green-500',
-          error: 'bg-red-500',
-          warning: 'bg-yellow-500',
-          info: 'bg-blue-500'
+        const styles = {
+          success: 'bg-secondary text-white',
+          error: 'bg-error text-white',
+          warning: 'bg-warning text-warning-content',
+          info: 'bg-primary text-white'
         };
 
-        toast.className = `${bgColors[type]} text-white px-6 py-3 rounded-lg shadow-lg pointer-events-auto transform transition-all duration-300 translate-x-0 opacity-100`;
+        toast.className = `${styles[type]} px-5 py-3 rounded-lg shadow-warm-lg pointer-events-auto transform transition-all duration-300 translate-x-0 opacity-100 font-medium text-sm`;
         toast.textContent = message;
 
         container.appendChild(toast);

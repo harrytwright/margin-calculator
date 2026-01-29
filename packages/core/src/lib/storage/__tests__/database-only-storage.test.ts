@@ -28,7 +28,7 @@ describe('DatabaseOnlyStorage', () => {
       category: 'test',
       purchase: {
         unit: '1kg',
-        cost: 10.5,
+        cost: 1050,
         vat: false,
       },
     }

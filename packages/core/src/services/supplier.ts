@@ -1,6 +1,6 @@
-import { Selectable } from 'kysely'
+import { Selectable, Transaction } from 'kysely'
 
-import { Supplier } from '@menubook/types'
+import { DB, Supplier } from '@menubook/types'
 import type { DatabaseContext } from '../datastore/context'
 import { handleError } from '../datastore/handleError'
 import { Importer, type ImportOutcome } from '../lib/importer'
@@ -10,20 +10,20 @@ import { hasChanges } from '../utils'
 export class SupplierService {
   constructor(private context: DatabaseContext) {}
 
-  private get database() {
+  get database() {
     return this.context.db
   }
 
-  async exists(slug: string) {
-    return !!(await this.database
+  async exists(slug: string, trx?: Transaction<DB>) {
+    return !!(await ((trx ?? this.database)
       .selectFrom('Supplier')
       .select('id')
       .where('slug', '=', slug)
-      .executeTakeFirst())
+      .executeTakeFirst()))
   }
 
-  findById(slug: string): Promise<Selectable<Supplier>> {
-    return this.database
+  findById(slug: string, trx?: Transaction<DB>): Promise<Selectable<Supplier>> {
+    return (trx ?? this.database)
       .selectFrom('Supplier')
       .select([
         'id',
@@ -38,8 +38,8 @@ export class SupplierService {
       .executeTakeFirstOrThrow(handleError({ slug }))
   }
 
-  upsert(slug: string, data: SupplierImportData | SupplierResolvedImportData) {
-    return this.database
+  upsert(slug: string, data: SupplierImportData | SupplierResolvedImportData, trx?: Transaction<DB>) {
+    return (trx ?? this.database)
       .insertInto('Supplier')
       .values({
         slug,
@@ -53,17 +53,17 @@ export class SupplierService {
       .executeTakeFirst()
   }
 
-  async delete(slug: string) {
-    const result = await this.database
+  async delete(slug: string, trx?: Transaction<DB>) {
+    const result = await ((trx ?? this.database)
       .deleteFrom('Supplier')
       .where('slug', '=', slug)
-      .executeTakeFirst()
+      .executeTakeFirst())
 
     return result.numDeletedRows > 0n
   }
 
-  async find() {
-    return this.database
+  async find(trx?: Transaction<DB>) {
+    return (trx ?? this.database)
       .selectFrom('Supplier')
       .select(['id', 'slug', 'name'])
       .execute()
@@ -72,20 +72,26 @@ export class SupplierService {
   async processor(
     importer: Importer,
     data: SupplierResolvedImportData,
-    filePath: string | undefined
+    filePath: string | undefined,
+    trx?: Transaction<DB>
   ): Promise<ImportOutcome> {
-    // Load up the previous data if it exists
-    const prev = await this.findById(data.slug)
+    const query = async (trx: Transaction<DB>) => {
+      // Load up the previous data if it exists
+      const prev = await this.findById(data.slug, trx)
 
-    // Check if any mutable fields have changed
-    const hasChanged = hasChanges(prev, data, {
-      name: 'name',
-    })
+      // Check if any mutable fields have changed
+      const hasChanged = hasChanges(prev, data, {
+        name: 'name',
+      })
 
-    if (prev && !hasChanged) return 'ignored'
+      if (prev && !hasChanged) return 'ignored'
 
-    await this.upsert(data.slug, data)
+      const res = await this.upsert(data.slug, data, trx)
+      if (res.insertId === undefined) throw new Error('Failed to upsert supplier')
 
-    return prev ? 'upserted' : 'created'
+      return prev ? 'upserted' : 'created'
+    }
+
+    return trx ? query(trx) : this.database.transaction().execute(query)
   }
 }

@@ -1,0 +1,168 @@
+<!-- Help Modal -->
+<div class="max-h-[80vh] overflow-hidden flex flex-col max-w-2xl">
+  <!-- Modal Header -->
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Help & Documentation</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Learn how to use Menu Book effectively</p>
+    </div>
+    <button
+      onclick="closeModal()"
+      class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Scrollable Content -->
+  <div class="flex-1 overflow-y-auto p-6 space-y-6">
+    <!-- Getting Started -->
+    <div>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+        Getting Started
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-300">
+        Menu Book helps you calculate recipe costs, track margins, and maximize profits for your food service business. Start by adding suppliers, then ingredients, and finally create recipes.
+      </p>
+    </div>
+
+    <!-- Navigation Guide -->
+    <div>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+        </svg>
+        Navigation
+      </h3>
+      <div class="grid gap-3">
+        <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">Recipes</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Create and cost your menu items, sub-recipes, and base templates</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">Ingredients</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Track costs, units, and supplier information for all your ingredients</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 17a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 17H7V5h9v7h3l2 4v1h-3m-5 0H6"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-900 dark:text-white">Suppliers</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">Manage your supplier contacts and link them to ingredients</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keyboard Shortcuts -->
+    <div>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+        </svg>
+        Keyboard Shortcuts
+      </h3>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+          <span class="text-xs text-gray-600 dark:text-gray-300">Global Search</span>
+          <kbd class="px-2 py-1 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs rounded font-mono">/</kbd>
+        </div>
+        <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700/50 rounded">
+          <span class="text-xs text-gray-600 dark:text-gray-300">Close Modal</span>
+          <kbd class="px-2 py-1 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs rounded font-mono">Esc</kbd>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Tips -->
+    <div>
+      <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+        </svg>
+        Quick Tips
+      </h3>
+      <div class="space-y-3">
+        <div class="flex items-start gap-3">
+          <div class="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            <strong class="text-gray-900 dark:text-white">Sub-recipes</strong> can be used as ingredients in other recipes. Create sauces, doughs, and preparations as sub-recipes for accurate costing.
+          </p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            <strong class="text-gray-900 dark:text-white">Unit conversions</strong> are handled automatically. Enter costs in bulk units (kg, L) and use recipe quantities in practical units (g, ml).
+          </p>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-3 h-3 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-300">
+            <strong class="text-gray-900 dark:text-white">Real-time updates</strong> - Changes to ingredient costs automatically recalculate all affected recipe costs.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Support -->
+    <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+      <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        <div>
+          <h4 class="text-sm font-medium text-blue-900 dark:text-blue-200">Need more help?</h4>
+          <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">
+            Check out the documentation or contact support for additional assistance with Menu Book.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Footer -->
+  <div class="flex items-center justify-end px-6 py-4 border-t border-gray-200 dark:border-gray-700 shrink-0">
+    <button
+      type="button"
+      onclick="closeModal()"
+      class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+    >
+      Close
+    </button>
+  </div>
+</div>

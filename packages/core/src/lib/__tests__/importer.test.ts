@@ -657,7 +657,7 @@ data:
   category: meat
   purchase:
     unit: 1kg
-    cost: 5.99
+    cost: 599
   supplier:
     uses: ../suppliers/asda.yaml
 `
@@ -754,7 +754,7 @@ data:
   category: dairy
   purchase:
     unit: 200g
-    cost: 2.50
+    cost: 250
   supplier:
     uses: ../suppliers/asda.yaml
 `
@@ -768,7 +768,7 @@ data:
   category: meat
   purchase:
     unit: 1kg
-    cost: 5.99
+    cost: 599
   supplier:
     uses: "@/suppliers/asda.yaml"
 `

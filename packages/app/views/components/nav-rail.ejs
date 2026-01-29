@@ -1,0 +1,90 @@
+<%
+  const navItems = [
+    { id: 'recipes', icon: 'book', label: 'Recipes', href: '/recipes' },
+    { id: 'ingredients', icon: 'package', label: 'Ingredients', href: '/ingredients' },
+    { id: 'suppliers', icon: 'truck', label: 'Suppliers', href: '/suppliers' },
+  ]
+
+  const bottomItems = [
+    { id: 'settings', icon: 'settings', label: 'Settings', href: '/settings' },
+  ]
+
+  if (!demoMode) {
+    bottomItems.unshift({ id: 'help', icon: 'help', label: 'Help', href: '/help' })
+  }
+%>
+
+<!-- Nav Rail -->
+<nav class="w-14 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-2">
+  <!-- Main Navigation -->
+  <div class="flex-1 flex flex-col items-center gap-1">
+    <% navItems.forEach(item => { %>
+    <a
+      href="<%= item.href %>"
+      hx-get="<%= item.href %>"
+      hx-target="#main-content"
+      hx-push-url="true"
+      class="group relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors
+        <%= currentView === item.id
+          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+          : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200'
+        %>"
+      title="<%= item.label %>"
+    >
+      <% if (item.icon === 'book') { %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+      </svg>
+      <% } else if (item.icon === 'package') { %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+      </svg>
+      <% } else if (item.icon === 'truck') { %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 17a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 17H7V5h9v7h3l2 4v1h-3m-5 0H6"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 12V5"/>
+      </svg>
+      <% } %>
+
+      <!-- Tooltip -->
+      <span class="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+        <%= item.label %>
+      </span>
+    </a>
+    <% }) %>
+  </div>
+
+  <!-- Separator -->
+  <div class="w-6 h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
+
+  <!-- Bottom Navigation -->
+  <div class="flex flex-col items-center gap-1">
+    <% bottomItems.forEach(item => { %>
+    <button
+      hx-get="<%= item.href %>"
+      hx-target=".modal-content"
+      onclick="openModal()"
+      class="group relative w-10 h-10 flex items-center justify-center rounded-lg transition-colors
+        text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200"
+      title="<%= item.label %>"
+    >
+      <% if (item.icon === 'settings') { %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      <% } else if (item.icon === 'help') { %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <% } %>
+
+      <!-- Tooltip -->
+      <span class="absolute left-full ml-2 px-2 py-1 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+        <%= item.label %>
+      </span>
+    </button>
+    <% }) %>
+  </div>
+</nav>

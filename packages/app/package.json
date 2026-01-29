@@ -12,10 +12,10 @@
   },
   "scripts": {
     "build": "npm run build:css && tsc -p tsconfig.build.json && npm run postbuild",
-    "build:css": "tailwindcss -i ./src/server/public/styles/input.css -o ./src/server/public/styles/output.css --minify",
-    "postbuild": "cp -r src/server/public dist/server/ && cp -r src/server/views dist/server/",
+    "build:css": "tailwindcss -i ./public/styles/input.css -o ./public/styles/output.css --minify",
+    "postbuild": "cp -r public dist/ && cp -r views dist/",
     "dev": "concurrently \"npm run build:css:watch\" \"tsc -w -p tsconfig.build.json\"",
-    "build:css:watch": "tailwindcss -i ./src/server/public/styles/input.css -o ./src/server/public/styles/output.css --watch",
+    "build:css:watch": "tailwindcss -i ./public/styles/input.css -o ./public/styles/output.css --watch",
     "test": "jest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",

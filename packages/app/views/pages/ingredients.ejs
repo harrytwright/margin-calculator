@@ -1,27 +1,211 @@
-<div class="space-y-6">
-  <!-- Header with Add Button -->
-  <div class="flex justify-between items-center">
-    <div>
-      <h3 class="text-lg font-semibold text-gray-900">Ingredients</h3>
-      <p class="text-sm text-gray-600 mt-1">
-        <%= typeof ingredients !== 'undefined' ? ingredients.length : 0 %> ingredient<%= (typeof ingredients !== 'undefined' && ingredients.length !== 1) ? 's' : '' %>
-      </p>
-    </div>
-    <button
-      hx-get="/ingredients/new"
-      hx-target=".modal-content"
-      onclick="openModal()"
-      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
-    >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-      </svg>
-      Add Ingredient
-    </button>
+<%
+  const ingredientList = typeof ingredients !== 'undefined' ? ingredients : []
+  const selectedIngredient = typeof ingredient !== 'undefined' ? ingredient : null
+  const supplierList = typeof suppliers !== 'undefined' ? suppliers : []
+  const usedInRecipes = typeof usedIn !== 'undefined' ? usedIn : []
+%>
+
+<!-- Ingredients Page - Island Layout -->
+<div class="h-full flex gap-3">
+  <!-- Left Island: Ingredient Browser -->
+  <div class="w-64 shrink-0">
+    <%- include('../islands/browser', {
+      type: 'ingredients',
+      items: ingredientList,
+      selectedSlug: selectedIngredient ? selectedIngredient.slug : null,
+      groupBy: 'category'
+    }) %>
   </div>
 
-  <!-- Ingredient List (updates via HTMX) -->
-  <div id="ingredients-list">
-    <%- include('../components/ingredient-list', { ingredients: typeof ingredients !== 'undefined' ? ingredients : [] }) %>
+  <!-- Center Island: Ingredient Editor -->
+  <div class="flex-1 min-w-0">
+    <div
+      id="ingredients-editor"
+      class="h-full flex flex-col bg-white dark:bg-gray-800 rounded-island shadow-island overflow-hidden"
+    >
+      <% if (!selectedIngredient) { %>
+      <!-- Empty State -->
+      <div class="flex-1 flex items-center justify-center">
+        <div class="text-center px-8">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-1">Select an ingredient</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Choose an ingredient from the list to view and edit its details</p>
+          <button
+            hx-get="/ingredients/new"
+            hx-target=".modal-content"
+            onclick="openModal()"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Create New Ingredient
+          </button>
+        </div>
+      </div>
+      <% } else { %>
+      <!-- Editor Header -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center gap-3 min-w-0">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white truncate"><%= selectedIngredient.name %></h2>
+          <% if (selectedIngredient.category || selectedIngredient.type) { %>
+          <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+            <%= selectedIngredient.category || selectedIngredient.type %>
+          </span>
+          <% } %>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            hx-get="/ingredients/<%= selectedIngredient.slug %>/edit"
+            hx-target=".modal-content"
+            onclick="openModal()"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
+            Edit
+          </button>
+          <div class="relative">
+            <button
+              class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+              onclick="this.nextElementSibling.classList.toggle('hidden')"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+              </svg>
+            </button>
+            <div class="hidden absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+              <button
+                class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                onclick="confirmDelete('ingredients', '<%= selectedIngredient.slug %>', '<%= selectedIngredient.name %>')"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Editor Content -->
+      <div class="flex-1 overflow-y-auto p-4">
+        <div class="space-y-6">
+          <!-- Cost Info -->
+          <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Purchase Cost</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                <% if (selectedIngredient.purchaseCost != null) { %>&pound;<%= (selectedIngredient.purchaseCost / 100).toFixed(2) %><% } else { %><span class="text-gray-400">--</span><% } %>
+              </p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Per</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                <%= selectedIngredient.purchaseUnit || 'unit' %>
+              </p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">VAT</p>
+              <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                <%= selectedIngredient.includesVat ? 'Included' : 'Excluded' %>
+              </p>
+            </div>
+          </div>
+
+          <!-- Supplier Info -->
+          <div>
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Supplier</h3>
+            <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <% if (selectedIngredient.supplier) { %>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-white dark:bg-gray-600 flex items-center justify-center shadow-sm">
+                  <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 17a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 17H7V5h9v7h3l2 4v1h-3m-5 0H6"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white"><%= selectedIngredient.supplier.name || selectedIngredient.supplierSlug %></p>
+                  <% if (selectedIngredient.supplier.contact) { %>
+                  <p class="text-sm text-gray-500 dark:text-gray-400"><%= selectedIngredient.supplier.contact %></p>
+                  <% } %>
+                </div>
+              </div>
+              <% } else if (selectedIngredient.supplierSlug) { %>
+              <p class="text-sm text-gray-600 dark:text-gray-300"><%= selectedIngredient.supplierSlug %></p>
+              <% } else { %>
+              <p class="text-sm text-gray-500 dark:text-gray-400">No supplier assigned</p>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <% if (selectedIngredient.notes) { %>
+          <div>
+            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Notes</h3>
+            <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <p class="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap"><%= selectedIngredient.notes %></p>
+            </div>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Right Island: Used In Panel -->
+  <div class="w-60 shrink-0">
+    <%- include('../islands/details-panel', {
+      id: 'used-in-panel',
+      title: 'Used In',
+      collapsed: false,
+      content: `
+        ${selectedIngredient && usedInRecipes && usedInRecipes.length > 0 ? `
+        <div class="p-3 space-y-2">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">${usedInRecipes.length} recipe${usedInRecipes.length !== 1 ? 's' : ''}</p>
+          ${usedInRecipes.map(recipe => `
+          <a
+            href="/recipes/${recipe.slug}"
+            class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+          >
+            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span class="text-sm text-gray-700 dark:text-gray-200 truncate">${recipe.name}</span>
+          </a>
+          `).join('')}
+        </div>
+        ` : selectedIngredient ? `
+        <div class="text-center py-8 px-3">
+          <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Not used in any recipes</p>
+        </div>
+        ` : `
+        <div class="text-center py-8 px-3">
+          <p class="text-sm text-gray-500 dark:text-gray-400">Select an ingredient to see usage</p>
+        </div>
+        `}`
+    }) %>
   </div>
 </div>
+
+<script>
+  // Highlight selected item on page load
+  <% if (selectedIngredient) { %>
+  document.addEventListener('DOMContentLoaded', () => {
+    selectItem('ingredients', '<%= selectedIngredient.slug %>');
+  });
+  <% } %>
+</script>

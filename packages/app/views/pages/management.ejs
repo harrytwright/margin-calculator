@@ -8,18 +8,18 @@
 
 <div class="space-y-6">
   <!-- Header with Add Button -->
-  <div class="flex justify-between items-center">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
-      <h1 class="text-2xl font-bold text-base-content"><%= capitalizedType %></h1>
-      <p class="text-sm text-base-content/70 mt-1">
-        <%= itemCount %> <%= singular %><%= itemCount !== 1 ? 's' : '' %>
+      <h1 class="text-3xl font-display text-base-content"><%= capitalizedType %></h1>
+      <p class="text-base-content/60 mt-1">
+        <span class="font-medium"><%= itemCount %></span> <%= singular %><%= itemCount !== 1 ? 's' : '' %> in your collection
       </p>
     </div>
     <button
       hx-get="/management/<%= entityType %>/new"
       hx-target=".modal-content"
       onclick="openModal()"
-      class="btn btn-primary gap-2"
+      class="btn btn-primary gap-2 shadow-warm hover:shadow-warm-lg transition-shadow"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -28,9 +28,9 @@
     </button>
   </div>
 
-  <!-- Filters (type-specific) -->
+  <!-- Search & Filters -->
   <% if (entityType === 'ingredients') { %>
-  <div class="card bg-base-100 shadow-sm">
+  <div class="card bg-base-100 shadow-warm">
     <div class="card-body py-4">
       <form
         hx-get="/management/ingredients"
@@ -40,13 +40,18 @@
         class="flex flex-wrap gap-4"
       >
         <div class="form-control flex-1 min-w-[200px]">
-          <input
-            type="text"
-            name="search"
-            placeholder="Search ingredients..."
-            value="<%= typeof search !== 'undefined' ? search : '' %>"
-            class="input input-bordered w-full"
-          />
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search ingredients..."
+              value="<%= typeof search !== 'undefined' ? search : '' %>"
+              class="input input-bordered w-full pl-10"
+            />
+          </div>
         </div>
         <div class="form-control">
           <select name="filter-category" class="select select-bordered">
@@ -72,7 +77,7 @@
     </div>
   </div>
   <% } else if (entityType === 'recipes') { %>
-  <div class="card bg-base-100 shadow-sm">
+  <div class="card bg-base-100 shadow-warm">
     <div class="card-body py-4">
       <form
         hx-get="/management/recipes"
@@ -82,13 +87,18 @@
         class="flex flex-wrap gap-4"
       >
         <div class="form-control flex-1 min-w-[200px]">
-          <input
-            type="text"
-            name="search"
-            placeholder="Search recipes..."
-            value="<%= typeof search !== 'undefined' ? search : '' %>"
-            class="input input-bordered w-full"
-          />
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search recipes..."
+              value="<%= typeof search !== 'undefined' ? search : '' %>"
+              class="input input-bordered w-full pl-10"
+            />
+          </div>
         </div>
         <div class="form-control">
           <select name="filter-class" class="select select-bordered">
@@ -112,7 +122,7 @@
     </div>
   </div>
   <% } else if (entityType === 'suppliers') { %>
-  <div class="card bg-base-100 shadow-sm">
+  <div class="card bg-base-100 shadow-warm">
     <div class="card-body py-4">
       <form
         hx-get="/management/suppliers"
@@ -122,18 +132,21 @@
         class="flex gap-4"
       >
         <div class="form-control flex-1">
-          <input
-            type="text"
-            name="search"
-            placeholder="Search suppliers..."
-            value="<%= typeof search !== 'undefined' ? search : '' %>"
-            class="input input-bordered w-full"
-          />
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search suppliers..."
+              value="<%= typeof search !== 'undefined' ? search : '' %>"
+              class="input input-bordered w-full pl-10"
+            />
+          </div>
         </div>
         <button type="submit" class="btn btn-ghost">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-          </svg>
+          Search
         </button>
       </form>
     </div>

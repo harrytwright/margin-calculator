@@ -11,6 +11,7 @@ import express from 'express'
 
 import {
   AnalyticsController,
+  AppController,
   EventsController,
   HealthcheckController,
   InfoController,
@@ -25,9 +26,9 @@ import handler from './middleware/error-handler'
 import { MetricsController } from './modules/metrics/controllers/metrics.controller'
 import { expressRequestHandler } from './modules/sentry/middleware/wrapper'
 
-@http((config) => config.get('port'))
-@Setting('view-engine', 'ejs')
-@Setting('views', path.join(__dirname + '../views'))
+@http((config) => config.get('port')) // @ts-ignore
+@Setting('view engine', 'ejs')
+@Setting('views', path.join(__dirname, '../views'))
 @useControllers(
   InfoController,
   HealthcheckController,
@@ -36,7 +37,8 @@ import { expressRequestHandler } from './modules/sentry/middleware/wrapper'
   IngredientsController,
   RecipesController,
   AnalyticsController,
-  EventsController
+  EventsController,
+  AppController
 )
 @useMiddleware(expressRequestHandler())
 @useMiddleware(require('./modules/metrics/middleware/morgan').morgan)
@@ -50,6 +52,7 @@ import { expressRequestHandler } from './modules/sentry/middleware/wrapper'
   require('./modules/auth/middleware/authentication').Authentication
 )
 @BodyParser.json({ type: ['application/*+json', 'application/json'] })
+@BodyParser.url({ extended: true })
 @NotFound()
 @NotFound(
   (req: express.Request, res: express.Response, next: express.NextFunction) => {

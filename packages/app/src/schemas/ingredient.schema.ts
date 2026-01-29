@@ -12,7 +12,7 @@ export const ingredientApiSchema = z.object({
   name: z.string().min(1, 'Ingredient name is required'),
   category: z.string().min(1, 'Category is required'),
   purchase: z.object({
-    cost: z.number().positive('Purchase cost must be positive'),
+    cost: z.number().int().nonnegative('Purchase cost must be non-negative'), // in pence
     unit: z
       .string()
       .min(1, "Purchase unit is required (e.g., '120g', '1 loaf')"),

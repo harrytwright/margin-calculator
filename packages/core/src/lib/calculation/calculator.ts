@@ -52,11 +52,14 @@ export class Calculator {
       return null
     }
 
+    // Convert purchaseCost from pounds (Decimal) to pence (integer)
+    const purchaseCostInPence = Number(lookup.purchaseCost) * 100
+
     // If ingredient purchase cost includes VAT, strip it out
     const vatRate = await this.config.getVatRate()
     const purchaseCostExVat = lookup.includesVat
-      ? lookup.purchaseCost / (1 + vatRate)
-      : lookup.purchaseCost
+      ? purchaseCostInPence / (1 + vatRate)
+      : purchaseCostInPence
 
     const totalCost = (convertedAmount / purchase.amount) * purchaseCostExVat
 
@@ -67,7 +70,7 @@ export class Calculator {
       unit,
       costPerUnit,
       name: lookup.name,
-      totalCost: Math.ceil(totalCost * 100) / 100,
+      totalCost: Math.ceil(totalCost), // in pence
     }
   }
 
@@ -92,9 +95,7 @@ export class Calculator {
           ...parseUnit(ingredient.unit)!,
           type: ingredient.type,
           name: ingredient.name!,
-          cost:
-            Math.ceil(this.scaleSubRecipe(result, ingredient, depth) * 100) /
-            100,
+          cost: Math.ceil(this.scaleSubRecipe(result, ingredient, depth)), // in pence
           children: result.tree,
         })
       } else {
@@ -121,38 +122,40 @@ export class Calculator {
   }
 
   async margin(recipe: RecipeResult) {
-    const { totalCost, recipe: recipeData } = recipe
+    const { totalCost, recipe: recipeData } = recipe // totalCost is in pence
 
     const vatRate = await this.config.getVatRate()
     const vatApplicable = recipeData.includesVat === 1
 
+    // sellPrice is already in pence (what customer pays if VAT-inclusive)
+    const customerPriceInPence = recipeData.sellPrice
+
     // If includesVat is true, sellPrice is VAT-inclusive (what customer pays)
     // Strip VAT to get the ex-VAT sell price for margin calculations
-    const sellPriceInPence = recipeData.sellPrice
-    const customerPrice = sellPriceInPence / 100
+    const sellPriceExVatInPence = vatApplicable
+      ? customerPriceInPence / (1 + vatRate) // Strip VAT from customer price
+      : customerPriceInPence // Already ex-VAT
 
-    const sellPriceExVat = vatApplicable
-      ? customerPrice / (1 + vatRate) // Strip VAT from customer price
-      : customerPrice // Already ex-VAT
-
-    // Margin calculated ex-VAT
-    const profit = sellPriceExVat - totalCost
-    const actualMargin = (profit / sellPriceExVat) * 100
+    // Margin calculated ex-VAT (all values in pence)
+    const profitInPence = sellPriceExVatInPence - totalCost
+    const actualMargin = (profitInPence / sellPriceExVatInPence) * 100
     const targetMargin = recipeData.targetMargin || 0
     const marginDelta = actualMargin - targetMargin
 
-    // Calculate VAT amount
-    const vatAmount = vatApplicable ? customerPrice - sellPriceExVat : 0
+    // Calculate VAT amount in pence
+    const vatAmountInPence = vatApplicable
+      ? customerPriceInPence - sellPriceExVatInPence
+      : 0
 
     return {
-      cost: Math.ceil(totalCost * 100) / 100,
-      sellPrice: Math.ceil(sellPriceExVat * 100) / 100,
-      customerPrice: Math.ceil(customerPrice * 100) / 100,
-      vatAmount: Math.ceil(vatAmount * 100) / 100,
-      profit: Math.ceil(profit * 100) / 100,
-      actualMargin: Math.ceil(actualMargin * 100) / 100,
-      targetMargin,
-      marginDelta: Math.ceil(marginDelta * 100) / 100,
+      cost: Math.ceil(totalCost), // in pence
+      sellPrice: Math.ceil(sellPriceExVatInPence), // in pence
+      customerPrice: Math.ceil(customerPriceInPence), // in pence
+      vatAmount: Math.ceil(vatAmountInPence), // in pence
+      profit: Math.ceil(profitInPence), // in pence
+      actualMargin: Math.ceil(actualMargin * 100) / 100, // percentage
+      targetMargin, // percentage
+      marginDelta: Math.ceil(marginDelta * 100) / 100, // percentage
       meetsTarget: actualMargin >= targetMargin,
       vatApplicable,
     }

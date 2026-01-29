@@ -62,7 +62,7 @@ describe('IngredientService', () => {
           name: 'Ham',
           category: 'meat',
           purchaseUnit: '1kg',
-          purchaseCost: 5.99,
+          purchaseCost: 599,
           includesVat: 0,
           supplierId,
         })
@@ -87,7 +87,7 @@ describe('IngredientService', () => {
           name: 'Sliced Ham',
           category: 'meat',
           purchaseUnit: '1kg',
-          purchaseCost: 5.99,
+          purchaseCost: 599,
           includesVat: 0,
           supplierId,
           notes: 'Premium quality',
@@ -100,7 +100,7 @@ describe('IngredientService', () => {
         name: 'Sliced Ham',
         category: 'meat',
         purchaseUnit: '1kg',
-        purchaseCost: 5.99,
+        purchaseCost: 599,
         includesVat: 0,
         supplierSlug: 'asda',
         notes: 'Premium quality',
@@ -115,7 +115,7 @@ describe('IngredientService', () => {
           name: 'Cheese',
           category: 'dairy',
           purchaseUnit: '200g',
-          purchaseCost: 2.5,
+          purchaseCost: 250,
           includesVat: 0,
           supplierId,
         })
@@ -134,7 +134,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchase: {
           unit: '1kg',
-          cost: 5.99,
+          cost: 599,
           vat: false,
         },
       }
@@ -152,7 +152,7 @@ describe('IngredientService', () => {
         name: 'Ham',
         category: 'meat',
         purchaseUnit: '1kg',
-        purchaseCost: 5.99,
+        purchaseCost: 599,
         includesVat: 0,
         supplierId,
       })
@@ -166,7 +166,7 @@ describe('IngredientService', () => {
           name: 'Old Ham',
           category: 'meat',
           purchaseUnit: '500g',
-          purchaseCost: 3.0,
+          purchaseCost: 300,
           includesVat: 0,
           supplierId,
         })
@@ -178,7 +178,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchase: {
           unit: '1kg',
-          cost: 5.99,
+          cost: 599,
           vat: false,
         },
       }
@@ -194,7 +194,7 @@ describe('IngredientService', () => {
       expect(ingredient).toMatchObject({
         name: 'New Ham',
         purchaseUnit: '1kg',
-        purchaseCost: 5.99,
+        purchaseCost: 599,
         includesVat: 0,
       })
     })
@@ -213,7 +213,7 @@ describe('IngredientService', () => {
           name: 'Cheese',
           category: 'dairy',
           purchaseUnit: '200g',
-          purchaseCost: 2.5,
+          purchaseCost: 250,
           includesVat: 0,
           supplierId: anotherSupplier!.id,
         })
@@ -225,7 +225,7 @@ describe('IngredientService', () => {
         category: 'dairy',
         purchase: {
           unit: '250g',
-          cost: 3.0,
+          cost: 300,
           vat: false,
         },
       }
@@ -251,7 +251,7 @@ describe('IngredientService', () => {
         category: 'bakery',
         purchase: {
           unit: '1 loaf',
-          cost: 1.2,
+          cost: 120,
           vat: false,
         },
         conversionRate: '1 loaf = 16 slices',
@@ -278,7 +278,7 @@ describe('IngredientService', () => {
           name: 'Ham',
           category: 'meat',
           purchaseUnit: '1kg',
-          purchaseCost: 5.99,
+          purchaseCost: 599,
           includesVat: 0,
           supplierId,
         })
@@ -306,7 +306,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchase: {
           unit: '1kg',
-          cost: 5.99,
+          cost: 599,
           vat: false,
         },
         supplier: { slug: 'asda' },
@@ -327,7 +327,7 @@ describe('IngredientService', () => {
           name: 'Old Ham',
           category: 'meat',
           purchaseUnit: '500g',
-          purchaseCost: 3.0,
+          purchaseCost: 300,
           includesVat: 0,
           supplierId,
         })
@@ -339,7 +339,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchase: {
           unit: '1kg',
-          cost: 5.99,
+          cost: 599,
           vat: false,
         },
         supplier: { slug: 'asda' },
@@ -357,7 +357,7 @@ describe('IngredientService', () => {
           name: 'Ham',
           category: 'meat',
           purchaseUnit: '1kg',
-          purchaseCost: 5.99,
+          purchaseCost: 599,
           includesVat: 0,
           supplierId,
         })
@@ -369,7 +369,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchase: {
           unit: '1kg',
-          cost: 5.99,
+          cost: 599,
           vat: false,
         },
         supplier: { slug: 'asda' },
@@ -386,7 +386,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchase: {
           unit: '1kg',
-          cost: 5.99,
+          cost: 599,
           vat: false,
         },
       }
@@ -411,7 +411,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchase: {
           unit: '1kg',
-          cost: 5.99,
+          cost: 599,
           vat: false,
         },
         supplier: { slug: 'non-existent' },
@@ -435,7 +435,7 @@ describe('IngredientService', () => {
           name: 'Ham',
           category: 'meat',
           purchaseUnit: '1kg',
-          purchaseCost: 5.99,
+          purchaseCost: 599,
           includesVat: 0,
           supplierId,
         })
@@ -447,7 +447,7 @@ describe('IngredientService', () => {
         category: 'meat',
         purchase: {
           unit: '1kg',
-          cost: 5.99,
+          cost: 599,
           vat: false,
         },
         supplier: { slug: 'tesco' },
@@ -466,7 +466,7 @@ describe('IngredientService', () => {
           name: 'Cheese',
           category: 'dairy',
           purchaseUnit: '200g',
-          purchaseCost: 2.5,
+          purchaseCost: 250,
           includesVat: 0,
           supplierId,
         })
@@ -478,7 +478,7 @@ describe('IngredientService', () => {
         category: 'dairy',
         purchase: {
           unit: '200g',
-          cost: 3.0, // Changed cost
+          cost: 300, // Changed cost
           vat: false,
         },
         supplier: { slug: 'asda' },

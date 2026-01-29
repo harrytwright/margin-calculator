@@ -49,7 +49,7 @@ describe('FileWriter', () => {
       category: 'dairy',
       purchase: {
         unit: '1kg',
-        cost: 5.99,
+        cost: 599,
         vat: false,
       },
     }

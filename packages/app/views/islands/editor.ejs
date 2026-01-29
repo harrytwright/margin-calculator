@@ -1,0 +1,157 @@
+<%
+  /**
+   * Editor Island - Main editor panel wrapper
+   *
+   * Props:
+   * - type: 'recipe' | 'ingredient' | 'supplier'
+   * - item: The item being edited (or null for empty state)
+   * - title: Page title for the editor
+   */
+
+  const typeLabels = {
+    recipe: 'Recipe',
+    ingredient: 'Ingredient',
+    supplier: 'Supplier',
+  }
+
+  const pluralTypes = {
+    recipe: 'recipes',
+    ingredient: 'ingredients',
+    supplier: 'suppliers',
+  }
+%>
+
+<!-- Editor Island -->
+<div
+  id="<%= pluralTypes[type] %>-editor"
+  class="h-full flex flex-col bg-white dark:bg-gray-800 rounded-island shadow-island overflow-hidden"
+>
+  <% if (!item) { %>
+  <!-- Empty State -->
+  <div class="flex-1 flex items-center justify-center">
+    <div class="text-center px-8">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-1">
+        Select a <%= type %>
+      </h3>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+        Choose a <%= type %> from the list to view and edit its details
+      </p>
+      <button
+        hx-get="/<%= pluralTypes[type] %>/new"
+        hx-target=".modal-content"
+        onclick="openModal()"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Create New <%= typeLabels[type] %>
+      </button>
+    </div>
+  </div>
+  <% } else { %>
+  <!-- Editor Header -->
+  <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-3 min-w-0">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
+        <%= item.name %>
+      </h2>
+      <% if (item.category || item.type) { %>
+      <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+        <%= item.category || item.type %>
+      </span>
+      <% } %>
+    </div>
+    <div class="flex items-center gap-2">
+      <!-- Save Button (for explicit save) -->
+      <button
+        id="save-<%= type %>"
+        class="hidden items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+        onclick="saveForm('<%= type %>')"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        Save
+      </button>
+
+      <!-- More Options -->
+      <div class="relative">
+        <button
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+          onclick="this.nextElementSibling.classList.toggle('hidden')"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+          </svg>
+        </button>
+        <div class="hidden absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+          <button
+            hx-get="/<%= pluralTypes[type] %>/<%= item.slug %>/duplicate"
+            hx-target="#<%= pluralTypes[type] %>-editor"
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            Duplicate
+          </button>
+          <button
+            class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+            onclick="confirmDelete('<%= pluralTypes[type] %>', '<%= item.slug %>', '<%= item.name %>')"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor Content (will be filled by specific type editor) -->
+  <div class="flex-1 overflow-y-auto p-4">
+    <%- typeof content !== 'undefined' ? content : '' %>
+  </div>
+  <% } %>
+</div>
+
+<script>
+  // Track form changes
+  function trackChanges(formId) {
+    const form = document.getElementById(formId);
+    if (!form) return;
+
+    const saveButton = document.getElementById('save-' + form.dataset.type);
+    if (!saveButton) return;
+
+    form.addEventListener('input', () => {
+      saveButton.classList.remove('hidden');
+      saveButton.classList.add('flex');
+    });
+  }
+
+  // Save form via HTMX
+  function saveForm(type) {
+    const form = document.querySelector(`#${type}-form`);
+    if (form) {
+      htmx.trigger(form, 'submit');
+    }
+  }
+
+  // Confirm delete
+  function confirmDelete(type, slug, name) {
+    if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+      htmx.ajax('DELETE', `/${type}/${slug}`, {
+        target: `#${type}-browser`,
+        swap: 'innerHTML'
+      });
+    }
+  }
+</script>

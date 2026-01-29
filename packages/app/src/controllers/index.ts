@@ -1,4 +1,5 @@
 export * from './analytics.controller'
+export * from './app.controller'
 export * from './events.controller'
 export * from './healthcheck.controller'
 export * from './info.controller'

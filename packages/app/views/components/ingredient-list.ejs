@@ -48,7 +48,7 @@
           <% } %>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
-          <% if (ingredient.purchaseCost && ingredient.purchaseUnit) { %>
+          <% if (ingredient.purchaseCost != null && ingredient.purchaseUnit) { %>
           <div class="text-sm text-gray-900">
             £<%= (ingredient.purchaseCost / 100).toFixed(2) %> / <%= ingredient.purchaseUnit %>
           </div>

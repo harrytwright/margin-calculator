@@ -1,0 +1,74 @@
+<%
+  /**
+   * Details Panel Island - Collapsible right panel
+   *
+   * Props:
+   * - id: Unique identifier for the panel
+   * - title: Panel title
+   * - collapsed: Whether panel starts collapsed (default: false)
+   * - content: Panel content (EJS string)
+   */
+
+  const isCollapsed = typeof collapsed !== 'undefined' && collapsed
+  const panelId = id || 'details-panel'
+%>
+
+<!-- Details Panel Island -->
+<div
+  id="<%= panelId %>"
+  data-panel
+  class="h-full flex flex-col bg-white dark:bg-gray-800 rounded-island shadow-island overflow-hidden transition-all duration-200 <%= isCollapsed ? 'w-0 overflow-hidden' : 'w-60' %>"
+>
+  <!-- Panel Header -->
+  <div class="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700 shrink-0">
+    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
+      <%= title %>
+    </h3>
+    <button
+      onclick="togglePanel('<%= panelId %>')"
+      class="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+      title="Collapse panel"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Panel Content -->
+  <div class="flex-1 overflow-y-auto">
+    <% if (typeof content !== 'undefined') { %>
+    <%- content %>
+    <% } else { %>
+    <!-- Default empty state -->
+    <div class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p>No details to display</p>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Collapse Toggle Button (shown when panel is collapsed) -->
+<div
+  id="<%= panelId %>-toggle"
+  class="<%= isCollapsed ? 'flex' : 'hidden' %> h-full w-8 flex-col items-center justify-start pt-2 bg-white dark:bg-gray-800 rounded-island shadow-island"
+>
+  <button
+    onclick="togglePanel('<%= panelId %>')"
+    class="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+    title="Expand panel"
+  >
+    <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+    </svg>
+  </button>
+  <span class="mt-2 text-2xs font-medium text-gray-400 dark:text-gray-500 writing-vertical-lr rotate-180">
+    <%= title %>
+  </span>
+</div>
+
+<style>
+  .writing-vertical-lr {
+    writing-mode: vertical-lr;
+  }
+</style>

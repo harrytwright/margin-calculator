@@ -1,0 +1,180 @@
+<%
+  const selectedRecipe = typeof recipe !== 'undefined' ? recipe : null
+  const recipeCost = typeof cost !== 'undefined' ? cost : null
+%>
+
+<% if (!selectedRecipe) { %>
+<!-- Empty State -->
+<div class="flex-1 flex items-center justify-center">
+  <div class="text-center px-8">
+    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+      <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-700 dark:text-gray-200 mb-1">Select a recipe</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Choose a recipe from the list to view and edit its details</p>
+    <button
+      hx-get="/recipes/new"
+      hx-target=".modal-content"
+      onclick="openModal()"
+      class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      Create New Recipe
+    </button>
+  </div>
+</div>
+<% } else { %>
+<!-- Editor Header -->
+<div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+  <div class="flex items-center gap-3 min-w-0">
+    <h2 class="text-lg font-semibold text-gray-900 dark:text-white truncate"><%= selectedRecipe.name %></h2>
+    <% if (selectedRecipe.category) { %>
+    <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+      <%= selectedRecipe.category %>
+    </span>
+    <% } %>
+    <span class="px-2 py-0.5 text-xs font-medium rounded-full
+      <%= selectedRecipe.class === 'menu_item' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+         selectedRecipe.class === 'sub_recipe' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' :
+         'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' %>">
+      <%= selectedRecipe.class === 'menu_item' ? 'Menu Item' : selectedRecipe.class === 'sub_recipe' ? 'Sub Recipe' : 'Base Template' %>
+    </span>
+  </div>
+  <div class="flex items-center gap-2">
+    <button
+      hx-get="/recipes/<%= selectedRecipe.slug %>/edit"
+      hx-target=".modal-content"
+      onclick="openModal()"
+      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+      </svg>
+      Edit
+    </button>
+    <div class="relative">
+      <button
+        class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+        onclick="this.nextElementSibling.classList.toggle('hidden')"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+        </svg>
+      </button>
+      <div class="hidden absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
+        <button
+          class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+          onclick="confirmDelete('recipes', '<%= selectedRecipe.slug %>', '<%= selectedRecipe.name %>')"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Editor Content -->
+<div class="flex-1 overflow-y-auto p-4">
+  <div class="space-y-6">
+    <!-- Basic Info -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Sell Price</p>
+        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+          <% if (selectedRecipe.sellPrice) { %>&pound;<%= (selectedRecipe.sellPrice / 100).toFixed(2) %><% } else { %><span class="text-gray-400">--</span><% } %>
+        </p>
+      </div>
+      <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Target Margin</p>
+        <p class="text-lg font-semibold text-gray-900 dark:text-white">
+          <% if (selectedRecipe.targetMargin) { %><%= selectedRecipe.targetMargin %>%<% } else { %><span class="text-gray-400">Default</span><% } %>
+        </p>
+      </div>
+      <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Stage</p>
+        <p class="text-lg font-semibold text-gray-900 dark:text-white capitalize"><%= selectedRecipe.stage || 'Active' %></p>
+      </div>
+      <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">VAT</p>
+        <p class="text-lg font-semibold text-gray-900 dark:text-white"><%= selectedRecipe.includesVat ? 'Included' : 'Excluded' %></p>
+      </div>
+    </div>
+
+    <!-- Ingredients Section -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200">Ingredients</h3>
+        <button
+          class="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+          hx-get="/recipes/<%= selectedRecipe.slug %>/ingredients/add"
+          hx-target=".modal-content"
+          onclick="openModal()"
+        >+ Add Ingredient</button>
+      </div>
+      <% if (selectedRecipe.ingredients && selectedRecipe.ingredients.length > 0) { %>
+      <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ingredient</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Quantity</th>
+              <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Cost</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            <% selectedRecipe.ingredients.forEach(ing => { %>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+              <td class="px-4 py-2 text-sm text-gray-900 dark:text-white"><%= ing.name || ing.ingredientSlug || ing.recipeSlug %></td>
+              <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300"><%= ing.quantity %> <%= ing.unit %></td>
+              <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 text-right">
+                <% if (ing.calculatedCost) { %>&pound;<%= (ing.calculatedCost / 100).toFixed(2) %><% } else { %>--<% } %>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %>
+      <div class="border border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No ingredients added yet</p>
+        <button
+          class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          hx-get="/recipes/<%= selectedRecipe.slug %>/ingredients/add"
+          hx-target=".modal-content"
+          onclick="openModal()"
+        >Add ingredients</button>
+      </div>
+      <% } %>
+    </div>
+
+    <% if (selectedRecipe.class === 'sub_recipe' && selectedRecipe.yieldAmount) { %>
+    <!-- Yield Info -->
+    <div>
+      <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-3">Yield</h3>
+      <div class="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg inline-block">
+        <span class="text-lg font-semibold text-gray-900 dark:text-white">
+          <%= selectedRecipe.yieldAmount %> <%= selectedRecipe.yieldUnit %>
+        </span>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<script>
+  // Highlight selected item after HTMX swap
+  selectItem('recipes', '<%= selectedRecipe.slug %>');
+</script>
+
+<!-- Out-of-band swap for cost panel -->
+<div id="cost-panel-content" hx-swap-oob="innerHTML:#cost-panel .flex-1.overflow-y-auto">
+  <%- include('./cost-breakdown', { recipe: selectedRecipe, cost: recipeCost }) %>
+</div>
+<% } %>
