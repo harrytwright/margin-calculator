@@ -1,6 +1,8 @@
 import { Inject, register } from '@harrytwright/api/dist/core'
 import type { DatabaseContext } from '@menubook/core'
 
+import { DemoPersistenceManager } from '../datastore/sqlite.demo'
+
 /**
  * Allowed fields for RSQL filtering on recipes
  * This whitelist prevents querying sensitive data
@@ -51,10 +53,14 @@ interface AnalyticsResult {
 
 @register('singleton')
 export default class AnalyticsServiceImpl {
-  constructor(@Inject('database') private readonly ctx: DatabaseContext) {}
+  constructor(
+    @Inject('database') private readonly ctx: DatabaseContext,
+    private readonly demo: DemoPersistenceManager
+  ) {}
 
   private get database() {
-    return this.ctx.db
+    const demoCtx = this.demo.ctx()
+    return demoCtx ? demoCtx.db : this.ctx.db
   }
 
   /**

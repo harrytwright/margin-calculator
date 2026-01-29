@@ -1,11 +1,11 @@
 import { Selectable } from 'kysely'
 
+import { Supplier } from '@menubook/types'
 import type { DatabaseContext } from '../datastore/context'
+import { handleError } from '../datastore/handleError'
 import { Importer, type ImportOutcome } from '../lib/importer'
 import type { SupplierImportData, SupplierResolvedImportData } from '../schema'
 import { hasChanges } from '../utils'
-import {Supplier} from "@menubook/types";
-import {handleError} from "../datastore/handleError";
 
 export class SupplierService {
   constructor(private context: DatabaseContext) {}
@@ -25,7 +25,15 @@ export class SupplierService {
   findById(slug: string): Promise<Selectable<Supplier>> {
     return this.database
       .selectFrom('Supplier')
-      .select(['id', 'slug', 'name', 'contactEmail', 'contactName', 'contactPhone', 'notes'])
+      .select([
+        'id',
+        'slug',
+        'name',
+        'contactEmail',
+        'contactName',
+        'contactPhone',
+        'notes',
+      ])
       .where('slug', '=', slug)
       .executeTakeFirstOrThrow(handleError({ slug }))
   }
@@ -54,7 +62,7 @@ export class SupplierService {
     return result.numDeletedRows > 0n
   }
 
-  async find () {
+  async find() {
     return this.database
       .selectFrom('Supplier')
       .select(['id', 'slug', 'name'])

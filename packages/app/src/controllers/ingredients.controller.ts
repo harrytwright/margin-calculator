@@ -1,24 +1,15 @@
-import { controller, Inject, path } from '@harrytwright/api/dist/core'
-import { BadRequest, Conflict, NotFound } from '@hndlr/errors'
+import { controller, path } from '@harrytwright/api/dist/core'
+import { NotFound } from '@hndlr/errors'
 import { slugify } from '@menubook/core'
-import type { EventEmitter } from 'events'
 import express from 'express'
-import {
-  IngredientApiData,
-  ingredientApiSchema,
-  toIngredientData,
-} from '../schemas'
+
+import { IngredientApiData, ingredientApiSchema } from '../schemas'
 import IngredientServiceImpl from '../services/ingredient.service'
-import SupplierServiceImpl from '../services/supplier.service'
 import type { ServerRequest } from '../types/response.json.type'
 
 @controller('/api/ingredients')
 export class IngredientsController {
-  constructor(
-    private readonly service: IngredientServiceImpl,
-    private readonly suppliers: SupplierServiceImpl,
-    @Inject('events') private readonly events: EventEmitter
-  ) {}
+  constructor(private readonly service: IngredientServiceImpl) {}
 
   @path('/')
   async getIngredients(req: express.Request, res: express.Response) {
@@ -35,21 +26,10 @@ export class IngredientsController {
     try {
       const parsed = ingredientApiSchema.parse(req.body)
       const slug = parsed.slug || (await slugify(parsed.name))
-
-      if (await this.service.exists(slug)) {
-        throw new Conflict(`Ingredient with slug '${slug}' already exists`)
-      }
-
       const supplierSlug = parsed.supplier || 'generic'
-      if (parsed.supplier && !(await this.suppliers.exists(supplierSlug))) {
-        throw new NotFound(`Supplier with slug '${supplierSlug}' not found`)
-      }
 
-      const data = toIngredientData(parsed, slug)
-      await this.service.upsert(slug, data, supplierSlug)
+      const result = await this.service.create(slug, parsed, supplierSlug)
 
-      const result = await this.service.findById(slug)
-      this.events.emit('ingredient.created', result)
       return res.status(201).json(result)
     } catch (error) {
       return next(error)
@@ -77,27 +57,10 @@ export class IngredientsController {
     try {
       const { slug } = req.params
       const parsed = ingredientApiSchema.parse(req.body)
-
-      if (parsed.slug && parsed.slug !== slug) {
-        throw new BadRequest(
-          `Slug mismatch: expected '${slug}' but received '${parsed.slug}'`
-        )
-      }
-
-      if (!(await this.service.exists(slug))) {
-        throw new NotFound(`Ingredient with slug '${slug}' not found`)
-      }
-
       const supplierSlug = parsed.supplier || 'generic'
-      if (parsed.supplier && !(await this.suppliers.exists(supplierSlug))) {
-        throw new NotFound(`Supplier with slug '${supplierSlug}' not found`)
-      }
 
-      const data = toIngredientData(parsed, slug)
-      await this.service.upsert(slug, data, supplierSlug)
+      const result = await this.service.update(slug, parsed, supplierSlug)
 
-      const result = await this.service.findById(slug)
-      this.events.emit('ingredient.updated', result)
       return res.status(200).json(result)
     } catch (error) {
       return next(error)
@@ -113,12 +76,8 @@ export class IngredientsController {
     try {
       const { slug } = req.params
 
-      if (!(await this.service.exists(slug))) {
-        throw new NotFound(`Ingredient with slug '${slug}' not found`)
-      }
-
       await this.service.delete(slug)
-      this.events.emit('ingredient.deleted', slug)
+
       return res.status(204).end()
     } catch (error) {
       return next(error)

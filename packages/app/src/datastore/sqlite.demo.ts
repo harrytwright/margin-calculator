@@ -9,10 +9,16 @@ import log from '@harrytwright/logger'
 import { ServiceUnavailable } from '@hndlr/errors'
 import { TTLCache } from '@isaacs/ttlcache'
 import type { DatabaseContext } from '@menubook/core'
-import { createDatabase, jsonArrayFrom, jsonObjectFrom } from '@menubook/sqlite'
+import {
+  createDatabase,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+} from '@menubook/sqlite'
 import { createId } from '@paralleldrive/cuid2'
 
 import { Prometheus } from '../modules/metrics'
+import { time } from '../utils/time'
 
 interface Session {
   id: string
@@ -44,50 +50,59 @@ export class DemoPersistenceManager {
     },
   })
 
-  private readonly storage = new AsyncLocalStorage<DatabaseContext>()
+  private readonly storage = new AsyncLocalStorage<Session>()
 
   constructor(private readonly metrics: Prometheus) {}
 
-  run<T>(ctx: DatabaseContext, fn: () => T | Promise<T>): T | Promise<T> {
-    return this.storage.run(ctx, fn)
+  run<T>(session: Session, fn: () => T | Promise<T>): T | Promise<T> {
+    return this.storage.run(session, fn)
   }
 
   ctx(): DatabaseContext | undefined {
+    return this.session()?.database
+  }
+
+  session(): Session | undefined {
     return this.storage.getStore()
   }
 
-  get(sessionId: string): DatabaseContext | undefined {
+  get(sessionId: string): Session | undefined {
     // Might as well update the sessions here.
     this.metrics.activeSessions.set(this.sessions.size)
-    return this.sessions.get(sessionId)?.database ?? undefined
+    return this.sessions.get(sessionId)
   }
 
   // Should we purge or handle the max ourselves? Think we handle ourselves
-  create(): Promise<Omit<Session, 'createdAt'>> {
+  async create(): Promise<Session> {
     if (this.sessions.size === 100)
       throw new ServiceUnavailable(
         'All sessions are in use, please try again later'
       )
 
     const session = createId()
+    const db = createDatabase(`:memory:`)
     const database = {
-      db: createDatabase(':memory:'),
+      db,
       helpers: {
         jsonArrayFrom,
         jsonObjectFrom,
       },
     }
 
+    // Make sure to run the migration each time too
+    await time('migrate', () => migrate(db, 'up'))
+
+    const createdAt = Date.now()
     this.sessions.set(session, {
       id: session,
       database,
-      createdAt: Date.now(),
+      createdAt: createdAt,
     })
 
     this.metrics.sessionCreatedTotal.inc()
     this.metrics.activeSessions.set(this.sessions.size)
 
-    return Promise.resolve({ id: session, database })
+    return Promise.resolve({ id: session, database, createdAt })
   }
 
   async destroy(sessionId: string): Promise<void> {

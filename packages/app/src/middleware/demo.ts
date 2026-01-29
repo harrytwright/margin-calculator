@@ -5,7 +5,7 @@ import express from 'express'
 import { DemoPersistenceManager } from '../datastore/sqlite.demo'
 
 const SESSION_COOKIE =
-  process.env.DEMO_SESSION_COOKIE || 'menubook:demo_session'
+  process.env.DEMO_SESSION_COOKIE || 'menubook!demo_session'
 
 // Probably not needed anymore, but good to have, maybe for logging etc
 declare global {
@@ -41,21 +41,31 @@ const template = `
 </div>
 `
 
+const inDemoMode = process.env.DEMO === 'true'
+
 export const demo = registerMiddleware(
   'demo',
   (demo): MiddlewareReturn =>
     async (req, res, next) => {
-      if (!Boolean(process.env.DEMO)) return next()
+      if (!inDemoMode) return next()
 
       if (handleSkips(req)) return next()
 
-      const sessionID = req.cookies?.[SESSION_COOKIE]
+      // Test header to force new session creation (for e2e testing with supertest)
+      // Only enabled in test environment to prevent misuse in production
+      const forceNewSession =
+        process.env.NODE_ENV === 'test' &&
+        req.headers['x-demo-new-session'] === 'true'
+
+      const sessionID = forceNewSession
+        ? undefined
+        : req.cookies?.[SESSION_COOKIE]
 
       if (sessionID) {
-        const ctx = demo.get(sessionID)
-        if (!!ctx) {
+        const session = demo.get(sessionID)
+        if (!!session) {
           req.demo = { session: sessionID }
-          return demo.run(ctx, next)
+          return demo.run(session, next)
         }
 
         if (req.headers['hx-request'] === 'true') {
@@ -80,7 +90,7 @@ export const demo = registerMiddleware(
         })
 
         req.demo = { session: session.id }
-        return demo.run(session.database, next)
+        return demo.run(session, next)
       } catch (error) {
         return next(error)
       }

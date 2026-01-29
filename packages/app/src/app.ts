@@ -44,6 +44,7 @@ import { expressRequestHandler } from './modules/sentry/middleware/wrapper'
 // @useMiddleware(require('./middleware/tracing').Tracing)
 // @useMiddleware(require('./middleware/trace').trace)
 @useMiddleware(require('cookie-parser')())
+@useMiddleware(require('./middleware/demo').demo)
 @useMiddleware(express.static(path.join(__dirname, '../public')))
 @useMiddleware(
   require('./modules/auth/middleware/authentication').Authentication

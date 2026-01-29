@@ -79,7 +79,7 @@ export default class SupplierServiceImpl {
       )
 
     if (!(await this.exists(slug))) {
-      throw new NotFound(`Unable to find '${slug}'`)
+      throw new NotFound(`Supplier with slug '${slug}' not found`)
     }
 
     const data = toSupplierData(raw, slug)
@@ -96,7 +96,11 @@ export default class SupplierServiceImpl {
     return this.supplier(ctx).find()
   }
 
-  private async findAndEmit (slug: string, event: string, ctx?: DatabaseContext) {
+  private async findAndEmit(
+    slug: string,
+    event: string,
+    ctx?: DatabaseContext
+  ) {
     const result = await this.findById(slug, ctx)
     this.events.emit(event, result)
     return result

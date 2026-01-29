@@ -173,9 +173,24 @@ export type Hook = (
   config?: Config<AppConfig>
 ) => Promise<void>
 
+export type BeforeEachHook = (
+  req: ReturnType<supertest.Agent[Lowercase<Methods>]>,
+  flow: WorkFlow,
+  agent: supertest.Agent
+) => Promise<ReturnType<supertest.Agent[Lowercase<Methods>]>>
+
+export type AfterEachHook = (
+  req: ReturnType<supertest.Agent[Lowercase<Methods>]>,
+  res: supertest.Response,
+  flow: WorkFlow,
+  ctx: Record<string, Record<string, any>>
+) => Promise<void>
+
 export interface Hooks {
   before?: Hook
   after?: Hook
+  beforeEach?: BeforeEachHook
+  afterEach?: AfterEachHook
 }
 
 export async function handleFlow(
@@ -183,7 +198,8 @@ export async function handleFlow(
   base: string | Constructable<any>,
   runnerCtx: Record<string, any>,
   hooks?: Hooks,
-  builder: typeof API = API
+  builder: typeof API = API,
+  auth: boolean = true
 ) {
   let applet: BuilderContext | undefined
   let ctx: Record<string, Record<string, any>>
@@ -244,7 +260,9 @@ export async function handleFlow(
           })
         ).text()
       } else {
-        throw new Error('Cannot run tests without a private key or api-key')
+        if (auth)
+          throw new Error('Cannot run tests without a private key or api-key')
+        else debug('Skipping auth header creation as auth is disabled')
       }
       debug('Created an auth header - %o', authHeader)
 
@@ -325,7 +343,7 @@ export async function handleFlow(
 
     // This is not ideal, but will work for now, jwt technically can be created w/ a DI as it only depends
     // on config, in the test file, but would need describe to be async
-    if (flow.auth) {
+    if (auth && flow.auth) {
       const authIsString = typeof flow.auth === 'string'
 
       if (!authHeader && !authIsString)
@@ -337,10 +355,17 @@ export async function handleFlow(
           : authHeader,
         { type: 'bearer' }
       )
+    } else if (flow.auth && !auth) {
+      throw new Error(
+        'Mismatch config. Auth set for runner, but suite set to false'
+      )
     }
 
     let res: supertest.Response
     try {
+      // @ts-ignore
+      req = (await hooks?.beforeEach?.(req, flow, curr)) || req
+
       res = await req
       debug('Received %j', /text\/.*/.test(res.type) ? res.text : res.body)
     } catch (err) {
@@ -407,6 +432,8 @@ export async function handleFlow(
         }
       }
     }
+
+    await (hooks?.afterEach?.(req, res, flow, ctx) || Promise.resolve())
   }
 }
 

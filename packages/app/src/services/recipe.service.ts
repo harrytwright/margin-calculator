@@ -1,8 +1,5 @@
-/**
- * Could be re-written to use AsyncStorage concept to handle the underlying demo side?
- * */
-
 import { Inject, register } from '@harrytwright/api/dist/core'
+import { BadRequest, Conflict, NotFound } from '@hndlr/errors'
 import type {
   DatabaseContext,
   RecipeResolvedImportData,
@@ -14,43 +11,56 @@ import {
   RecipeService,
   SupplierService,
 } from '@menubook/core'
+import type { EventEmitter } from 'events'
 
+import { DemoPersistenceManager } from '../datastore/sqlite.demo'
+import { RecipeApiData, toRecipeData } from '../schemas'
 import IngredientServiceImpl from './ingredient.service'
 
-// Basically a wrapper around the IngredientService to work with the DI side of the webapp
+// Basically a wrapper around the RecipeService to work with the DI side of the webapp
 @register('singleton')
 export default class RecipeServiceImpl {
-  // The shared ingredient service instance. Each method will have a `ctx` parameter, if set, a new service instance
+  // The shared recipe service instance. Each method will have a `ctx` parameter, if set, a new service instance
   // will be created for that call and that call only. For use with the demo system.
-  readonly recipe: RecipeService = new RecipeService(
+  readonly defaultRecipe: RecipeService = new RecipeService(
     this.ctx,
-    this.ingredient.ingredient,
+    this.ingredient.defaultIngredient,
     this.conf
   )
 
   constructor(
     @Inject('database') private readonly ctx: DatabaseContext,
     @Inject('globalConfig') private readonly conf: ConfigService,
-    private readonly ingredient: IngredientServiceImpl
+    @Inject('events') private readonly events: EventEmitter,
+    private readonly ingredient: IngredientServiceImpl,
+    private readonly demo: DemoPersistenceManager
   ) {}
 
-  // Could add a metric here.
-  #createDemoService(ctx: DatabaseContext): RecipeService {
-    return new RecipeService(
-      ctx,
-      new IngredientService(ctx, new SupplierService(ctx)),
-      this.conf
-    )
+  private recipe(ctx?: DatabaseContext): RecipeService {
+    const _ctx = ctx || this.demo.ctx()
+    return _ctx
+      ? new RecipeService(
+          _ctx,
+          new IngredientService(_ctx, new SupplierService(_ctx)),
+          this.conf
+        )
+      : this.defaultRecipe
   }
 
-  delete(slug: string, ctx?: DatabaseContext): Promise<boolean> {
-    const service = ctx ? this.#createDemoService(ctx) : this.recipe
-    return service.delete(slug)
+  async delete(slug: string, ctx?: DatabaseContext): Promise<boolean> {
+    if (!(await this.exists(slug, ctx))) {
+      throw new NotFound(`Recipe with slug '${slug}' not found`)
+    }
+
+    const res = await this.recipe(ctx).delete(slug)
+
+    if (res) this.events.emit('recipe.deleted', slug)
+
+    return res
   }
 
   exists(slug: string, ctx?: DatabaseContext): Promise<boolean> {
-    const service = ctx ? this.#createDemoService(ctx) : this.recipe
-    return service.exists(slug)
+    return this.recipe(ctx).exists(slug)
   }
 
   upsert(
@@ -59,8 +69,84 @@ export default class RecipeServiceImpl {
     defaultPriceIncludesVat: boolean = true,
     ctx?: DatabaseContext
   ) {
-    const service = ctx ? this.#createDemoService(ctx) : this.recipe
-    return service.upsert(slug, data, defaultPriceIncludesVat)
+    return this.recipe(ctx).upsert(slug, data, defaultPriceIncludesVat)
+  }
+
+  async create(slug: string, raw: RecipeApiData, ctx?: DatabaseContext) {
+    if (await this.exists(slug, ctx)) {
+      throw new Conflict(`Recipe with slug '${slug}' already exists`)
+    }
+
+    // Validate parent recipe exists if specified
+    if (raw.extends && !(await this.exists(raw.extends, ctx))) {
+      throw new NotFound(`Parent recipe with slug '${raw.extends}' not found`)
+    }
+
+    // Validate price requirement
+    if (!raw.extends && !raw.costing?.price) {
+      throw new BadRequest(
+        'costing.price is required when no parent recipe (extends) is specified'
+      )
+    }
+
+    // Detect ingredient types and validate they exist
+    const ingredientTypes = await this.detectIngredientTypes(
+      raw.ingredients,
+      ctx
+    )
+
+    const data = toRecipeData(raw, slug, ingredientTypes)
+    const recipeId = await this.upsert(slug, data, true, ctx)
+
+    if (!recipeId) {
+      throw new Error('Failed to create recipe')
+    }
+
+    await this.upsertIngredients(recipeId, data, ctx)
+
+    return this.findAndEmit(slug, 'recipe.created', ctx)
+  }
+
+  async update(slug: string, raw: RecipeApiData, ctx?: DatabaseContext) {
+    if (raw.slug && raw.slug !== slug) {
+      throw new BadRequest(
+        `Slug mismatch: expected '${slug}' but received '${raw.slug}'`
+      )
+    }
+
+    const existing = await this.findById(slug, true, ctx)
+    if (!existing) {
+      throw new NotFound(`Recipe with slug '${slug}' not found`)
+    }
+
+    // Validate parent recipe exists if specified
+    if (raw.extends && !(await this.exists(raw.extends, ctx))) {
+      throw new NotFound(`Parent recipe with slug '${raw.extends}' not found`)
+    }
+
+    // Validate parent is not being changed
+    if (existing.parent !== (raw.extends || null)) {
+      throw new BadRequest(
+        `Cannot change parent recipe from '${existing.parent}' to '${raw.extends || null}'. Parent is immutable after creation.`
+      )
+    }
+
+    // Detect ingredient types and validate they exist
+    const ingredientTypes = await this.detectIngredientTypes(
+      raw.ingredients,
+      ctx
+    )
+
+    const data = toRecipeData(raw, slug, ingredientTypes)
+    const recipeId = await this.upsert(slug, data, true, ctx)
+
+    if (!recipeId) {
+      throw new Error('Failed to update recipe')
+    }
+
+    await this.upsertIngredients(recipeId, data, ctx)
+
+    return this.findAndEmit(slug, 'recipe.updated', ctx)
   }
 
   findById(
@@ -91,13 +177,11 @@ export default class RecipeServiceImpl {
 
     if (!withIngredients) withIngredients = true
 
-    const service = ctx ? this.#createDemoService(ctx) : this.recipe
-    return service.findById(slug, withIngredients)
+    return this.recipe(ctx).findById(slug, withIngredients)
   }
 
   find(ctx?: DatabaseContext) {
-    const service = ctx ? this.#createDemoService(ctx) : this.recipe
-    return service.find()
+    return this.recipe(ctx).find()
   }
 
   upsertIngredients(
@@ -105,7 +189,42 @@ export default class RecipeServiceImpl {
     data: RecipeResolvedImportData,
     ctx?: DatabaseContext
   ) {
-    const service = ctx ? this.#createDemoService(ctx) : this.recipe
-    return service.upsertIngredients(recipeId, data)
+    return this.recipe(ctx).upsertIngredients(recipeId, data)
+  }
+
+  private async detectIngredientTypes(
+    ingredients: RecipeApiData['ingredients'],
+    ctx?: DatabaseContext
+  ): Promise<Map<string, 'ingredient' | 'recipe'>> {
+    const ingredientTypes = new Map<string, 'ingredient' | 'recipe'>()
+
+    for (const ing of ingredients) {
+      if (ing.type) {
+        ingredientTypes.set(ing.slug, ing.type)
+      } else {
+        // Auto-detect: check ingredient first, then recipe
+        if (await this.ingredient.exists(ing.slug, ctx)) {
+          ingredientTypes.set(ing.slug, 'ingredient')
+        } else if (await this.exists(ing.slug, ctx)) {
+          ingredientTypes.set(ing.slug, 'recipe')
+        } else {
+          throw new NotFound(
+            `Ingredient or sub-recipe with slug '${ing.slug}' not found`
+          )
+        }
+      }
+    }
+
+    return ingredientTypes
+  }
+
+  private async findAndEmit(
+    slug: string,
+    event: string,
+    ctx?: DatabaseContext
+  ) {
+    const result = await this.findById(slug, true, ctx)
+    this.events.emit(event, result)
+    return result
   }
 }
