@@ -267,6 +267,25 @@ export class AppController {
   }
 
   /**
+   * GET /recipes/:slug/ingredients/add - Ingredient picker modal
+   */
+  @path('/recipes/:slug/ingredients/add')
+  async getIngredientPicker(req: express.Request, res: express.Response) {
+    const { slug } = req.params
+    const recipe = await this.recipes.findById(slug, true)
+    const ingredients = await this.ingredients.find()
+
+    if (!recipe) {
+      return res.status(404).send('Recipe not found')
+    }
+
+    return res.render('modals/ingredient-picker', {
+      recipe,
+      ingredients,
+    })
+  }
+
+  /**
    * GET /ingredients - List all ingredients
    */
   @path('/ingredients')

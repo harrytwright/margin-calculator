@@ -220,6 +220,14 @@
         showToast('An error occurred. Please try again.', 'error');
       });
 
+      // Handle closeModal trigger from server
+      document.body.addEventListener('htmx:trigger', (event) => {
+        if (event.detail.name === 'closeModal') {
+          closeModal();
+          showToast('Saved successfully', 'success');
+        }
+      });
+
       // Handle selection in tree views
       function selectItem(type, slug) {
         // Remove selection from all items
