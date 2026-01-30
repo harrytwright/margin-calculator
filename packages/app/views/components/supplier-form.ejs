@@ -28,8 +28,8 @@
 </div>
 
 <form
-  hx-<%= supplier ? 'put' : 'post' %>="/management/suppliers<%= supplier ? '/' + supplier.slug : '' %>"
-  hx-target="#entity-list"
+  hx-<%= supplier ? 'put' : 'post' %>="/suppliers<%= supplier ? '/' + supplier.slug : '' %>"
+  hx-target="#main-content"
   hx-swap="innerHTML"
   class="flex-1 overflow-y-auto"
 >

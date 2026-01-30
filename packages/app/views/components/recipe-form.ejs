@@ -16,8 +16,8 @@
 </div>
 
 <form
-  hx-<%= recipe ? 'put' : 'post' %>="/management/recipes<%= recipe ? '/' + recipe.slug : '' %>"
-  hx-target="#entity-list"
+  hx-<%= recipe ? 'put' : 'post' %>="/recipes<%= recipe ? '/' + recipe.slug : '' %>"
+  hx-target="#recipes-editor"
   hx-swap="innerHTML"
   class="flex-1 overflow-y-auto"
 >
