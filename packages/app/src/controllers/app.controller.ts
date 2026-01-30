@@ -81,6 +81,9 @@ export class AppController {
     ) {
       // Ingredient editor partial - only render the editor content
       return res.render('islands/ingredient-editor', data)
+    } else if (isHtmx && target === '#supplier-details') {
+      // Supplier details partial - render details island with OOB swap for ingredients
+      return res.render('islands/supplier-details', data)
     } else if (
       isHtmx &&
       (target?.startsWith('#') || target?.endsWith('-editor'))
