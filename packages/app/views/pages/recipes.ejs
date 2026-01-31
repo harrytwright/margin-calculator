@@ -2,6 +2,16 @@
   const recipeList = typeof recipes !== 'undefined' ? recipes : []
   const selectedRecipe = typeof recipe !== 'undefined' ? recipe : null
   const recipeCost = typeof cost !== 'undefined' ? cost : null
+  const costBreakdown = recipeCost?.breakdown || []
+  const costByName = new Map(costBreakdown.map((node) => [node.name, node.cost]))
+
+  const getIngredientCost = (ing, index) => {
+    if (ing.calculatedCost != null) return ing.calculatedCost
+    const name = ing.name || ing.ingredientSlug || ing.recipeSlug
+    if (name && costByName.has(name)) return costByName.get(name)
+    if (costBreakdown[index]) return costBreakdown[index].cost
+    return null
+  }
 %>
 
 <!-- Recipes Page - Island Layout -->
@@ -145,12 +155,13 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                  <% selectedRecipe.ingredients.forEach(ing => { %>
+                  <% selectedRecipe.ingredients.forEach((ing, index) => { %>
                   <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                     <td class="px-4 py-2 text-sm text-gray-900 dark:text-white"><%= ing.name || ing.ingredientSlug || ing.recipeSlug %></td>
                     <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300"><%= ing.quantity %> <%= ing.unit %></td>
                     <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 text-right">
-                      <% if (ing.calculatedCost) { %>&pound;<%= (ing.calculatedCost / 100).toFixed(2) %><% } else { %>--<% } %>
+                      <% const rowCost = getIngredientCost(ing, index) %>
+                      <% if (rowCost != null) { %>&pound;<%= (rowCost / 100).toFixed(2) %><% } else { %>--<% } %>
                     </td>
                   </tr>
                   <% }) %>
@@ -187,31 +198,43 @@
     </div>
   </div>
 
-  <!-- Right Island: Cost Panel -->
-  <div class="w-60 min-w-60 shrink-0" data-panel-wrapper>
+  <!-- Right Rail + Cost Panel -->
+  <div id="recipe-right-rail-wrapper" class="flex flex-row-reverse items-stretch gap-2 shrink-0 <%= selectedRecipe ? '' : 'hidden' %>">
+    <div class="flex flex-col items-center justify-start w-10 gap-4 rounded-island shadow-island py-3">
+      <button
+        type="button"
+        onclick="toggleRecipePanel('cost')"
+        class="flex flex-col items-center cursor-pointer py-2 gap-2 hover:border hover:border-gray-200 dark:hover:border-gray-700 text-gray-500 rounded-md dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all"
+        title="Cost Breakdown"
+      >
+        <span class="w-7 h-7 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 11V3h2v8h-2zm0 10v-6h2v6h-2zM5 7h2v10H5V7zm12 2h2v8h-2V9z"/>
+          </svg>
+        </span>
+        <span class="text-sm mb-2 font-bold tracking-wide writing-vertical-lr">Cost</span>
+      </button>
+    </div>
+
     <div
-      id="cost-panel"
-      data-panel
-      class="h-full flex flex-col bg-white dark:bg-gray-800 rounded-island shadow-island overflow-hidden transition-all duration-200 w-60 min-w-60"
+      id="recipe-right-panel"
+      class="w-72 min-w-72 h-full bg-white dark:bg-gray-800 rounded-island shadow-island overflow-hidden transition-all duration-200"
+      data-view="cost"
     >
-      <!-- Panel Header -->
-      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 shrink-0">
-        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200 truncate">
-          Cost Breakdown
-        </h3>
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200" id="recipe-right-panel-title">Cost Breakdown</h3>
         <button
-          onclick="togglePanel('cost-panel')"
+          type="button"
+          onclick="closeRecipePanel()"
           class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
-          title="Collapse panel"
+          title="Close"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
-
-      <!-- Panel Content -->
-      <div class="flex-1 overflow-y-auto">
+      <div class="flex-1 overflow-y-auto" id="recipe-right-panel-content">
         <%- include('../islands/cost-breakdown', { recipe: selectedRecipe, cost: recipeCost }) %>
       </div>
     </div>
@@ -219,10 +242,72 @@
 </div>
 
 <script>
+  function showRecipeRail() {
+    const wrapper = document.getElementById('recipe-right-rail-wrapper');
+    if (!wrapper) return;
+    wrapper.classList.remove('hidden');
+  }
+
+  function hideRecipeRail() {
+    const wrapper = document.getElementById('recipe-right-rail-wrapper');
+    if (!wrapper) return;
+    wrapper.classList.add('hidden');
+  }
+
+  function openRecipePanel(view) {
+    const panel = document.getElementById('recipe-right-panel');
+    const title = document.getElementById('recipe-right-panel-title');
+    if (!panel) return;
+    panel.classList.remove('w-0', 'min-w-0', 'opacity-0', 'pointer-events-none');
+    panel.classList.add('w-72', 'min-w-72');
+    panel.dataset.view = view;
+    if (title) {
+      title.textContent = view === 'cost' ? 'Cost Breakdown' : 'Details';
+    }
+  }
+
+  function closeRecipePanel() {
+    const panel = document.getElementById('recipe-right-panel');
+    if (!panel) return;
+    panel.classList.add('w-0', 'min-w-0', 'opacity-0', 'pointer-events-none');
+    panel.classList.remove('w-72', 'min-w-72');
+  }
+
+  function toggleRecipePanel(view) {
+    const panel = document.getElementById('recipe-right-panel');
+    if (!panel) return;
+    const isOpen = !panel.classList.contains('w-0');
+    const currentView = panel.dataset.view || 'cost';
+    if (isOpen && currentView === view) {
+      closeRecipePanel();
+    } else {
+      openRecipePanel(view);
+    }
+  }
+
   // Highlight selected item on page load
   <% if (selectedRecipe) { %>
   document.addEventListener('DOMContentLoaded', () => {
     selectItem('recipes', '<%= selectedRecipe.slug %>');
+    showRecipeRail();
+    openRecipePanel('cost');
+  });
+  <% } else { %>
+  document.addEventListener('DOMContentLoaded', () => {
+    hideRecipeRail();
   });
   <% } %>
+
+  document.body.addEventListener('htmx:afterSwap', (event) => {
+    if (event.detail.target && event.detail.target.id === 'recipes-editor') {
+      showRecipeRail();
+      openRecipePanel('cost');
+    }
+  });
 </script>
+
+<style>
+  .writing-vertical-lr {
+    writing-mode: vertical-lr;
+  }
+</style>

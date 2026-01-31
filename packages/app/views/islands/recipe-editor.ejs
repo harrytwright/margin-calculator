@@ -1,6 +1,16 @@
 <%
   const selectedRecipe = typeof recipe !== 'undefined' ? recipe : null
   const recipeCost = typeof cost !== 'undefined' ? cost : null
+  const costBreakdown = recipeCost?.breakdown || []
+  const costByName = new Map(costBreakdown.map((node) => [node.name, node.cost]))
+
+  const getIngredientCost = (ing, index) => {
+    if (ing.calculatedCost != null) return ing.calculatedCost
+    const name = ing.name || ing.ingredientSlug || ing.recipeSlug
+    if (name && costByName.has(name)) return costByName.get(name)
+    if (costBreakdown[index]) return costBreakdown[index].cost
+    return null
+  }
 %>
 
 <% if (!selectedRecipe) { %>
@@ -36,6 +46,9 @@
   data-breadcrumb-group="<%= selectedRecipe.category || selectedRecipe.class || 'Uncategorised' %>"
   data-breadcrumb-slug="<%= selectedRecipe.slug %>"
 ></div>
+<div id="recipe-right-panel-content" hx-swap-oob="innerHTML">
+  <%- include('../islands/cost-breakdown', { recipe: selectedRecipe, cost: recipeCost }) %>
+</div>
 <!-- Editor Header -->
 <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
   <div class="flex items-center gap-3 min-w-0">
@@ -126,12 +139,13 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-            <% selectedRecipe.ingredients.forEach(ing => { %>
+            <% selectedRecipe.ingredients.forEach((ing, index) => { %>
             <tr class="group hover:bg-gray-50 dark:hover:bg-gray-700/30">
               <td class="px-4 py-2 text-sm text-gray-900 dark:text-white"><%= ing.name || ing.ingredientSlug || ing.recipeSlug %></td>
               <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300"><%= ing.quantity %> <%= ing.unit %></td>
               <td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 text-right">
-                <% if (ing.calculatedCost) { %>&pound;<%= (ing.calculatedCost / 100).toFixed(2) %><% } else { %>--<% } %>
+                <% const rowCost = getIngredientCost(ing, index) %>
+                <% if (rowCost != null) { %>&pound;<%= (rowCost / 100).toFixed(2) %><% } else { %>--<% } %>
               </td>
               <td class="px-4 py-2 text-right">
                 <button
@@ -184,8 +198,4 @@
   selectItem('recipes', '<%= selectedRecipe.slug %>');
 </script>
 
-<!-- Out-of-band swap for cost panel -->
-<div id="cost-panel-content" hx-swap-oob="innerHTML:#cost-panel .flex-1.overflow-y-auto">
-  <%- include('./cost-breakdown', { recipe: selectedRecipe, cost: recipeCost }) %>
-</div>
 <% } %>

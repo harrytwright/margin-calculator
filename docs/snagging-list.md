@@ -46,5 +46,5 @@ expand=supplier` so the UI can display the name not the slug, looks cleaner.
       that allows the user to open up different data on the 3rd island.
 - [x] Edit/Create modal does not look good on dark mode, needs to be styled properly.
 - [x] Edit/Create modal is vertical heavy, should be padded properly, with overflow scroll.
-- [ ] `Ingredients` costs are not displayed properly.
+- [x] `Ingredients` costs are not displayed properly.
 - [x] Bottom bar breadcrumb not working, if the user clicks on an ingredient it should be `Recipe / {group} / {slug}`. Allowing the user to know where they are
