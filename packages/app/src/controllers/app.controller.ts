@@ -406,9 +406,15 @@ export class AppController {
   @path('/ingredients/new')
   async getNewIngredientForm(req: express.Request, res: express.Response) {
     const suppliers = await this.suppliers.find()
+    const returnTo =
+      typeof req.query.returnTo === 'string' ? req.query.returnTo : null
+    const recipeSlug =
+      typeof req.query.recipeSlug === 'string' ? req.query.recipeSlug : null
     return res.render('components/ingredient-form', {
       ingredient: null,
       suppliers,
+      returnTo,
+      recipeSlug,
     })
   }
 
@@ -428,6 +434,22 @@ export class AppController {
       const slug = parsed.slug || (await slugify(parsed.name))
       const supplierSlug = req.body.supplierId || 'generic'
       await this.ingredients.create(slug, parsed, supplierSlug)
+
+      const returnTo = req.body.returnTo
+      const recipeSlug = req.body.recipeSlug
+
+      if (returnTo === 'recipe-picker' && recipeSlug) {
+        const recipe = await this.recipes.findById(recipeSlug, true)
+        if (!recipe) {
+          return res.status(404).send('Recipe not found')
+        }
+        const ingredients = await this.ingredients.find()
+        return res.render('modals/ingredient-picker', {
+          recipe,
+          ingredients,
+          selectedIngredientSlug: slug,
+        })
+      }
 
       res.setHeader('HX-Redirect', `/ingredients/${slug}`)
       return res.status(201).send('')

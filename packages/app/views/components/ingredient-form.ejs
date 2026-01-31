@@ -24,11 +24,16 @@
   </div>
 
   <form
+    id="ingredient-form"
     hx-<%= isEdit ? 'put' : 'post' %>="/ingredients<%= isEdit ? '/' + ingredient.slug : '' %>"
     hx-target="#ingredients-editor"
     hx-swap="innerHTML"
     class="flex-1 overflow-y-auto"
   >
+    <% if (returnTo && recipeSlug) { %>
+    <input type="hidden" name="returnTo" value="<%= returnTo %>" />
+    <input type="hidden" name="recipeSlug" value="<%= recipeSlug %>" />
+    <% } %>
     <div class="p-4 sm:p-6 space-y-5">
     <!-- Name -->
     <div>
@@ -205,7 +210,31 @@
       </button>
     </div>
   </form>
-</div>
+<script>
+  (function () {
+    const form = document.getElementById('ingredient-form')
+    if (!form) return
+
+    const returnTo = form.querySelector('input[name="returnTo"]')?.value
+    if (returnTo === 'recipe-picker') {
+      form.setAttribute('hx-target', '#modal-content')
+      form.setAttribute('hx-swap', 'innerHTML')
+      return
+    }
+
+    if (document.getElementById('ingredients-editor')) {
+      return
+    }
+
+    if (document.getElementById('recipes-editor')) {
+      form.setAttribute('hx-target', '#recipes-editor')
+      return
+    }
+
+    form.setAttribute('hx-target', 'body')
+    form.setAttribute('hx-swap', 'none')
+  })()
+</script>
 
 <script>
   // Close modal after successful form submission
