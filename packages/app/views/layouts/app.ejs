@@ -169,6 +169,10 @@
             wrapper.classList.remove('min-w-0');
             wrapper.classList.add('min-w-60');
           }
+          if (panelId === 'used-in-panel') {
+            const panelWrapper = document.getElementById('used-in-panel-wrapper');
+            panelWrapper?.classList.remove('hidden');
+          }
         } else {
           // Collapse panel
           panel.classList.add('w-0', 'overflow-hidden');

@@ -24,11 +24,12 @@
 
 ### Ingredients
 
-- [ ] `Used in` island should be hidden by default. Only shown when an ingredient is selected.
-- [ ] When `Used in` island is closed it is not possible to open it again. Should be closed to a minimized state, `right: 0px;`
+- [x] `Used in` island should be hidden by default. Only shown when an ingredient is selected.
+- [x] When `Used in` island is closed it is not possible to open it again. Should be closed to a minimized state, `right: 0px;`
       with a middle 90deg rotatated button that says `Used in` to allow for reopening. (Third island could be used in the future
       to show different information about the ingredient, allowing for more buttons to determine what is shown)
-- [ ] When `Used In` island is closed, main island should use remainging space. I'd say use of `min-w-` rather than `w-`.
+- [x] When `Used In` island is closed, main island should use remainging space. I'd say use of `min-w-` rather than `w-`.
+
 - [ ] Adjust endpoints and API to return expanded supplier on `/ingrdients/*` routes, or `/api/ingredients/:slug?
 expand=supplier` so the UI can display the name not the slug, looks cleaner.
 - [ ] Add a `/api/ingredients/:slug/recipes` to return all recipes that use this ingredient, this way we can show a list of

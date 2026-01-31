@@ -162,11 +162,11 @@
   </div>
 
   <!-- Right Island: Used In Panel -->
-  <div class="w-60 shrink-0">
+  <div id="used-in-panel-wrapper" class="min-w-0 shrink-0 <%= selectedIngredient ? '' : 'hidden' %>" data-panel-wrapper>
     <%- include('../islands/details-panel', {
       id: 'used-in-panel',
       title: 'Used In',
-      collapsed: false,
+      collapsed: !selectedIngredient,
       content: `
         ${selectedIngredient && usedInRecipes && usedInRecipes.length > 0 ? `
         <div class="p-3 space-y-2">
@@ -206,6 +206,11 @@
   <% if (selectedIngredient) { %>
   document.addEventListener('DOMContentLoaded', () => {
     selectItem('ingredients', '<%= selectedIngredient.slug %>');
+    const panelWrapper = document.getElementById('used-in-panel-wrapper');
+    if (panelWrapper) {
+      panelWrapper.classList.remove('hidden');
+    }
   });
   <% } %>
 </script>
+
