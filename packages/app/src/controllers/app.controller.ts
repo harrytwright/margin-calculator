@@ -59,11 +59,16 @@ export class AppController {
     const isHtmx = req.headers['hx-request'] === 'true'
     const target = req.headers['hx-target'] as string | undefined
 
+    const isModalTarget =
+      target === '.modal-content' ||
+      target === 'modal-content' ||
+      target === '#modal-content'
+
     if (isHtmx && target === 'content-area') {
       return res.render('partials/content-area', { view, ...data })
     } else if (isHtmx && target === 'main-content') {
       return res.render(`pages/${view}`, data)
-    } else if (isHtmx && target === '.modal-content') {
+    } else if (isHtmx && isModalTarget) {
       // Modal content rendering - find the appropriate component
       return res.render(`components/${data.componentView || view}`, data)
     } else if (isHtmx && target === '#entity-list') {
@@ -292,6 +297,93 @@ export class AppController {
   }
 
   /**
+   * PUT /recipes/:slug/ingredients/:ingredientSlug - Add/update ingredient in recipe
+   */
+  @path('/recipes/:slug/ingredients/:ingredientSlug')
+  async putRecipeIngredient(
+    req: ServerRequest<
+      { slug: string; ingredientSlug: string },
+      unknown,
+      { quantity?: string; unit: string }
+    >,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    const { slug, ingredientSlug } = req.params
+    const { quantity, unit } = req.body
+
+    try {
+      if (!unit) {
+        return res.status(400).send('Unit is required')
+      }
+
+      await this.recipes.addIngredient(slug, ingredientSlug, {
+        quantity: quantity ? parseFloat(quantity) : undefined,
+        unit,
+      })
+
+      // Re-fetch and return updated editor
+      const recipes = await this.recipes.find()
+      const recipe = await this.recipes.findById(slug, true)
+
+      let cost = null
+      try {
+        const costResult = await this.calculator.cost(slug)
+        const marginResult = await this.calculator.margin(costResult)
+        cost = {
+          total: costResult.totalCost,
+          breakdown: costResult.tree,
+          margin: marginResult,
+        }
+      } catch (error) {
+        // Cost calculation failed
+      }
+
+      res.setHeader('HX-Trigger', 'closeModal')
+      return res.render('islands/recipe-editor', { recipes, recipe, cost })
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
+   * DELETE /recipes/:slug/ingredients/:ingredientSlug - Remove ingredient from recipe
+   */
+  @path('/recipes/:slug/ingredients/:ingredientSlug')
+  async deleteRecipeIngredient(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    const { slug, ingredientSlug } = req.params
+
+    try {
+      await this.recipes.removeIngredient(slug, ingredientSlug)
+
+      // Re-fetch and return updated editor
+      const recipes = await this.recipes.find()
+      const recipe = await this.recipes.findById(slug, true)
+
+      let cost = null
+      try {
+        const costResult = await this.calculator.cost(slug)
+        const marginResult = await this.calculator.margin(costResult)
+        cost = {
+          total: costResult.totalCost,
+          breakdown: costResult.tree,
+          margin: marginResult,
+        }
+      } catch (error) {
+        // Cost calculation failed
+      }
+
+      return res.render('islands/recipe-editor', { recipes, recipe, cost })
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  /**
    * GET /ingredients - List all ingredients
    */
   @path('/ingredients')
@@ -326,7 +418,9 @@ export class AppController {
     next: express.NextFunction
   ) {
     try {
-      const parsed = ingredientApiSchema.parse(req.body)
+      // Transform flat form data to nested schema format
+      const formData = this.transformIngredientFormData(req.body)
+      const parsed = ingredientApiSchema.parse(formData)
       const slug = parsed.slug || (await slugify(parsed.name))
       const supplierSlug = req.body.supplierId || 'generic'
       await this.ingredients.create(slug, parsed, supplierSlug)
@@ -405,7 +499,9 @@ export class AppController {
     const { slug } = req.params
 
     try {
-      const parsed = ingredientApiSchema.parse(req.body)
+      // Transform flat form data to nested schema format
+      const formData = this.transformIngredientFormData(req.body)
+      const parsed = ingredientApiSchema.parse(formData)
       const supplierSlug = req.body.supplierId || 'generic'
       await this.ingredients.update(slug, parsed, supplierSlug)
 
@@ -849,8 +945,12 @@ export class AppController {
     // Check if this is a modal request
     const isHtmx = req.headers['hx-request'] === 'true'
     const target = req.headers['hx-target'] as string | undefined
+    const isModalTarget =
+      target === '.modal-content' ||
+      target === 'modal-content' ||
+      target === '#modal-content'
 
-    if (isHtmx && target === '.modal-content') {
+    if (isHtmx && isModalTarget) {
       return res.render('modals/settings-modal', { settings })
     }
 
@@ -893,10 +993,14 @@ export class AppController {
       // Check if it's an HTMX request
       const isHtmx = req.headers['hx-request'] === 'true'
       const target = req.headers['hx-target'] as string | undefined
+      const isModalTarget =
+        target === '.modal-content' ||
+        target === 'modal-content' ||
+        target === '#modal-content'
 
       if (isHtmx) {
         // If targeting modal, return modal with success
-        if (target === '.modal-content') {
+        if (isModalTarget) {
           return res.render('modals/settings-modal', {
             settings,
             success: true,
@@ -1037,6 +1141,28 @@ export class AppController {
         return this.ingredients.delete(slug)
       case 'recipes':
         return this.recipes.delete(slug)
+    }
+  }
+
+  /**
+   * Transform flat ingredient form data to nested schema format
+   */
+  private transformIngredientFormData(body: Record<string, any>) {
+    return {
+      slug: body.slug,
+      name: body.name,
+      category: body.category,
+      purchase: {
+        cost: body.purchaseCost ? parseInt(body.purchaseCost, 10) : 0,
+        unit: body.purchaseUnit || '',
+        vat:
+          body.includesVat === 'on' ||
+          body.includesVat === '1' ||
+          body.includesVat === true,
+      },
+      supplier: body.supplierId,
+      conversionRate: body.conversionRule || undefined,
+      notes: body.notes || undefined,
     }
   }
 }

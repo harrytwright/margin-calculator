@@ -4,9 +4,9 @@
 %>
 
 <!-- Settings Modal -->
-<div class="max-h-[80vh] overflow-hidden flex flex-col">
+<div class="max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col w-full max-w-[90vw] sm:max-w-md mx-auto">
   <!-- Modal Header -->
-  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
+  <div class="flex items-start sm:items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
     <div>
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Settings</h2>
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Configure your pricing and margin preferences</p>
@@ -14,6 +14,7 @@
     <button
       onclick="closeModal()"
       class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+      aria-label="Close settings"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -23,7 +24,7 @@
 
   <!-- Success Message -->
   <% if (showSuccess) { %>
-  <div class="mx-6 mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
+  <div class="mx-4 sm:mx-6 mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
     <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
@@ -42,8 +43,10 @@
       hx-post="/settings"
       hx-target=".modal-content"
       hx-swap="innerHTML"
-      class="p-6 space-y-6"
+      class="p-4 sm:p-6 space-y-6"
     >
+      <div class="grid gap-6">
+
       <!-- VAT Rate -->
       <div>
         <label for="vat" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -107,9 +110,13 @@
           <label for="defaultPriceIncludesVat" class="text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer">
             Prices include VAT by default
           </label>
-          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            When enabled, new recipes will assume sell prices include VAT
-          </p>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          When enabled, new recipes will assume sell prices include VAT
+        </p>
+        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+          Stored in <code class="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-700">margin.toml</code>
+        </p>
+
         </div>
       </div>
 
@@ -118,7 +125,7 @@
       <!-- Theme Settings -->
       <div>
         <p class="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Theme</p>
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onclick="setTheme('light')"
@@ -148,9 +155,10 @@
           Choose between light and dark mode
         </p>
       </div>
+        </div>
 
       <!-- Modal Footer -->
-      <div class="flex items-center justify-end gap-3 pt-2">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 pt-2">
         <button
           type="button"
           onclick="closeModal()"
@@ -160,7 +168,7 @@
         </button>
         <button
           type="submit"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

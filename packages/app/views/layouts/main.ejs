@@ -149,34 +149,6 @@
 
     <!-- Shared JavaScript for SSE, Modals, Toast, Tour -->
     <script>
-      // Server-Sent Events for real-time updates
-      let eventSource = null;
-
-      function initializeSSE() {
-        eventSource = new EventSource('/api/events/sse');
-
-        eventSource.addEventListener('entity', (event) => {
-          const data = JSON.parse(event.data);
-          console.log('Entity update:', data);
-
-          // Trigger HTMX refresh on relevant elements
-          const entityType = data.type;
-          const listElement = document.getElementById(`${entityType}-list`);
-          if (listElement) {
-            htmx.trigger(listElement, 'refresh');
-          }
-
-          // Show toast notification
-          showToast(`${data.action} ${data.type}: ${data.slug}`, 'info');
-        });
-
-        eventSource.addEventListener('error', (error) => {
-          console.error('SSE error:', error);
-          // Reconnect after delay
-          setTimeout(initializeSSE, 5000);
-        });
-      }
-
       // Toast notification function
       function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
@@ -248,9 +220,6 @@
       document.getElementById('modal-overlay')?.addEventListener('click', closeModal);
 
       // Initialize on page load
-      document.addEventListener('DOMContentLoaded', () => {
-        initializeSSE();
-      });
 
       // HTMX configuration
       document.body.addEventListener('htmx:configRequest', (event) => {

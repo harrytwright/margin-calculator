@@ -61,7 +61,7 @@
       id="modal"
       class="fixed inset-0 flex items-center justify-center z-50 hidden pointer-events-none"
     >
-      <div class="modal-content bg-white dark:bg-gray-800 rounded-island shadow-xl max-w-lg w-full mx-4 pointer-events-auto transform transition-all duration-200 scale-95 opacity-0">
+      <div id="modal-content" class="modal-content bg-white dark:bg-gray-800 rounded-island shadow-xl max-w-lg w-full mx-4 pointer-events-auto transform transition-all duration-200 scale-95 opacity-0">
         <!-- Modal content will be loaded here via HTMX -->
       </div>
     </div>
@@ -74,33 +74,6 @@
 
     <!-- Shared JavaScript -->
     <script>
-      // Server-Sent Events for real-time updates
-      let eventSource = null;
-
-      function initializeSSE() {
-        eventSource = new EventSource('/api/events/sse');
-
-        eventSource.addEventListener('entity', (event) => {
-          const data = JSON.parse(event.data);
-          console.log('Entity update:', data);
-
-          // Trigger HTMX refresh on relevant elements
-          const entityType = data.type;
-          const listElement = document.getElementById(`${entityType}-browser`);
-          if (listElement) {
-            htmx.trigger(listElement, 'refresh');
-          }
-
-          // Show toast notification
-          showToast(`${data.action} ${data.type}: ${data.slug}`, 'info');
-        });
-
-        eventSource.addEventListener('error', (error) => {
-          console.error('SSE error:', error);
-          setTimeout(initializeSSE, 5000);
-        });
-      }
-
       // Toast notification function
       function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
@@ -129,7 +102,7 @@
       function openModal() {
         const modal = document.getElementById('modal');
         const overlay = document.getElementById('modal-overlay');
-        const modalContent = modal.querySelector('.modal-content');
+        const modalContent = document.getElementById('modal-content');
 
         modal.classList.remove('hidden');
         overlay.classList.remove('hidden');
@@ -143,7 +116,7 @@
       function closeModal() {
         const modal = document.getElementById('modal');
         const overlay = document.getElementById('modal-overlay');
-        const modalContent = modal.querySelector('.modal-content');
+        const modalContent = document.getElementById('modal-content');
 
         modalContent.classList.remove('scale-100', 'opacity-100');
         modalContent.classList.add('scale-95', 'opacity-0');
@@ -180,14 +153,34 @@
       // Panel collapse/expand
       function togglePanel(panelId) {
         const panel = document.getElementById(panelId);
+        const toggleBtn = document.getElementById(`${panelId}-toggle`);
+        const wrapper = panel?.closest('[data-panel-wrapper]');
         const isCollapsed = panel.classList.contains('w-0');
 
         if (isCollapsed) {
+          // Expand panel
           panel.classList.remove('w-0', 'overflow-hidden');
-          panel.classList.add('w-60');
+          panel.classList.add('w-60', 'min-w-60');
+          if (toggleBtn) {
+            toggleBtn.classList.add('hidden');
+            toggleBtn.classList.remove('flex');
+          }
+          if (wrapper) {
+            wrapper.classList.remove('min-w-0');
+            wrapper.classList.add('min-w-60');
+          }
         } else {
+          // Collapse panel
           panel.classList.add('w-0', 'overflow-hidden');
-          panel.classList.remove('w-60');
+          panel.classList.remove('w-60', 'min-w-60');
+          if (toggleBtn) {
+            toggleBtn.classList.remove('hidden');
+            toggleBtn.classList.add('flex');
+          }
+          if (wrapper) {
+            wrapper.classList.remove('min-w-60');
+            wrapper.classList.add('min-w-0');
+          }
         }
 
         // Save state to localStorage
@@ -198,16 +191,27 @@
       function restorePanelStates() {
         document.querySelectorAll('[data-panel]').forEach(panel => {
           const state = localStorage.getItem(`panel-${panel.id}`);
+          const wrapper = panel.closest('[data-panel-wrapper]');
           if (state === 'collapsed') {
             panel.classList.add('w-0', 'overflow-hidden');
-            panel.classList.remove('w-60');
+            panel.classList.remove('w-60', 'min-w-60');
+            if (wrapper) {
+              wrapper.classList.remove('min-w-60');
+              wrapper.classList.add('min-w-0');
+            }
+          } else if (state === 'expanded') {
+            panel.classList.remove('w-0', 'overflow-hidden');
+            panel.classList.add('w-60', 'min-w-60');
+            if (wrapper) {
+              wrapper.classList.remove('min-w-0');
+              wrapper.classList.add('min-w-60');
+            }
           }
         });
       }
 
       // Initialize on page load
       document.addEventListener('DOMContentLoaded', () => {
-        initializeSSE();
         restorePanelStates();
       });
 
@@ -226,6 +230,28 @@
           closeModal();
           showToast('Saved successfully', 'success');
         }
+      });
+
+      // Update nav rail active state on HTMX navigation
+      function updateNavState(url) {
+        const path = new URL(url, window.location.origin).pathname;
+        const navId = path.split('/')[1] || 'recipes'; // e.g., /recipes/xxx -> recipes
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+          const itemId = item.getAttribute('data-nav-id');
+          if (itemId === navId) {
+            item.classList.add('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400', 'active');
+            item.classList.remove('text-gray-500', 'dark:text-gray-400');
+          } else {
+            item.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-600', 'dark:text-blue-400', 'active');
+            item.classList.add('text-gray-500', 'dark:text-gray-400');
+          }
+        });
+      }
+
+      // Listen for HTMX URL changes
+      document.body.addEventListener('htmx:pushedIntoHistory', (event) => {
+        updateNavState(event.detail.path);
       });
 
       // Handle selection in tree views
