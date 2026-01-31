@@ -42,9 +42,9 @@ expand=supplier` so the UI can display the name not the slug, looks cleaner.
 
 ### Recipes
 
-- [ ] `Cost Breakdown` should be same as `Ingredients`.`Used In` island. This is where there is a minimised bar
+- [x] `Cost Breakdown` should be same as `Ingredients`.`Used In` island. This is where there is a minimised bar
       that allows the user to open up different data on the 3rd island.
-- [ ] Edit/Create modal does not look good on dark mode, needs to be styled properly.
-- [ ] Edit/Create modal is vertical heavy, should be padded properly, with overflow scroll.
+- [x] Edit/Create modal does not look good on dark mode, needs to be styled properly.
+- [x] Edit/Create modal is vertical heavy, should be padded properly, with overflow scroll.
 - [ ] `Ingredients` costs are not displayed properly.
 - [x] Bottom bar breadcrumb not working, if the user clicks on an ingredient it should be `Recipe / {group} / {slug}`. Allowing the user to know where they are
