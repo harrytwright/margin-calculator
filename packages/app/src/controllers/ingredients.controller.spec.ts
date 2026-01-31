@@ -42,7 +42,10 @@ describe('IngredientsController', () => {
       // Create a test supplier (ingredients reference suppliers)
       await applet.container
         .get<SupplierServiceImpl>(SupplierServiceImpl)!
-        .create('test-supplier', { name: 'Test Supplier' })
+        .create('test-supplier', {
+          slug: 'test-supplier',
+          name: 'Test Supplier',
+        })
 
       // Create a test ingredient
       await applet.container
@@ -148,6 +151,18 @@ describe('IngredientsController', () => {
         expect(response.body).toMatchObject({
           name: 'Test Flour',
           category: 'Dry Goods',
+        })
+      })
+
+      test('should expand supplier data when requested', async () => {
+        const response = await request.get(
+          '/api/ingredients/test-flour?expand=supplier'
+        )
+
+        expect(response.status).toBe(200)
+        expect(response.body.supplier).toMatchObject({
+          slug: 'test-supplier',
+          name: 'Test Supplier',
         })
       })
 

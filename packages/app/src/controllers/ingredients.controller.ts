@@ -131,7 +131,14 @@ function mapToData(
     lastPurchased: data.lastPurchased ?? undefined,
     supplier: data.supplierSlug
       ? 'supplierName' in data
-        ? mappers.supplier.mapEntityToJSON(data)
+        ? mappers.supplier.mapEntityToJSON({
+            slug: data.supplierSlug as string,
+            name: data.supplierName ?? (data.supplierSlug as string),
+            contactName: data.supplierContactName ?? undefined,
+            contactEmail: data.supplierContactEmail ?? undefined,
+            contactPhone: data.supplierContactPhone ?? undefined,
+            notes: data.supplierNotes ?? undefined,
+          })
         : data.supplierSlug
       : undefined,
   }
