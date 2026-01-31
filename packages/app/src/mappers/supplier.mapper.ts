@@ -5,7 +5,7 @@ import { Insertable, Selectable, Updateable } from 'kysely'
 
 import { Base } from './base'
 
-import {SupplierApiData, supplierApiSchema} from '../schemas'
+import { SupplierApiData, supplierApiSchema } from '../schemas'
 
 // Will add a generator next to generate these from OpenAPI schema
 export type JSONSupplier = Pick<Selectable<Supplier>, 'slug' | 'name'> & {

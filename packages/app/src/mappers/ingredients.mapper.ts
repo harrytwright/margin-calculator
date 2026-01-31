@@ -1,29 +1,20 @@
-import { register } from '@harrytwright/api/dist/core'
-import { InternalServerError } from '@hndlr/errors'
-import type {
-  DBIngredient,
-  DBIngredientWithSupplier,
-  Ingredient,
-  IngredientImportData,
-} from '@menubook/core'
-import type { Supplier } from '@menubook/types'
-import { Insertable, Selectable, Updateable } from 'kysely'
+import type { DBIngredient } from '@menubook/core'
 
-import { Base } from './base'
-
-import {ingredientApiSchema, supplierApiSchema} from '../schemas'
-import {JSONSupplier} from "./supplier.mapper";
+import { JSONSupplier } from './supplier.mapper'
 
 // Will add a generator next to generate these from OpenAPI schema
-export type JSONIngredient = Pick<DBIngredient, 'slug' | 'name' | 'category'> & {
+export type JSONIngredient = Pick<
+  DBIngredient,
+  'slug' | 'name' | 'category'
+> & {
   notes?: string
   purchase: {
-    unit: string,
-    cost: number,
+    unit: string
+    cost: number
     vat: boolean
-  },
-  conversionRule?: string,
-  lastPurchased?: string,
+  }
+  conversionRule?: string
+  lastPurchased?: string
   supplier?: JSONSupplier | string
 }
 //

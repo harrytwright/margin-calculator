@@ -3,12 +3,12 @@ import { NotFound } from '@hndlr/errors'
 import { DBIngredient, DBIngredientWithSupplier, slugify } from '@menubook/core'
 import express from 'express'
 
+import { JSONIngredient } from '../mappers/ingredients.mapper'
+import { SupplierMapper } from '../mappers/supplier.mapper'
 import { IngredientApiData, ingredientApiSchema } from '../schemas'
 import IngredientServiceImpl from '../services/ingredient.service'
 import RecipeServiceImpl from '../services/recipe.service'
 import type { ServerRequest } from '../types/response.json.type'
-import {JSONIngredient} from "../mappers/ingredients.mapper";
-import {SupplierMapper} from "../mappers/supplier.mapper";
 
 @controller('/api/ingredients')
 export class IngredientsController {
@@ -21,7 +21,9 @@ export class IngredientsController {
   @path('/')
   async getIngredients(req: express.Request, res: express.Response) {
     const data = await this.service.find()
-    return res.status(200).json(data.map(el => mapToData(el, { supplier: this.supplierMapper })))
+    return res
+      .status(200)
+      .json(data.map((el) => mapToData(el, { supplier: this.supplierMapper })))
   }
 
   @path('/')
@@ -37,7 +39,9 @@ export class IngredientsController {
 
       const result = await this.service.create(slug, parsed, supplierSlug)
 
-      return res.status(201).json(mapToData(result, { supplier: this.supplierMapper }))
+      return res
+        .status(201)
+        .json(mapToData(result, { supplier: this.supplierMapper }))
     } catch (error) {
       return next(error)
     }
@@ -53,7 +57,9 @@ export class IngredientsController {
       throw new NotFound(`Ingredient with slug '${slug}' not found`)
     }
 
-    return res.status(200).json(mapToData(raw, { supplier: this.supplierMapper }))
+    return res
+      .status(200)
+      .json(mapToData(raw, { supplier: this.supplierMapper }))
   }
 
   @path('/:slug/recipes')
@@ -81,7 +87,9 @@ export class IngredientsController {
 
       const result = await this.service.update(slug, parsed, supplierSlug)
 
-      return res.status(200).json(mapToData(result, { supplier: this.supplierMapper }))
+      return res
+        .status(200)
+        .json(mapToData(result, { supplier: this.supplierMapper }))
     } catch (error) {
       return next(error)
     }
@@ -105,7 +113,10 @@ export class IngredientsController {
   }
 }
 
-function mapToData (data: DBIngredient | DBIngredientWithSupplier, mappers: { supplier: SupplierMapper }): JSONIngredient {
+function mapToData(
+  data: DBIngredient | DBIngredientWithSupplier,
+  mappers: { supplier: SupplierMapper }
+): JSONIngredient {
   return {
     slug: data.slug,
     name: data.name,
