@@ -36,7 +36,7 @@ expand=supplier` so the UI can display the name not the slug, looks cleaner.
       recipes that use this ingredient on the ingredient page. (might need to add it to the app controller to, to use
       htmx, could be client side ease of loading)
 - [x] Edit/Create modal is vertical heavy, should be padded properly, with overflow scroll.
-- [ ] Bottom bar breadcrumb not working, if the user clicks on an ingredient it should be `Ingredients / {group} / {slug}`. Allowing the user to know where they are
+- [x] Bottom bar breadcrumb not working, if the user clicks on an ingredient it should be `Ingredients / {group} / {slug}`. Allowing the user to know where they are
 - [ ] Ingredient price should tell the user to use pence/cents only. Not decimal currency.
 - [ ] Supplier value on main island should be `supplier.name` not the slug.
 
@@ -47,4 +47,4 @@ expand=supplier` so the UI can display the name not the slug, looks cleaner.
 - [ ] Edit/Create modal does not look good on dark mode, needs to be styled properly.
 - [ ] Edit/Create modal is vertical heavy, should be padded properly, with overflow scroll.
 - [ ] `Ingredients` costs are not displayed properly.
-- [ ] Bottom bar breadcrumb not working, if the user clicks on an ingredient it should be `Recipe / {group} / {slug}`. Allowing the user to know where they are
+- [x] Bottom bar breadcrumb not working, if the user clicks on an ingredient it should be `Recipe / {group} / {slug}`. Allowing the user to know where they are
