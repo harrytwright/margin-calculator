@@ -37,8 +37,8 @@ expand=supplier` so the UI can display the name not the slug, looks cleaner.
       htmx, could be client side ease of loading)
 - [x] Edit/Create modal is vertical heavy, should be padded properly, with overflow scroll.
 - [x] Bottom bar breadcrumb not working, if the user clicks on an ingredient it should be `Ingredients / {group} / {slug}`. Allowing the user to know where they are
-- [ ] Ingredient price should tell the user to use pence/cents only. Not decimal currency.
-- [ ] Supplier value on main island should be `supplier.name` not the slug.
+- [x] Ingredient price should tell the user to use pence/cents only. Not decimal currency.
+- [x] Supplier value on main island should be `supplier.name` not the slug.
 
 ### Recipes
 
