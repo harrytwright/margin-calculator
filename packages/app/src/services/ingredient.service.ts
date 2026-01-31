@@ -8,6 +8,7 @@ import { IngredientService, SupplierService } from '@menubook/core'
 import type { EventEmitter } from 'events'
 import type { InsertResult } from 'kysely'
 
+import type { DBIngredient, DBIngredientWithSupplier } from '@menubook/core'
 import { DemoPersistenceManager } from '../datastore/sqlite.demo'
 import { IngredientApiData, toIngredientData } from '../schemas'
 import SupplierServiceImpl from './supplier.service'
@@ -113,8 +114,28 @@ export default class IngredientServiceImpl {
     return this.findAndEmit(slug, 'ingredient.updated', ctx)
   }
 
-  findById(slug: string, ctx?: DatabaseContext) {
-    return this.ingredient(ctx).findById(slug)
+  findById(slug: string): Promise<DBIngredient>
+  findById(
+    slug: string,
+    withSupplier: true,
+    ctx?: DatabaseContext
+  ): Promise<DBIngredientWithSupplier>
+  findById(
+    slug: string,
+    withSupplier: false,
+    ctx?: DatabaseContext
+  ): Promise<DBIngredient>
+  findById(
+    slug: string,
+    withSupplier: boolean,
+    ctx?: DatabaseContext
+  ): Promise<DBIngredient | DBIngredientWithSupplier>
+  findById(
+    slug: string,
+    withSupplier: boolean = false,
+    ctx?: DatabaseContext
+  ): Promise<DBIngredient | DBIngredientWithSupplier> {
+    return this.ingredient(ctx).findById(slug, withSupplier)
   }
 
   find(ctx?: DatabaseContext) {
@@ -126,7 +147,7 @@ export default class IngredientServiceImpl {
     event: string,
     ctx?: DatabaseContext
   ) {
-    const result = await this.findById(slug, ctx)
+    const result = await this.findById(slug, false, ctx)
     this.events.emit(event, result)
     return result
   }

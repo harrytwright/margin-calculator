@@ -97,6 +97,21 @@ export class RecipeService {
       .execute()
   }
 
+  findByIngredientSlug(ingredientSlug: string) {
+    return this.database
+      .selectFrom('RecipeIngredients')
+      .innerJoin('Recipe', 'RecipeIngredients.recipeId', 'Recipe.id')
+      .innerJoin(
+        'Ingredient',
+        'RecipeIngredients.ingredientId',
+        'Ingredient.id'
+      )
+      .select(['Recipe.slug', 'Recipe.name', 'Recipe.class', 'Recipe.category'])
+      .where('Ingredient.slug', '=', ingredientSlug)
+      .distinct()
+      .execute()
+  }
+
   findById(slug: string): Promise<RecipeWithIngredients<true> | undefined>
   findById(
     slug: string,

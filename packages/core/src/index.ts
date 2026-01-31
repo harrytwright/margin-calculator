@@ -55,6 +55,10 @@ export {
   SupplierService,
 } from './services'
 export type { RecipeIngredientsLookup, RecipeWithIngredients } from './services'
+export type {
+  DBIngredient,
+  DBIngredientWithSupplier,
+} from './services/ingredient'
 
 // Calculator
 export { Calculator } from './lib/calculation/calculator'

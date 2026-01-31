@@ -5,7 +5,7 @@
 - Root uses pnpm workspaces + turbo; packages live under `packages/` and the marketing site under `apps/`.
 - `packages/core`: business logic, importer, calculator, storage backends, Prisma schema (`prisma/schema.prisma`), and Kysely migrations in `src/datastore/migrations`; tests live beside code in `__tests__`.
 - `packages/cli`: Commander-based `margin` CLI (commands in `src/commands`, reporters in `src/reporters`, shared helpers in `src/lib`/`src/utils`); builds to `packages/cli/dist`.
-- `packages/app`: Express API + EJS UI; static assets in `src/server/public`, views in `src/server/views`, routes in `src/server/routes`, SSE events at `/api/events`, and storage mode handling for filesystem vs database-only.
+- `packages/app`: Express API + HTMX/EJS UI; controllers in `src/controllers`, services in `src/services`, schemas in `src/schemas`, views in `views/` (layouts/pages/components/islands/modals), static assets in `public/`, and SSE events at `/api/events/sse`.
 - `apps/web`: Parcel + Tailwind marketing site/blog (scripts in `apps/web/scripts`, sources in `apps/web/src`, build output in `apps/web/dist`).
 - Templates and helper scripts sit in `templates/` and `scripts/`; note the active schema/migrations live in `packages/core`, not the root `src/` path referenced by legacy scripts.
 

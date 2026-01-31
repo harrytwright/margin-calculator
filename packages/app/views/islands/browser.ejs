@@ -48,15 +48,15 @@
   hx-swap="innerHTML"
 >
   <!-- Header -->
-  <div class="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-200">
+  <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+    <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
       <%= typeLabels[type] || type %>
     </h3>
     <button
       hx-get="/<%= type %>/new"
       hx-target=".modal-content"
       onclick="openModal()"
-      class="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+      class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
       title="Add new"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

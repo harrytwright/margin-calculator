@@ -10,6 +10,7 @@ import { createDatabase, migrate } from '@menubook/sqlite'
 import { EventEmitter } from 'events'
 import { cleanup, generateApplet } from '../../jest/testing-suite'
 import IngredientServiceImpl from '../services/ingredient.service'
+import RecipeServiceImpl from '../services/recipe.service'
 import SupplierServiceImpl from '../services/supplier.service'
 import { IngredientsController } from './ingredients.controller'
 
@@ -245,6 +246,45 @@ describe('IngredientsController', () => {
         expect(response.status).toBe(404)
         expect(response.body.error).toBeDefined()
       })
+    })
+  })
+
+  describe('/api/ingredients/:slug/recipes', () => {
+    test('should return recipes that use the ingredient', async () => {
+      const recipes =
+        applet.container.get<RecipeServiceImpl>(RecipeServiceImpl)!
+
+      await recipes.create('test-recipe', {
+        name: 'Test Recipe',
+        stage: 'development',
+        class: 'menu_item',
+        category: 'Tests',
+        costing: { price: 500, vat: false, margin: 70 },
+        ingredients: [{ slug: 'test-flour', unit: '1kg', type: 'ingredient' }],
+      })
+
+      const response = await request.get('/api/ingredients/test-flour/recipes')
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            slug: 'test-recipe',
+            name: 'Test Recipe',
+          }),
+        ])
+      )
+
+      await recipes.delete('test-recipe')
+    })
+
+    test('should return 404 for missing ingredient', async () => {
+      const response = await request.get(
+        '/api/ingredients/non-existent/recipes'
+      )
+
+      expect(response.status).toBe(404)
+      expect(response.body.error).toBeDefined()
     })
   })
 })

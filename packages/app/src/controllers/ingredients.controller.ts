@@ -1,20 +1,27 @@
 import { controller, path } from '@harrytwright/api/dist/core'
 import { NotFound } from '@hndlr/errors'
-import { slugify } from '@menubook/core'
+import { DBIngredient, DBIngredientWithSupplier, slugify } from '@menubook/core'
 import express from 'express'
 
 import { IngredientApiData, ingredientApiSchema } from '../schemas'
 import IngredientServiceImpl from '../services/ingredient.service'
+import RecipeServiceImpl from '../services/recipe.service'
 import type { ServerRequest } from '../types/response.json.type'
+import {JSONIngredient} from "../mappers/ingredients.mapper";
+import {SupplierMapper} from "../mappers/supplier.mapper";
 
 @controller('/api/ingredients')
 export class IngredientsController {
-  constructor(private readonly service: IngredientServiceImpl) {}
+  constructor(
+    private readonly service: IngredientServiceImpl,
+    private readonly recipes: RecipeServiceImpl,
+    private readonly supplierMapper: SupplierMapper
+  ) {}
 
   @path('/')
   async getIngredients(req: express.Request, res: express.Response) {
     const data = await this.service.find()
-    return res.status(200).json(data)
+    return res.status(200).json(data.map(el => mapToData(el, { supplier: this.supplierMapper })))
   }
 
   @path('/')
@@ -30,7 +37,7 @@ export class IngredientsController {
 
       const result = await this.service.create(slug, parsed, supplierSlug)
 
-      return res.status(201).json(result)
+      return res.status(201).json(mapToData(result, { supplier: this.supplierMapper }))
     } catch (error) {
       return next(error)
     }
@@ -39,13 +46,26 @@ export class IngredientsController {
   @path('/:slug')
   async getIngredientBySlug(req: express.Request, res: express.Response) {
     const { slug } = req.params
-    const data = await this.service.findById(slug)
+    const expand = req.query.expand === 'supplier'
+    const raw = await this.service.findById(slug, expand)
 
-    if (!data) {
+    if (!raw) {
       throw new NotFound(`Ingredient with slug '${slug}' not found`)
     }
 
-    return res.status(200).json(data)
+    return res.status(200).json(mapToData(raw, { supplier: this.supplierMapper }))
+  }
+
+  @path('/:slug/recipes')
+  async getIngredientRecipes(req: express.Request, res: express.Response) {
+    const { slug } = req.params
+
+    if (!(await this.service.exists(slug))) {
+      throw new NotFound(`Ingredient with slug '${slug}' not found`)
+    }
+
+    const recipes = await this.recipes.findByIngredientSlug(slug)
+    return res.status(200).json(recipes)
   }
 
   @path('/:slug')
@@ -61,7 +81,7 @@ export class IngredientsController {
 
       const result = await this.service.update(slug, parsed, supplierSlug)
 
-      return res.status(200).json(result)
+      return res.status(200).json(mapToData(result, { supplier: this.supplierMapper }))
     } catch (error) {
       return next(error)
     }
@@ -82,5 +102,26 @@ export class IngredientsController {
     } catch (error) {
       return next(error)
     }
+  }
+}
+
+function mapToData (data: DBIngredient | DBIngredientWithSupplier, mappers: { supplier: SupplierMapper }): JSONIngredient {
+  return {
+    slug: data.slug,
+    name: data.name,
+    category: data.category,
+    notes: data.notes ?? undefined,
+    purchase: {
+      unit: data.purchaseUnit,
+      cost: data.purchaseCost,
+      vat: Boolean(data.includesVat),
+    },
+    conversionRule: data.conversionRule ?? undefined,
+    lastPurchased: data.lastPurchased ?? undefined,
+    supplier: data.supplierSlug
+      ? 'supplierName' in data
+        ? mappers.supplier.mapEntityToJSON(data)
+        : data.supplierSlug
+      : undefined,
   }
 }

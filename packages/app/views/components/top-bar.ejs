@@ -1,10 +1,10 @@
 <%
-  const tenantName = typeof tenant !== 'undefined' && tenant ? tenant.name : 'Menu Book'
-  const restaurantName = typeof restaurant !== 'undefined' && restaurant ? restaurant.name : null
+  const tenantName = typeof tenant !== 'undefined' && tenant ? tenant.name : 'Demo'
+  const restaurantName = typeof restaurant !== 'undefined' && restaurant ? restaurant.name : 'Demo'
 %>
 
 <!-- Top Bar -->
-<header class="h-12 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 shrink-0">
+<header class="h-12 flex items-center justify-between px-4 shrink-0"> <!-- bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 -->
   <!-- Left: Logo and Tenant/Restaurant Selector -->
   <div class="flex items-center gap-4">
     <!-- Logo -->
@@ -14,7 +14,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
         </svg>
       </div>
-      <span class="font-semibold text-gray-900 dark:text-white text-sm hidden sm:inline">Menu Book</span>
+      <span class="font-semibold text-gray-900 dark:text-white text-sm hidden sm:inline">menubook</span>
     </div>
 
     <!-- Separator -->
@@ -25,8 +25,8 @@
       class="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
       onclick="document.getElementById('tenant-dropdown').classList.toggle('hidden')"
     >
-      <span class="text-gray-700 dark:text-gray-300 font-medium truncate max-w-[150px]">
-        <%= tenantName %><% if (restaurantName) { %> / <%= restaurantName %><% } %>
+      <span class="text-gray-500 dark:text-gray-500 font-medium truncate max-w-[150px]">
+        <%= tenantName %><% if (restaurantName) { %> / <span class="text-gray-800 dark:text-gray-300"><%= restaurantName %> </span><% } %>
       </span>
       <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -38,54 +38,30 @@
     <% } %>
   </div>
 
-  <!-- Center: Search (hidden on small screens) -->
-  <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
-    <div class="relative w-full">
-      <input
-        type="text"
-        placeholder="Search recipes, ingredients..."
-        class="w-full h-8 pl-9 pr-4 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-600 transition-colors"
-        id="global-search"
-        autocomplete="off"
-      />
-      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-      </svg>
-      <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-2xs font-medium">/</kbd>
-    </div>
-  </div>
-
   <!-- Right: User Menu & Theme Toggle -->
   <div class="flex items-center gap-2">
-    <!-- Mobile Search Button -->
-    <button class="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-      </svg>
-    </button>
-
-    <!-- Theme Toggle -->
-    <button
-      onclick="toggleTheme()"
-      class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
-      title="Toggle theme"
-    >
-      <!-- Sun icon (shown in dark mode) -->
-      <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-      </svg>
-      <!-- Moon icon (shown in light mode) -->
-      <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-      </svg>
-    </button>
+    <div class="hidden md:flex items-center flex-1">
+      <div class="relative w-full">
+        <input
+                type="text"
+                placeholder="Search..."
+                class="w-full h-8 pl-9 pr-4 rounded-md bg-white dark:bg-gray-700 border-1 border-gray-200 shadow-xs text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-600 transition-colors"
+                id="global-search"
+                autocomplete="off"
+        />
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <kbd class="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400 text-2xs font-medium">/</kbd>
+      </div>
+    </div>
 
     <!-- User Menu -->
     <button
       class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium text-sm"
       onclick="document.getElementById('user-dropdown').classList.toggle('hidden')"
     >
-      U
+      D
     </button>
   </div>
 

@@ -1,15 +1,10 @@
 import { Inject, register } from '@harrytwright/api/dist/core'
 import { BadRequest, Conflict, NotFound } from '@hndlr/errors'
-import type {
-  DatabaseContext,
-  SupplierImportData,
-  SupplierResolvedImportData,
-} from '@menubook/core'
+import type { DatabaseContext, Supplier } from '@menubook/core'
 import { SupplierService } from '@menubook/core'
 import type { EventEmitter } from 'events'
-import type { InsertResult } from 'kysely'
+import type { Insertable, InsertResult, Updateable } from 'kysely'
 import { DemoPersistenceManager } from '../datastore/sqlite.demo'
-import { toSupplierData } from '../schemas'
 
 // Basically a wrapper around the SupplierService to work with the DI side of the webapp
 @register('singleton')
@@ -47,7 +42,7 @@ export default class SupplierServiceImpl {
 
   upsert(
     slug: string,
-    data: SupplierImportData | SupplierResolvedImportData,
+    data: Insertable<Supplier> | Updateable<Supplier>,
     ctx?: DatabaseContext
   ): Promise<InsertResult> {
     return this.supplier(ctx).upsert(slug, data)
@@ -55,14 +50,13 @@ export default class SupplierServiceImpl {
 
   async create(
     slug: string,
-    raw: SupplierImportData | SupplierResolvedImportData,
+    data: Insertable<Supplier>,
     ctx?: DatabaseContext
   ) {
     if (await this.exists(slug)) {
       throw new Conflict(`Supplier with slug '${slug}' already exists`)
     }
 
-    const data = toSupplierData(raw, slug)
     await this.upsert(slug, data)
 
     return this.findAndEmit(slug, 'supplier.created', ctx)
@@ -70,19 +64,18 @@ export default class SupplierServiceImpl {
 
   async update(
     slug: string,
-    raw: SupplierImportData | SupplierResolvedImportData,
+    data: Updateable<Supplier>,
     ctx?: DatabaseContext
   ) {
-    if (raw.slug && raw.slug !== slug)
+    if (data.slug && data.slug !== slug)
       throw new BadRequest(
-        `Slug mismatch: expected '${slug}' but received '${raw.slug}'`
+        `Slug mismatch: expected '${slug}' but received '${data.slug}'`
       )
 
     if (!(await this.exists(slug))) {
       throw new NotFound(`Supplier with slug '${slug}' not found`)
     }
 
-    const data = toSupplierData(raw, slug)
     await this.upsert(slug, data)
 
     return this.findAndEmit(slug, 'supplier.updated', ctx)

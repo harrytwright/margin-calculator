@@ -1,11 +1,11 @@
-import { Selectable, Transaction } from 'kysely'
-
 import { NotFound } from '@hndlr/errors'
 import { DB, Supplier } from '@menubook/types'
+import { Insertable, Selectable, Transaction, Updateable } from 'kysely'
+
 import type { DatabaseContext } from '../datastore/context'
 import { handleError } from '../datastore/handleError'
 import { Importer, type ImportOutcome } from '../lib/importer'
-import type { SupplierImportData, SupplierResolvedImportData } from '../schema'
+import type { SupplierResolvedImportData } from '../schema'
 import { hasChanges } from '../utils'
 
 export class SupplierService {
@@ -26,33 +26,33 @@ export class SupplierService {
   findById(slug: string, trx?: Transaction<DB>): Promise<Selectable<Supplier>> {
     return (trx ?? this.database)
       .selectFrom('Supplier')
-      .select([
-        'id',
-        'slug',
-        'name',
-        'contactEmail',
-        'contactName',
-        'contactPhone',
-        'notes',
-      ])
+      .selectAll('Supplier')
       .where('slug', '=', slug)
       .executeTakeFirstOrThrow(handleError({ slug }))
   }
 
   upsert(
     slug: string,
-    data: SupplierImportData | SupplierResolvedImportData,
+    data: Insertable<Supplier> | Updateable<Supplier>,
     trx?: Transaction<DB>
   ) {
     return (trx ?? this.database)
       .insertInto('Supplier')
       .values({
         slug,
-        name: data.name,
+        name: data.name ?? slug,
+        contactName: data.contactName,
+        contactEmail: data.contactEmail,
+        contactPhone: data.contactPhone,
+        notes: data.notes,
       })
       .onConflict((oc) =>
         oc.column('slug').doUpdateSet({
           name: data.name,
+          contactName: data.contactName,
+          contactEmail: data.contactEmail,
+          contactPhone: data.contactPhone,
+          notes: data.notes,
         })
       )
       .executeTakeFirst()
@@ -70,7 +70,7 @@ export class SupplierService {
   async find(trx?: Transaction<DB>) {
     return (trx ?? this.database)
       .selectFrom('Supplier')
-      .select(['id', 'slug', 'name'])
+      .selectAll('Supplier')
       .execute()
   }
 

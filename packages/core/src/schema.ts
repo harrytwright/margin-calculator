@@ -65,6 +65,10 @@ export const ingredientImportSchema = z.object({
 export const supplierImportDataSchema = z.object({
   slug: z.string().optional(), // Optional - will be generated from name if not provided
   name: z.string().min(1, 'Supplier name is required'),
+  contactName: z.string().optional(),
+  contactEmail: z.email().optional(),
+  contactPhone: z.string().optional(),
+  notes: z.string().max(500, 'Notes cannot exceed 500 characters').optional(),
 })
 
 export const supplierImportSchema = z.object({

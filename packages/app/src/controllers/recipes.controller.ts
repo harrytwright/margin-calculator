@@ -102,4 +102,48 @@ export class RecipesController {
       return next(error)
     }
   }
+
+  @path('/:slug/ingredients/:ingredientSlug')
+  async putRecipeIngredient(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      const { slug, ingredientSlug } = req.params
+      const { quantity, unit } = req.body
+
+      if (!unit) {
+        return res.status(400).json({
+          error: { message: 'unit is required' },
+        })
+      }
+
+      const result = await this.service.addIngredient(slug, ingredientSlug, {
+        quantity,
+        unit,
+      })
+
+      return res.status(200).json(result)
+    } catch (error) {
+      return next(error)
+    }
+  }
+
+  @path('/:slug/ingredients/:ingredientSlug')
+  async deleteRecipeIngredient(
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) {
+    try {
+      const { slug, ingredientSlug } = req.params
+
+      const result = await this.service.removeIngredient(slug, ingredientSlug)
+
+      return res.status(200).json(result)
+    } catch (error) {
+      return next(error)
+    }
+  }
 }

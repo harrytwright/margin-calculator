@@ -12,6 +12,7 @@ import express from 'express'
 import {
   AnalyticsController,
   AppController,
+  DevToolsController,
   EventsController,
   HealthcheckController,
   InfoController,
@@ -38,7 +39,8 @@ import { expressRequestHandler } from './modules/sentry/middleware/wrapper'
   RecipesController,
   AnalyticsController,
   EventsController,
-  AppController
+  AppController,
+  DevToolsController
 )
 @useMiddleware(expressRequestHandler())
 @useMiddleware(require('./modules/metrics/middleware/morgan').morgan)

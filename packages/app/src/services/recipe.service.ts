@@ -184,12 +184,169 @@ export default class RecipeServiceImpl {
     return this.recipe(ctx).find()
   }
 
+  findByIngredientSlug(ingredientSlug: string, ctx?: DatabaseContext) {
+    const _ctx = ctx || this.demo.ctx() || this.ctx
+    return _ctx.db
+      .selectFrom('RecipeIngredients')
+      .innerJoin('Recipe', 'RecipeIngredients.recipeId', 'Recipe.id')
+      .innerJoin(
+        'Ingredient',
+        'RecipeIngredients.ingredientId',
+        'Ingredient.id'
+      )
+      .select(['Recipe.slug', 'Recipe.name', 'Recipe.class', 'Recipe.category'])
+      .where('Ingredient.slug', '=', ingredientSlug)
+      .distinct()
+      .execute()
+  }
+
   upsertIngredients(
     recipeId: number,
     data: RecipeResolvedImportData,
     ctx?: DatabaseContext
   ) {
     return this.recipe(ctx).upsertIngredients(recipeId, data)
+  }
+
+  async addIngredient(
+    recipeSlug: string,
+    ingredientSlug: string,
+    data: { quantity?: number; unit: string },
+    ctx?: DatabaseContext
+  ) {
+    const recipe = await this.findById(recipeSlug, true, ctx)
+    if (!recipe) {
+      throw new NotFound(`Recipe with slug '${recipeSlug}' not found`)
+    }
+
+    // Detect ingredient type
+    let type: 'ingredient' | 'recipe'
+    if (await this.ingredient.exists(ingredientSlug, ctx)) {
+      type = 'ingredient'
+    } else if (await this.exists(ingredientSlug, ctx)) {
+      type = 'recipe'
+    } else {
+      throw new NotFound(
+        `Ingredient or sub-recipe with slug '${ingredientSlug}' not found`
+      )
+    }
+
+    // Build updated ingredients list
+    const existingIngredients = recipe.ingredients || []
+    const unitStr =
+      data.quantity != null ? `${data.quantity}${data.unit}` : data.unit
+
+    // Filter out if already exists, then add
+    const filteredIngredients = existingIngredients.filter(
+      (ing) => ing.slug !== ingredientSlug
+    )
+    const updatedIngredients = [
+      ...filteredIngredients.map((ing) => ({
+        slug: ing.slug,
+        type: ing.type,
+        with: { unit: ing.unit, notes: ing.notes || undefined },
+      })),
+      { slug: ingredientSlug, type, with: { unit: unitStr } },
+    ]
+
+    // Build the update payload
+    const raw: RecipeApiData = {
+      name: recipe.name,
+      stage: recipe.stage || 'development',
+      class: recipe.class || 'menu_item',
+      costing: {
+        price: recipe.sellPrice,
+        margin: recipe.targetMargin || undefined,
+        vat: recipe.includesVat === 1,
+      },
+      extends: recipe.parent || undefined,
+      ingredients: updatedIngredients.map((ing) => ({
+        slug: ing.slug,
+        type: ing.type,
+        unit: ing.with.unit,
+      })),
+    }
+
+    const ingredientTypes = new Map<string, 'ingredient' | 'recipe'>()
+    for (const ing of updatedIngredients) {
+      ingredientTypes.set(ing.slug, ing.type)
+    }
+
+    const recipeData = toRecipeData(raw, recipeSlug, ingredientTypes)
+    const recipeId = await this.upsert(recipeSlug, recipeData, true, ctx)
+
+    if (!recipeId) {
+      throw new Error('Failed to update recipe')
+    }
+
+    await this.upsertIngredients(recipeId, recipeData, ctx)
+
+    return this.findAndEmit(recipeSlug, 'recipe.updated', ctx)
+  }
+
+  async removeIngredient(
+    recipeSlug: string,
+    ingredientSlug: string,
+    ctx?: DatabaseContext
+  ) {
+    const recipe = await this.findById(recipeSlug, true, ctx)
+    if (!recipe) {
+      throw new NotFound(`Recipe with slug '${recipeSlug}' not found`)
+    }
+
+    const existingIngredients = recipe.ingredients || []
+    const hadIngredient = existingIngredients.some(
+      (ing) => ing.slug === ingredientSlug
+    )
+
+    if (!hadIngredient) {
+      throw new NotFound(
+        `Ingredient '${ingredientSlug}' not found in recipe '${recipeSlug}'`
+      )
+    }
+
+    // Build updated ingredients list without the removed one
+    const updatedIngredients = existingIngredients
+      .filter((ing) => ing.slug !== ingredientSlug)
+      .map((ing) => ({
+        slug: ing.slug,
+        type: ing.type,
+        with: { unit: ing.unit, notes: ing.notes || undefined },
+      }))
+
+    // Build the update payload
+    const raw: RecipeApiData = {
+      name: recipe.name,
+      stage: recipe.stage || 'development',
+      class: recipe.class || 'menu_item',
+      costing: {
+        price: recipe.sellPrice,
+        margin: recipe.targetMargin || undefined,
+        vat: recipe.includesVat === 1,
+      },
+      extends: recipe.parent || undefined,
+      ingredients: updatedIngredients.map((ing) => ({
+        slug: ing.slug,
+        type: ing.type,
+        unit: ing.with.unit,
+      })),
+    }
+
+    const ingredientTypes = new Map<string, 'ingredient' | 'recipe'>()
+    for (const ing of updatedIngredients) {
+      ingredientTypes.set(ing.slug, ing.type)
+    }
+
+    const recipeData = toRecipeData(raw, recipeSlug, ingredientTypes)
+    const recipeId = await this.upsert(recipeSlug, recipeData, true, ctx)
+
+    if (!recipeId) {
+      throw new Error('Failed to update recipe')
+    }
+
+    await this.upsertIngredients(recipeId, recipeData, ctx)
+
+    return this.findAndEmit(recipeSlug, 'recipe.updated', ctx)
   }
 
   private async detectIngredientTypes(

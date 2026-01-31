@@ -63,34 +63,22 @@
             hx-get="/ingredients/<%= selectedIngredient.slug %>/edit"
             hx-target=".modal-content"
             onclick="openModal()"
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            class="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            title="Edit"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
-            Edit
           </button>
-          <div class="relative">
-            <button
-              class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
-              onclick="this.nextElementSibling.classList.toggle('hidden')"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
-              </svg>
-            </button>
-            <div class="hidden absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
-              <button
-                class="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                onclick="confirmDelete('ingredients', '<%= selectedIngredient.slug %>', '<%= selectedIngredient.name %>')"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
-                Delete
-              </button>
-            </div>
-          </div>
+          <button
+            class="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+            onclick="confirmDelete('ingredients', '<%= selectedIngredient.slug %>', '<%= selectedIngredient.name %>')"
+            title="Delete"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -161,29 +149,60 @@
     </div>
   </div>
 
-  <!-- Right Island: Used In Panel -->
-  <div id="used-in-panel-wrapper" class="min-w-0 shrink-0 <%= selectedIngredient ? '' : 'hidden' %>" data-panel-wrapper>
-    <%- include('../islands/details-panel', {
-      id: 'used-in-panel',
-      title: 'Used In',
-      collapsed: !selectedIngredient,
-      content: `
-        ${selectedIngredient && usedInRecipes && usedInRecipes.length > 0 ? `
+  <!-- Right Rail + Used In Panel -->
+  <div id="right-rail-wrapper" class="flex flex-row-reverse items-stretch gap-2 shrink-0 <%= selectedIngredient ? '' : 'hidden' %>">
+    <div class="flex flex-col items-center justify-start w-10 gap-4 rounded-island shadow-island py-3">
+      <button
+        type="button"
+        onclick="toggleRightPanel('used-in')"
+        class="flex flex-col items-center cursor-pointer py-2 gap-2 hover:border hover:border-gray-200 dark:hover:border-gray-700 text-gray-500 rounded-md dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all"
+        title="Used In"
+      >
+        <span class="w-7 h-7 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </span>
+        <span class="text-sm mb-2 font-bold tracking-wide writing-vertical-lr">Used In</span>
+      </button>
+    </div>
+
+    <div
+      id="right-panel"
+      class="w-72 min-w-72 h-full bg-white dark:bg-gray-800 rounded-island shadow-island overflow-hidden transition-all duration-200"
+    >
+      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-200" id="right-panel-title">Used In</h3>
+        <button
+          type="button"
+          onclick="closeRightPanel()"
+          class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+          title="Close"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto" id="right-panel-content">
+        <% if (usedInRecipes && usedInRecipes.length > 0) { %>
         <div class="p-3 space-y-2">
-          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">${usedInRecipes.length} recipe${usedInRecipes.length !== 1 ? 's' : ''}</p>
-          ${usedInRecipes.map(recipe => `
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            <%= usedInRecipes.length %> recipe<%= usedInRecipes.length !== 1 ? 's' : '' %>
+          </p>
+          <% usedInRecipes.forEach(recipe => { %>
           <a
-            href="/recipes/${recipe.slug}"
+            href="/recipes/<%= recipe.slug %>"
             class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
           >
             <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
-            <span class="text-sm text-gray-700 dark:text-gray-200 truncate">${recipe.name}</span>
+            <span class="text-sm text-gray-700 dark:text-gray-200 truncate"><%= recipe.name %></span>
           </a>
-          `).join('')}
+          <% }) %>
         </div>
-        ` : selectedIngredient ? `
+        <% } else { %>
         <div class="text-center py-8 px-3">
           <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,25 +211,140 @@
           </div>
           <p class="text-sm text-gray-500 dark:text-gray-400">Not used in any recipes</p>
         </div>
-        ` : `
-        <div class="text-center py-8 px-3">
-          <p class="text-sm text-gray-500 dark:text-gray-400">Select an ingredient to see usage</p>
-        </div>
-        `}`
-    }) %>
+        <% } %>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
+  function openRightPanel(view) {
+    const wrapper = document.getElementById('right-rail-wrapper');
+    const panel = document.getElementById('right-panel');
+    const title = document.getElementById('right-panel-title');
+    if (!wrapper || !panel) return;
+    wrapper.classList.remove('hidden');
+    panel.classList.remove('w-0', 'min-w-0', 'opacity-0', 'pointer-events-none');
+    panel.classList.add('w-72', 'min-w-72');
+    panel.dataset.view = view;
+    if (title) {
+      title.textContent = view === 'used-in' ? 'Used In' : 'Details';
+    }
+  }
+
+  function updateRightPanelContent(payload) {
+    const content = document.getElementById('right-panel-content');
+    if (!content) return;
+    const usedIn = payload?.usedIn || [];
+
+    if (usedIn.length === 0) {
+      content.innerHTML = `
+        <div class="text-center py-8 px-3">
+          <div class="w-10 h-10 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">Not used in any recipes</p>
+        </div>
+      `;
+      return;
+    }
+
+    const listItems = usedIn
+      .map((recipe) => {
+        const name = recipe.name || recipe.slug || 'Recipe';
+        const slug = recipe.slug || '';
+        return `
+          <a
+            href="/recipes/${slug}"
+            class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+          >
+            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span class="text-sm text-gray-700 dark:text-gray-200 truncate">${name}</span>
+          </a>
+        `;
+      })
+      .join('');
+
+    content.innerHTML = `
+      <div class="p-3 space-y-2">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          ${usedIn.length} recipe${usedIn.length !== 1 ? 's' : ''}
+        </p>
+        ${listItems}
+      </div>
+    `;
+  }
+
+  function closeRightPanel() {
+    const panel = document.getElementById('right-panel');
+    if (!panel) return;
+    panel.classList.add('w-0', 'min-w-0', 'opacity-0', 'pointer-events-none');
+    panel.classList.remove('w-72', 'min-w-72');
+  }
+
+  function toggleRightPanel(view) {
+    const panel = document.getElementById('right-panel');
+    if (!panel) return;
+    const isOpen = !panel.classList.contains('w-0');
+    const currentView = panel.dataset.view || 'used-in';
+    if (isOpen && currentView === view) {
+      closeRightPanel();
+    } else {
+      openRightPanel(view);
+    }
+  }
+
+  function hideRightRail() {
+    const wrapper = document.getElementById('right-rail-wrapper');
+    if (!wrapper) return;
+    wrapper.classList.add('hidden');
+  }
+
+
+  function showRightRail() {
+    const wrapper = document.getElementById('right-rail-wrapper');
+    if (!wrapper) return;
+    wrapper.classList.remove('hidden');
+  }
+
   // Highlight selected item on page load
   <% if (selectedIngredient) { %>
   document.addEventListener('DOMContentLoaded', () => {
     selectItem('ingredients', '<%= selectedIngredient.slug %>');
-    const panelWrapper = document.getElementById('used-in-panel-wrapper');
-    if (panelWrapper) {
-      panelWrapper.classList.remove('hidden');
-    }
+    showRightRail();
+    openRightPanel('used-in');
+    updateRightPanelContent({ usedIn: <%- JSON.stringify(usedInRecipes || []) %> });
+  });
+  <% } else { %>
+  document.addEventListener('DOMContentLoaded', () => {
+    hideRightRail();
   });
   <% } %>
+
+  document.body.addEventListener('htmx:afterSwap', (event) => {
+    if (event.detail.target && event.detail.target.id === 'ingredients-editor') {
+      showRightRail();
+      openRightPanel('used-in');
+      const payloadEl = event.detail.target.querySelector('[data-used-in]');
+      if (payloadEl) {
+        const usedIn = JSON.parse(payloadEl.getAttribute('data-used-in') || '[]');
+        updateRightPanelContent({ usedIn });
+      }
+    }
+  });
 </script>
 
+<style>
+  .writing-vertical-rl {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  .writing-vertical-lr {
+    writing-mode: vertical-lr;
+  }
+</style>

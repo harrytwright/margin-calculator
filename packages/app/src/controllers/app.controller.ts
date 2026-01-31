@@ -1,12 +1,15 @@
 import { controller, Inject, path } from '@harrytwright/api/dist/core'
-import type { DatabaseContext } from '@menubook/core'
+import type { DatabaseContext, Supplier } from '@menubook/core'
 import { ConfigService, slugify } from '@menubook/core'
 import express from 'express'
+import { Insertable, Updateable } from 'kysely'
 
 import { DemoPersistenceManager } from '../datastore/sqlite.demo'
+import { SupplierMapper } from '../mappers/supplier.mapper'
 import {
   ingredientApiSchema,
   recipeApiSchema,
+  SupplierApiData,
   supplierApiSchema,
 } from '../schemas'
 import CalculatorImpl from '../services/calculator.service'
@@ -43,7 +46,8 @@ export class AppController {
     @Inject('globalConfig') private readonly config: ConfigService,
     @Inject('database') private readonly ctx: DatabaseContext,
     private readonly calculator: CalculatorImpl,
-    private readonly demo: DemoPersistenceManager
+    private readonly demo: DemoPersistenceManager,
+    private readonly serviceMapper: SupplierMapper
   ) {}
 
   /**
@@ -465,19 +469,7 @@ export class AppController {
       return res.status(404).send('Ingredient not found')
     }
 
-    // Find recipes using this ingredient
-    // Note: We need to load each recipe with ingredients to check usage
-    // For performance, we could add a dedicated query for this
-    const allRecipes = await this.recipes.find()
-    const recipesWithIngredients = await Promise.all(
-      allRecipes.map((r) => this.recipes.findById(r.slug, true))
-    )
-    const usedIn = recipesWithIngredients.filter((r) => {
-      if (!r || !r.ingredients) return false
-      return r.ingredients.some(
-        (i: any) => i.ingredientSlug === slug || i.slug === slug
-      )
-    })
+    const usedIn = await this.recipes.findByIngredientSlug(slug)
 
     return this.render(req, res, 'ingredients', 'Ingredients', {
       ingredients,
@@ -579,13 +571,16 @@ export class AppController {
    */
   @path('/suppliers')
   async postSupplier(
-    req: ServerRequest<never, unknown, Record<string, any>>,
+    req: ServerRequest<never, unknown, SupplierApiData>,
     res: express.Response,
     next: express.NextFunction
   ) {
     try {
-      const parsed = supplierApiSchema.parse(req.body)
+      const parsed = this.serviceMapper.mapJSONToEntity(
+        req.body
+      ) as Insertable<Supplier>
       const slug = parsed.slug || (await slugify(parsed.name))
+
       await this.suppliers.create(slug, parsed)
 
       res.setHeader('HX-Redirect', `/suppliers/${slug}`)
@@ -1090,12 +1085,14 @@ export class AppController {
     }
   }
 
-  private async createEntity(type: EntityType, data: Record<string, any>) {
+  private async createEntity(type: EntityType, data: any) {
     switch (type) {
       case 'suppliers': {
-        const parsed = supplierApiSchema.parse(data)
+        const parsed = this.serviceMapper.mapJSONToEntity(
+          data
+        ) as Insertable<Supplier>
         const slug = parsed.slug || (await slugify(parsed.name))
-        return this.suppliers.create(slug, parsed)
+        return await this.suppliers.create(slug, parsed)
       }
       case 'ingredients': {
         const parsed = ingredientApiSchema.parse(data)
@@ -1111,14 +1108,12 @@ export class AppController {
     }
   }
 
-  private async updateEntity(
-    type: EntityType,
-    slug: string,
-    data: Record<string, any>
-  ) {
+  private async updateEntity(type: EntityType, slug: string, data: any) {
     switch (type) {
       case 'suppliers': {
-        const parsed = supplierApiSchema.parse(data)
+        const parsed = this.serviceMapper.mapJSONToEntity(
+          data
+        ) as Updateable<Supplier>
         return this.suppliers.update(slug, parsed)
       }
       case 'ingredients': {

@@ -19,11 +19,13 @@
     "cli": "pnpm --filter @menubook/cli cli"
   },
   "devDependencies": {
+    "@sindresorhus/slugify": "3.0.0",
     "@tsconfig/node16": "^16.1.8",
     "prettier": "^3.5.0",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prisma": "^6.9.0",
     "prisma-kysely": "^2.0.0",
+    "prompts": "2.4.2",
     "turbo": "^2.5.0",
     "typescript": "^5.9.3"
   },

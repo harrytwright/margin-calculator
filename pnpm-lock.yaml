@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@sindresorhus/slugify':
+        specifier: 3.0.0
+        version: 3.0.0
       '@tsconfig/node16':
         specifier: ^16.1.8
         version: 16.1.8
@@ -23,6 +26,9 @@ importers:
       prisma-kysely:
         specifier: ^2.0.0
         version: 2.3.0(prisma@6.19.1(typescript@5.9.3))
+      prompts:
+        specifier: 2.4.2
+        version: 2.4.2
       turbo:
         specifier: ^2.5.0
         version: 2.7.3
@@ -95,6 +101,9 @@ importers:
       '@menubook/core':
         specifier: workspace:*
         version: link:../core
+      '@menubook/types':
+        specifier: workspace:*
+        version: link:../types
       '@paralleldrive/cuid2':
         specifier: ^2.3.1
         version: 2.3.1

@@ -74,9 +74,8 @@ describe('IngredientService', () => {
   })
 
   describe('findById', () => {
-    test('should return undefined for non-existent ingredient', async () => {
-      const result = await service.findById('ham')
-      expect(result).toBeUndefined()
+    test('should throw undefined for non-existent ingredient', async () => {
+      await expect(service.findById('ham')).rejects.toThrow()
     })
 
     test('should return ingredient data with supplier info', async () => {

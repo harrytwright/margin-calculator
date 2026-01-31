@@ -3,11 +3,16 @@
 import slugify from '@sindresorhus/slugify'
 import prompt from 'prompts'
 
-const migrationsDirectoryPath = path.join(
-  __dirname,
-  '..',
-  './src/datastore/migrations'
-)
+// const migrationsDirectoryPath = path.join(
+//   __dirname,
+//   '..',
+//   './src/datastore/migrations'
+// )
+
+const adaptors = {
+  sqlite: path.join(__dirname, '..', './packages/sqlite/src/migrations'),
+  postgres: path.join(__dirname, '..', './packages/postgres/src/migrations'),
+}
 
 let migrationName = undefined
 const getMigrationNameResult = await getMigrationName(argv._[0])
@@ -19,15 +24,17 @@ if (getMigrationNameResult.userCancelled) {
   migrationName = getMigrationNameResult.name
 }
 
+const adaptor = adaptors[argv.database] || adaptors.sqlite
+
 const generatedMigrationName = `${createDateTime()}_${migrationName || ''}.ts`
 await spinner('Creating migration file', async () => {
   await fs.copyFile(
     path.join(__dirname, '..', './templates/migration.ts'),
-    path.join(migrationsDirectoryPath, generatedMigrationName)
+    path.join(adaptor, generatedMigrationName)
   )
 })
 
-echo`Created migration file @ ./${path.relative(process.cwd(), path.join(migrationsDirectoryPath, generatedMigrationName))}`
+echo`Created migration file @ ./${path.relative(process.cwd(), path.join(adaptor, generatedMigrationName))}`
 
 export async function getMigrationName(name) {
   // Truncate if longer

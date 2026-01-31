@@ -155,35 +155,29 @@
         const panel = document.getElementById(panelId);
         const toggleBtn = document.getElementById(`${panelId}-toggle`);
         const wrapper = panel?.closest('[data-panel-wrapper]');
-        const isCollapsed = panel.classList.contains('w-0');
+        const isCollapsed = panel?.classList.contains('w-0');
+
+        if (!panel || !toggleBtn) return;
 
         if (isCollapsed) {
           // Expand panel
           panel.classList.remove('w-0', 'overflow-hidden');
           panel.classList.add('w-60', 'min-w-60');
-          if (toggleBtn) {
-            toggleBtn.classList.add('hidden');
-            toggleBtn.classList.remove('flex');
-          }
+          toggleBtn.classList.add('hidden');
+          toggleBtn.classList.remove('flex');
           if (wrapper) {
-            wrapper.classList.remove('min-w-0');
-            wrapper.classList.add('min-w-60');
-          }
-          if (panelId === 'used-in-panel') {
-            const panelWrapper = document.getElementById('used-in-panel-wrapper');
-            panelWrapper?.classList.remove('hidden');
+            wrapper.classList.remove('min-w-0', 'w-8');
+            wrapper.classList.add('min-w-60', 'w-60');
           }
         } else {
           // Collapse panel
           panel.classList.add('w-0', 'overflow-hidden');
           panel.classList.remove('w-60', 'min-w-60');
-          if (toggleBtn) {
-            toggleBtn.classList.remove('hidden');
-            toggleBtn.classList.add('flex');
-          }
+          toggleBtn.classList.remove('hidden');
+          toggleBtn.classList.add('flex');
           if (wrapper) {
-            wrapper.classList.remove('min-w-60');
-            wrapper.classList.add('min-w-0');
+            wrapper.classList.remove('min-w-60', 'w-60');
+            wrapper.classList.add('min-w-0', 'w-8');
           }
         }
 
@@ -191,32 +185,8 @@
         localStorage.setItem(`panel-${panelId}`, isCollapsed ? 'expanded' : 'collapsed');
       }
 
-      // Restore panel states on load
-      function restorePanelStates() {
-        document.querySelectorAll('[data-panel]').forEach(panel => {
-          const state = localStorage.getItem(`panel-${panel.id}`);
-          const wrapper = panel.closest('[data-panel-wrapper]');
-          if (state === 'collapsed') {
-            panel.classList.add('w-0', 'overflow-hidden');
-            panel.classList.remove('w-60', 'min-w-60');
-            if (wrapper) {
-              wrapper.classList.remove('min-w-60');
-              wrapper.classList.add('min-w-0');
-            }
-          } else if (state === 'expanded') {
-            panel.classList.remove('w-0', 'overflow-hidden');
-            panel.classList.add('w-60', 'min-w-60');
-            if (wrapper) {
-              wrapper.classList.remove('min-w-0');
-              wrapper.classList.add('min-w-60');
-            }
-          }
-        });
-      }
-
       // Initialize on page load
       document.addEventListener('DOMContentLoaded', () => {
-        restorePanelStates();
       });
 
       // HTMX configuration

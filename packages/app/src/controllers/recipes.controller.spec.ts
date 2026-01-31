@@ -351,4 +351,178 @@ describe('RecipesController', () => {
       })
     })
   })
+
+  describe('/api/recipes/:slug/ingredients/:ingredientSlug', () => {
+    describe('PUT', () => {
+      test('should add an ingredient to a recipe', async () => {
+        // Create a test ingredient to add
+        await applet.container
+          .get<IngredientServiceImpl>(IngredientServiceImpl)!
+          .upsert(
+            'test-butter',
+            {
+              slug: 'test-butter',
+              name: 'Test Butter',
+              category: 'Dairy',
+              purchase: { cost: 200, unit: '250g', vat: false },
+            },
+            'test-supplier'
+          )
+
+        const response = await request
+          .put('/api/recipes/test-bread/ingredients/test-butter')
+          .send({
+            quantity: 50,
+            unit: 'g',
+          })
+
+        expect(response.status).toBe(200)
+        expect(response.body.ingredients).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ slug: 'test-butter', unit: '50g' }),
+          ])
+        )
+
+        // Cleanup - remove the added ingredient
+        await request.delete('/api/recipes/test-bread/ingredients/test-butter')
+        await applet.container
+          .get<IngredientServiceImpl>(IngredientServiceImpl)
+          ?.delete('test-butter')
+      })
+
+      test('should update an existing ingredient quantity', async () => {
+        const response = await request
+          .put('/api/recipes/test-bread/ingredients/test-flour')
+          .send({
+            quantity: 750,
+            unit: 'g',
+          })
+
+        expect(response.status).toBe(200)
+        expect(response.body.ingredients).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ slug: 'test-flour', unit: '750g' }),
+          ])
+        )
+
+        // Reset to original
+        await request
+          .put('/api/recipes/test-bread/ingredients/test-flour')
+          .send({
+            quantity: 500,
+            unit: 'g',
+          })
+      })
+
+      test('should return 400 when unit is missing', async () => {
+        const response = await request
+          .put('/api/recipes/test-bread/ingredients/test-flour')
+          .send({
+            quantity: 100,
+          })
+
+        expect(response.status).toBe(400)
+        expect(response.body.error.message).toContain('unit is required')
+      })
+
+      test('should return 404 for non-existent recipe', async () => {
+        const response = await request
+          .put('/api/recipes/non-existent/ingredients/test-flour')
+          .send({
+            quantity: 100,
+            unit: 'g',
+          })
+
+        expect(response.status).toBe(404)
+        expect(response.body.error).toBeDefined()
+      })
+
+      test('should return 404 for non-existent ingredient', async () => {
+        const response = await request
+          .put('/api/recipes/test-bread/ingredients/non-existent')
+          .send({
+            quantity: 100,
+            unit: 'g',
+          })
+
+        expect(response.status).toBe(404)
+        expect(response.body.error).toBeDefined()
+      })
+    })
+
+    describe('DELETE', () => {
+      test('should remove an ingredient from a recipe', async () => {
+        // First add an ingredient to remove
+        await applet.container
+          .get<IngredientServiceImpl>(IngredientServiceImpl)!
+          .upsert(
+            'test-salt',
+            {
+              slug: 'test-salt',
+              name: 'Test Salt',
+              category: 'Seasoning',
+              purchase: { cost: 50, unit: '500g', vat: false },
+            },
+            'test-supplier'
+          )
+
+        await request
+          .put('/api/recipes/test-bread/ingredients/test-salt')
+          .send({ quantity: 5, unit: 'g' })
+
+        const response = await request.delete(
+          '/api/recipes/test-bread/ingredients/test-salt'
+        )
+
+        expect(response.status).toBe(200)
+        expect(response.body.ingredients).not.toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ slug: 'test-salt' }),
+          ])
+        )
+
+        // Cleanup
+        await applet.container
+          .get<IngredientServiceImpl>(IngredientServiceImpl)
+          ?.delete('test-salt')
+      })
+
+      test('should return 404 for non-existent recipe', async () => {
+        const response = await request.delete(
+          '/api/recipes/non-existent/ingredients/test-flour'
+        )
+
+        expect(response.status).toBe(404)
+        expect(response.body.error).toBeDefined()
+      })
+
+      test('should return 404 when ingredient not in recipe', async () => {
+        // Create an ingredient that's not in the recipe
+        await applet.container
+          .get<IngredientServiceImpl>(IngredientServiceImpl)!
+          .upsert(
+            'test-sugar',
+            {
+              slug: 'test-sugar',
+              name: 'Test Sugar',
+              category: 'Dry Goods',
+              purchase: { cost: 100, unit: '1kg', vat: false },
+            },
+            'test-supplier'
+          )
+
+        const response = await request.delete(
+          '/api/recipes/test-bread/ingredients/test-sugar'
+        )
+
+        expect(response.status).toBe(404)
+        expect(response.body.error).toBeDefined()
+
+        // Cleanup
+        await applet.container
+          .get<IngredientServiceImpl>(IngredientServiceImpl)
+          ?.delete('test-sugar')
+      })
+    })
+  })
 })
