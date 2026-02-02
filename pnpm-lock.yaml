@@ -449,6 +449,9 @@ importers:
 
   packages/types:
     dependencies:
+      '@menubook/prisma':
+        specifier: workspace:*
+        version: link:../prisma
       kysely:
         specifier: ^0.28.7
         version: 0.28.9

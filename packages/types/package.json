@@ -15,7 +15,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "kysely": "^0.28.7"
+    "kysely": "^0.28.7",
+    "@menubook/prisma": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"
