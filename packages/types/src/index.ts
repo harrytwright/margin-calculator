@@ -8,3 +8,6 @@
 export type { ColumnType, GeneratedAlways } from 'kysely'
 
 export * from '@menubook/prisma'
+
+export type { DatabaseAdapter } from './database/adapter'
+export type { DatabaseContext } from './database/context'

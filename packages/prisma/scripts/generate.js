@@ -27,9 +27,7 @@ const banner = `
 
 async function main() {
   try {
-    await handleDatabaseSchema(
-      path.join(process.cwd(), './src/kysely.ts')
-    )
+    await handleDatabaseSchema(path.join(process.cwd(), './src/kysely.ts'))
   } catch (err) {
     console.error(err)
     return Promise.reject(err)
@@ -131,9 +129,7 @@ async function handleDatabaseSchema(file) {
               ts.factory.createImportSpecifier(false, ...importArgs),
             ])
           ),
-          ts.factory.createStringLiteral(
-            '../kysely.ts'
-          ),
+          ts.factory.createStringLiteral('../kysely.ts'),
           undefined
         ),
         ts.factory.createIdentifier('\n'),
