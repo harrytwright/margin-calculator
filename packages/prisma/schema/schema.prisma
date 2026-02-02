@@ -1,0 +1,11 @@
+datasource db {
+  // Work with postgres as default
+  provider = "postgresql"
+}
+
+generator kysely {
+  provider    = "prisma-kysely"
+  output      = "../src"
+  fileName    = "./kysely.ts"
+  readOnlyIds = true
+}

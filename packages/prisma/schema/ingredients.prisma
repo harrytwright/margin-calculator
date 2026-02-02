@@ -1,0 +1,47 @@
+model Ingredient {
+  id       Int    @id @default(autoincrement())
+  slug     String @unique
+  name     String
+  // Used by the UI to handle grouping
+  category String
+
+  // Optional: for custom units that convert-units can't handle
+  // Format: "X unitA = Y unitB" (e.g., "1 box = 24 bags")
+  conversionRule String?
+
+  // Supplier
+  supplierId Int?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  // Metadata
+  notes         String?
+  lastPurchased DateTime?
+
+  // Relations
+  recipes  RecipeIngredients[]
+  costings IngredientCost[]
+
+  @@index([category])
+  @@index([slug])
+}
+
+model IngredientCost {
+  id Int @id @default(autoincrement())
+
+  /// "1kg", "1 box", "1 keg", "500ml bottle"
+  unit      String
+  /// Does this value have VAT already added
+  vat       Boolean
+  // Handling historical costings
+  validFrom DateTime  @default(now())
+  validTo   DateTime?
+
+  // References
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+
+  pricingId Int
+  pricing   Pricing @relation(fields: [pricingId], references: [id])
+
+  @@index([pricingId])
+}

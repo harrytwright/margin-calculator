@@ -1,0 +1,30 @@
+{
+  "name": "@menubook/prisma",
+  "version": "4.0.0-beta.1",
+  "description": "Prisma schema for Menu Book. Used to generate TS types",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "kysely": {
+      "types": "./dist/kysely.d.ts",
+      "default": "./dist/kysely.js"
+    }
+  },
+  "scripts": {
+    "prebuild": "pnpm generate && node ./scripts/generate.js",
+    "build": "tsc",
+    "generate": "prisma generate --schema=./schema"
+  },
+  "dependencies": {
+    "kysely": "^0.28.11"
+  },
+  "devDependencies": {
+    "prisma": "^7.3.0",
+    "typescript": "^5.9.3"
+  }
+}

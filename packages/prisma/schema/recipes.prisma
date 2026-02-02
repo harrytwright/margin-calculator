@@ -1,0 +1,62 @@
+model Recipe {
+  id       Int         @id @default(autoincrement())
+  /// Slugified name for the supplier, used for linking when importing
+  slug     String      @unique
+  name     String
+  /// Metadata for usage
+  stage    RecipeStage @default(development)
+  class    RecipeClass @default(menu_item)
+  category String?
+
+  /// The taget profit margin.
+  targetMargin Int      @default(20)
+  // For sub-recipes: what does this recipe yield?
+  yieldAmount  Decimal?
+  yieldUnit    String?
+  // Allow for inheritance
+  parentId     Int?
+
+  parent      Recipe?             @relation("inheritance", fields: [parentId], references: [id])
+  children    Recipe[]            @relation("inheritance")
+  ingredients RecipeIngredients[] @relation("recipe")
+  usedIn      RecipeIngredients[] @relation("subRecipe")
+  prices      RecipePrice[]
+}
+
+model RecipeIngredients {
+  id           Int  @id @default(autoincrement())
+  recipeId     Int
+  ingredientId Int?
+  subRecipeId  Int?
+
+  // Freeform unit string: "50g", "2 bags", "1.5 pints"
+  unit String
+
+  // Optional notes for the recipe
+  notes String? // "finely chopped", "to taste", etc.
+
+  recipe     Recipe      @relation("recipe", fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient? @relation(fields: [ingredientId], references: [id])
+  subRecipe  Recipe?     @relation("subRecipe", fields: [subRecipeId], references: [id])
+
+  @@index([recipeId])
+  @@index([ingredientId])
+}
+
+model RecipePrice {
+  id Int @id @default(autoincrement())
+
+  /// Does this value have VAT already added
+  vat       Boolean
+  // Handling historical pricings
+  validFrom DateTime  @default(now())
+  validTo   DateTime?
+
+  recipeId Int
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+
+  pricingId Int
+  pricing   Pricing @relation(fields: [pricingId], references: [id])
+
+  @@index([pricingId])
+}
