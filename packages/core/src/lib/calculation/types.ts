@@ -1,16 +1,16 @@
-import { RecipeWithIngredients } from '../../services/recipe'
+import { RecipeResult as RecipeServiceResult } from '../../services/recipe'
 
 export interface RecipeCostNode {
   type: 'ingredient' | 'recipe'
   name: string
-  amount: number
+  amount?: number
   unit: string
   cost: number
   children?: RecipeCostNode[]
 }
 
-export type RecipeResult = {
-  recipe: RecipeWithIngredients<true>
+export type RecipeCostResult = {
+  recipe: RecipeServiceResult<{ withIngredients: true }>
   tree: RecipeCostNode[]
   totalCost: number
 }

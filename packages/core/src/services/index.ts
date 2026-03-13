@@ -6,8 +6,10 @@ export { IngredientService } from './ingredient'
 export type { IngredientServiceOptions } from './ingredient'
 export { RecipeService } from './recipe'
 export type {
-  RecipeIngredientsLookup,
+  RecipeIngredientReference,
+  RecipePricing,
+  RecipeResult,
   RecipeServiceOptions,
-  RecipeWithIngredients,
+  RecipeWithPricing,
 } from './recipe'
 export { SupplierService } from './supplier'

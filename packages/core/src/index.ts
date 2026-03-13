@@ -54,7 +54,7 @@ export {
   RecipeService,
   SupplierService,
 } from './services'
-export type { RecipeIngredientsLookup, RecipeWithIngredients } from './services'
+export type { RecipeIngredientReference, RecipeWithPricing } from './services'
 export type {
   DBIngredient,
   DBIngredientWithSupplier,
@@ -65,7 +65,7 @@ export { Calculator } from './lib/calculation/calculator'
 export type {
   MarginResult,
   RecipeCostNode,
-  RecipeResult,
+  RecipeCostResult,
 } from './lib/calculation/types'
 export {
   convertUnits,
