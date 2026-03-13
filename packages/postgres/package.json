@@ -21,8 +21,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@menubook/types": "workspace:*",
-    "kysely": "^0.28.7",
+    "@menubook/shared": "workspace:*",
+    "kysely": "^0.28.11",
     "pg": "^8.11.0"
   },
   "devDependencies": {

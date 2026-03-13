@@ -1,7 +1,7 @@
 {
-  "name": "@menubook/types",
+  "name": "@menubook/shared",
   "version": "0.3.0",
-  "description": "Shared TypeScript types for Menu Book packages",
+  "description": "Shared TypeScript types and enums for Menu Book packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -15,7 +15,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "kysely": "^0.28.7",
+    "kysely": "^0.28.11",
     "@menubook/prisma": "workspace:*"
   },
   "devDependencies": {

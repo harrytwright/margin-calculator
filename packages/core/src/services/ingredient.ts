@@ -1,18 +1,29 @@
-import { NotFound } from '@hndlr/errors'
-import { DB, Ingredient, Supplier } from '@menubook/types'
-import { Selectable, Transaction } from 'kysely'
+import {
+  DatabaseContext,
+  DB,
+  IDType,
+  Ingredient,
+  IngredientCost,
+  NewIngredient,
+  NewIngredientCost,
+  NewPricing,
+  Pricing,
+  Supplier,
+  TransactionOr,
+  UpdateIngredient,
+} from '@menubook/shared'
+import { Transaction } from 'kysely'
 
 import type { CacheAdapter } from '../cache'
-import type { DatabaseContext } from '../datastore/context'
 import { handleError } from '../datastore/handleError'
-import type { ImportOutcome } from '../lib/importer'
-import { Importer } from '../lib/importer'
-import type {
-  IngredientImportData,
-  IngredientResolvedImportData,
-} from '../schema'
 import { hasChanges } from '../utils'
-import { SupplierService } from './supplier'
+import { parseWithSchema } from '../validation'
+import {
+  ingredientCreateSchema,
+  ingredientPricingInputSchema,
+  ingredientSupplierRefSchema,
+  ingredientUpdateSchema,
+} from '../validation/zod'
 
 /** Cache key patterns for invalidation */
 const CACHE_PATTERNS = {
@@ -27,25 +38,30 @@ export interface IngredientServiceOptions {
   cache?: CacheAdapter
 }
 
-export type Prefix<T> = {
-  [K in keyof T as `supplier${Capitalize<Extract<K, string>>}`]?: T[K] | null
+export type IngredientPricing = Omit<
+  IngredientCost,
+  'ingredientId' | 'pricingId'
+> &
+  Omit<Pricing, 'id'>
+
+export type IngredientWithPricing = Ingredient & {
+  cost: IngredientPricing
+  supplierSlug?: string
 }
 
-export type DBIngredient = Selectable<Ingredient> & {
-  supplierSlug: string | null
+export type IngredientWithHistory = IngredientWithPricing & {
+  historicalPricing: IngredientPricing[]
 }
 
-export type DBIngredientWithSupplier = DBIngredient &
-  Prefix<Selectable<Supplier>>
-
-export type TransactionOr<T> = Transaction<DB> | T
+export type IngredientWithHistoryAndSupplier = IngredientWithHistory & {
+  supplier: Supplier
+}
 
 export class IngredientService {
   private cache?: CacheAdapter
 
   constructor(
     private context: DatabaseContext,
-    private readonly supplier: SupplierService,
     options: IngredientServiceOptions = {}
   ) {
     this.cache = options.cache
@@ -63,157 +79,280 @@ export class IngredientService {
     ])
   }
 
-  private get database() {
+  get database() {
     return this.context.db
   }
 
-  async exists(slug: string, trx?: Transaction<DB>) {
-    return !!(await (trx ?? this.database)
-      .selectFrom('Ingredient')
-      .select('id')
-      .where('slug', '=', slug)
-      .executeTakeFirst())
+  get transaction() {
+    return this.database.transaction()
   }
 
-  findById(slug: string): Promise<DBIngredient>
-  findById(slug: string, trx: Transaction<DB>): Promise<DBIngredient>
-  findById(slug: string, withSupplier: true): Promise<DBIngredientWithSupplier>
-  findById(slug: string, withSupplier: false): Promise<DBIngredient>
-  findById(
-    slug: string,
-    withSupplier: boolean
-  ): Promise<DBIngredient | DBIngredientWithSupplier>
-  findById(
-    slug: string,
-    withSupplier: true,
-    trx: Transaction<DB>
-  ): Promise<DBIngredientWithSupplier>
-  findById(
-    slug: string,
-    withSupplier: false,
-    trx: Transaction<DB>
-  ): Promise<DBIngredient>
-  findById(
-    slug: string,
-    withSupplier: boolean,
-    trx: Transaction<DB>
-  ): Promise<DBIngredient | DBIngredientWithSupplier>
-  findById(
-    slug: string,
-    withSupplier: TransactionOr<boolean> = false,
-    trx?: Transaction<DB>
-  ): Promise<DBIngredient | DBIngredientWithSupplier> {
-    if (withSupplier instanceof Transaction) {
-      trx = withSupplier
-      withSupplier = false
-    }
+  // The CLI will set a global value, bar the UI command, to say whether this is running as a CLI/TUI or not
+  get isInCLIMode() {
+    // @ts-ignore
+    return globalThis[Symbol.for('isCLI')] === true
+  }
 
-    return (trx ?? this.database)
+  find(trx?: Transaction<DB>): Promise<IngredientWithPricing[]> {
+    const base = trx ?? this.database
+    const jsonObjectFrom = this.context.helpers.jsonObjectFrom
+
+    return base
       .selectFrom('Ingredient')
-      .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
-      .select([
-        'Ingredient.slug',
-        'Ingredient.id',
-        'Ingredient.name',
-        'Ingredient.category',
-        'Ingredient.purchaseUnit',
-        'Ingredient.purchaseCost',
-        'Ingredient.includesVat',
-        'Ingredient.conversionRule',
-        'Ingredient.notes',
-        'Ingredient.lastPurchased',
-        'Ingredient.supplierId',
-        'Supplier.slug as supplierSlug',
-      ])
-      .$if(withSupplier, (eb) =>
-        eb.select([
-          'Supplier.id as supplierId',
-          'Supplier.name as supplierName',
-          'Supplier.contactName as supplierContactName',
-          'Supplier.contactEmail as supplierContactEmail',
-          'Supplier.contactPhone as supplierContactPhone',
-          'Supplier.notes as supplierNotes',
-        ])
+      .selectAll('Ingredient')
+      .innerJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
+      .select('Supplier.slug as supplierSlug')
+      .select((eb) =>
+        jsonObjectFrom(
+          eb
+            .selectFrom('IngredientCost')
+            .select([
+              'IngredientCost.id',
+              'IngredientCost.unit',
+              'IngredientCost.vat',
+              'IngredientCost.validFrom',
+              'IngredientCost.validTo',
+            ])
+            .leftJoin('Pricing', 'IngredientCost.pricingId', 'Pricing.id')
+            .select(['Pricing.cost as cost', 'Pricing.currency as currency'])
+            .where('IngredientCost.validTo', 'is', null)
+            .whereRef('Ingredient.id', '=', 'IngredientCost.ingredientId')
+        )
+          .$notNull()
+          .$castTo<IngredientPricing>() // Annoying, but seems to work? Not seen this before w/ date being a cunt
+          .as('cost')
       )
-      .where('Ingredient.slug', '=', slug)
-      .executeTakeFirstOrThrow(handleError({ slug }))
-  }
-
-  // Not expandable, at least for now
-  find(trx?: Transaction<DB>): Promise<DBIngredient[]> {
-    return (trx ?? this.database)
-      .selectFrom('Ingredient')
-      .leftJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
-      .select([
-        'Ingredient.slug',
-        'Ingredient.id',
-        'Ingredient.name',
-        'Ingredient.category',
-        'Ingredient.purchaseUnit',
-        'Ingredient.purchaseCost',
-        'Ingredient.includesVat',
-        'Ingredient.conversionRule',
-        'Ingredient.notes',
-        'Ingredient.lastPurchased',
-        'Ingredient.supplierId',
-        'Supplier.slug as supplierSlug',
-      ])
       .execute()
   }
 
-  async upsert(
-    slug: string,
-    data: IngredientImportData | IngredientResolvedImportData,
-    supplierSlug: string = 'generic',
+  findById(slug: IDType): Promise<IngredientWithHistory>
+  findById(slug: IDType, trx: Transaction<DB>): Promise<IngredientWithHistory>
+  findById(
+    slug: IDType,
+    withSupplier: true
+  ): Promise<IngredientWithHistoryAndSupplier>
+  findById(slug: IDType, withSupplier: false): Promise<IngredientWithHistory>
+  findById(
+    slug: IDType,
+    withSupplier: boolean
+  ): Promise<IngredientWithHistory | IngredientWithHistoryAndSupplier>
+  findById(
+    slug: IDType,
+    withSupplier: true,
+    trx: Transaction<DB>
+  ): Promise<IngredientWithHistoryAndSupplier>
+  findById(
+    slug: IDType,
+    withSupplier: false,
+    trx: Transaction<DB>
+  ): Promise<IngredientWithHistory>
+  findById(
+    slug: IDType,
+    withSupplier: boolean,
+    trx: Transaction<DB>
+  ): Promise<IngredientWithHistory | IngredientWithHistoryAndSupplier>
+  findById(
+    slug: IDType,
+    withSupplierOrTrx: TransactionOr<boolean> = false,
     trx?: Transaction<DB>
-  ) {
-    const query = async (trx: Transaction<DB>) => {
-      const result = await trx
-        .insertInto('Ingredient')
-        .values((eb) => ({
-          slug,
-          name: data.name,
-          category: data.category,
-          purchaseUnit: data.purchase.unit,
-          purchaseCost: data.purchase.cost,
-          includesVat: data.purchase.vat ? 1 : 0,
-          conversionRule: data.conversionRate?.trimEnd() || null,
-          supplierId: eb
-            .selectFrom('Supplier')
-            .select('Supplier.id')
-            .where('Supplier.slug', '=', supplierSlug),
-          notes: data.notes,
-          lastPurchased: data.lastPurchased,
-        }))
-        .onConflict((oc) =>
-          oc.column('slug').doUpdateSet({
-            // Note: supplierId is NOT in this update - immutable after creation
-            name: data.name,
-            category: data.category,
-            purchaseUnit: data.purchase.unit,
-            purchaseCost: data.purchase.cost,
-            includesVat: data.purchase.vat ? 1 : 0,
-            conversionRule: data.conversionRate?.trimEnd() || null,
-            notes: data.notes,
-            lastPurchased: data.lastPurchased,
-          })
-        )
-        .executeTakeFirst()
-
-      // Invalidate cache after mutation
-      await this.invalidateCache()
-
-      return result
+  ): Promise<IngredientWithHistory | IngredientWithHistoryAndSupplier> {
+    if (withSupplierOrTrx instanceof Transaction) {
+      trx = withSupplierOrTrx
+      withSupplierOrTrx = false
     }
 
-    return trx ? query(trx) : this.database.transaction().execute(query)
+    const base = trx ?? this.database
+    const jsonObjectFrom = this.context.helpers.jsonObjectFrom
+    const jsonArrayFrom = this.context.helpers.jsonArrayFrom
+
+    return base
+      .selectFrom('Ingredient')
+      .selectAll('Ingredient')
+      .innerJoin('Supplier', 'Ingredient.supplierId', 'Supplier.id')
+      .select('Supplier.slug as supplierSlug')
+      .select((eb) => [
+        jsonObjectFrom(
+          eb
+            .selectFrom('IngredientCost')
+            .select([
+              'IngredientCost.id',
+              'IngredientCost.unit',
+              'IngredientCost.vat',
+              'IngredientCost.validFrom',
+              'IngredientCost.validTo',
+            ])
+            .innerJoin('Pricing', 'IngredientCost.pricingId', 'Pricing.id')
+            .select(['Pricing.cost as cost', 'Pricing.currency as currency'])
+            .where('IngredientCost.validTo', 'is', null)
+            .whereRef('Ingredient.id', '=', 'IngredientCost.ingredientId')
+        )
+          .$notNull()
+          .$castTo<IngredientPricing>() // Annoying, but seems to work? Not seen this before w/ date being a cunt
+          .as('cost'),
+        jsonArrayFrom(
+          eb
+            .selectFrom('IngredientCost')
+            .select([
+              'IngredientCost.id',
+              'IngredientCost.unit',
+              'IngredientCost.vat',
+              'IngredientCost.validFrom',
+              'IngredientCost.validTo',
+            ])
+            .leftJoin('Pricing', 'IngredientCost.pricingId', 'Pricing.id')
+            .select(['Pricing.cost as cost', 'Pricing.currency as currency'])
+            .where('IngredientCost.validTo', 'is not', null)
+            .whereRef('Ingredient.id', '=', 'IngredientCost.ingredientId')
+        )
+          .$castTo<IngredientPricing[]>()
+          .as('historicalPricing'),
+      ])
+      .$if(withSupplierOrTrx, (qb) =>
+        qb.select((eb) => [
+          jsonObjectFrom(
+            eb
+              .selectFrom('Supplier')
+              .select([
+                'Supplier.id',
+                'Supplier.name',
+                'Supplier.slug',
+                'Supplier.notes',
+              ])
+              .whereRef('Supplier.id', '=', 'Ingredient.supplierId')
+          ).as('supplier'),
+        ])
+      )
+      .where(
+        typeof slug === 'string' ? 'Ingredient.slug' : 'Ingredient.id',
+        '=',
+        slug
+      )
+      .executeTakeFirstOrThrow(
+        handleError({ [typeof slug === 'string' ? 'slug' : 'id']: slug })
+      )
   }
 
-  async delete(slug: string, trx?: Transaction<DB>) {
+  // Split prior, due to the complexities of the schema. Supplier, generic, is a seeded value from now on, defaulted
+  // to `1` in the database.
+  create(
+    args: NewIngredient,
+    supplier: string | number,
+    costing: Omit<NewIngredientCost, 'ingredientId' | 'pricingId'> & NewPricing,
+    trx?: Transaction<DB>
+  ) {
+    const validatedArgs = parseWithSchema(
+      ingredientCreateSchema,
+      args,
+      'Invalid ingredient data'
+    )
+    const validatedSupplier = parseWithSchema(
+      ingredientSupplierRefSchema,
+      supplier,
+      'Invalid supplier reference'
+    )
+    const validatedCosting = parseWithSchema(
+      ingredientPricingInputSchema,
+      costing,
+      'Invalid ingredient pricing data'
+    )
+
+    const query = async (trx: Transaction<DB>) => {
+      const exists = await this.exists(validatedArgs.slug, trx)
+
+      if (exists)
+        throw Object.assign(
+          new Error(
+            `Ingredient with slug '${validatedArgs.slug}' already exists`
+          ),
+          { code: 'ERR_CONFLICT_409' }
+        )
+
+      const value = await trx
+        .insertInto('Ingredient')
+        .values(({ selectFrom }) => ({
+          ...validatedArgs,
+          supplierId:
+            typeof validatedSupplier === 'number'
+              ? validatedSupplier
+              : selectFrom('Supplier')
+                  .select('id')
+                  .where('slug', '=', validatedSupplier),
+        }))
+        .executeTakeFirst()
+
+      if (!value.insertId)
+        throw Object.assign(new Error('Failed to insert ingredient'), {
+          code: 'ERR_INTERNAL_SERVER_ERROR_500',
+        })
+
+      await this.updatePricingHistory(
+        Number(value.insertId),
+        validatedCosting,
+        trx
+      )
+
+      return this.findById(validatedArgs.slug, false, trx)
+    }
+
+    return trx ? query(trx) : this.transaction.execute(query)
+  }
+
+  // The update function here is less complex than the creation, only handles the updating of the core ingredient.
+  // `costing` should be done via the `updatePricingHistory` function.
+  update(slug: string, args: UpdateIngredient, trx?: Transaction<DB>) {
+    const validatedArgs = parseWithSchema(
+      ingredientUpdateSchema,
+      args,
+      'Invalid ingredient update'
+    )
+
+    const query = async (trx: Transaction<DB>) => {
+      const prev = await this.findById(slug, false, trx)
+
+      // This is enabled in the webapp, but not the CLI, due to hard coded references. Can be amended
+      // in the future if we allow the CLI to change references within the file system.
+      if (
+        this.isInCLIMode &&
+        hasChanges(prev, validatedArgs, {
+          supplierId: 'supplierId',
+        })
+      ) {
+        throw new Error('CLI cannot change the supplier of an ingredient.')
+      }
+
+      // Slug cannot be changed. Immutable after creation, would break the CLI if done, will
+      // keep this the same for the UI tool.
+      if (
+        validatedArgs.slug &&
+        hasChanges(prev, validatedArgs, { slug: 'slug' })
+      )
+        throw Object.assign(
+          new Error(`Cannot change slug of ingredient '${prev.slug}'`),
+          { code: 'ERR_BAD_REQUEST_400' }
+        )
+
+      const value = await trx
+        .updateTable('Ingredient')
+        .set(validatedArgs)
+        .where('slug', '=', slug)
+        .executeTakeFirst()
+
+      if (!value.numUpdatedRows)
+        throw Object.assign(new Error('Failed to update ingredient'), {
+          code: 'ERR_INTERNAL_SERVER_ERROR_500',
+        })
+
+      return this.findById(slug, false, trx)
+    }
+
+    return trx ? query(trx) : this.transaction.execute(query)
+  }
+
+  async delete(slug: IDType, trx?: Transaction<DB>) {
     const query = async (trx: Transaction<DB>) => {
       const result = await trx
         .deleteFrom('Ingredient')
-        .where('slug', '=', slug)
+        .where(typeof slug === 'string' ? 'slug' : 'id', '=', slug)
         .executeTakeFirst()
 
       const deleted = result.numDeletedRows > 0n
@@ -229,59 +368,116 @@ export class IngredientService {
     return trx ? query(trx) : this.database.transaction().execute(query)
   }
 
-  async processor(
-    importer: Importer,
-    data: IngredientResolvedImportData,
-    filePath: string | undefined,
+  async updatePricingHistory(
+    ingredientId: number,
+    costing: Omit<NewIngredientCost, 'ingredientId' | 'pricingId'> & NewPricing,
     trx?: Transaction<DB>
-  ): Promise<ImportOutcome> {
+  ): Promise<IngredientPricing> {
+    const validatedCosting = parseWithSchema(
+      ingredientPricingInputSchema,
+      costing,
+      'Invalid ingredient pricing data'
+    )
+
     const query = async (trx: Transaction<DB>) => {
-      if (
-        data.supplier &&
-        !(await this.supplier.exists(data.supplier.slug, trx))
-      ) {
-        throw new Error(
-          `Cannot create ingredient '${data.slug}' with missing '${data.supplier.slug}'. ` +
-            `Supplier if defined should be imported in prior to ingredients`
+      const [cost, pricing] = splitCostingToTables(validatedCosting)
+
+      const time = new Date()
+
+      // Handle previous costing history, in theory their should only 1 active costing
+      await trx
+        .updateTable('IngredientCost')
+        .set({
+          validTo: this.context.type === 'postgres' ? time : time.toISOString(),
+        })
+        .where((eb) =>
+          eb.and([
+            eb('ingredientId', '=', ingredientId),
+            eb('validTo', 'is', null),
+          ])
         )
-      }
+        .executeTakeFirst()
 
-      const supplier = data.supplier?.slug || 'generic'
+      // Set the `pricing` first, then the `costing`. Assume the currency has been validated before getting
+      // to this stage. Not sure what to return tbh, probably just the new pricing?
+      let value = await trx
+        .insertInto('Pricing')
+        .values({
+          ...pricing, // @ts-ignore Have to do it this way to prevent issues with Sqlite
+          cost:
+            this.context.type === 'postgres'
+              ? pricing.cost
+              : BigInt(pricing.cost),
+        })
+        .executeTakeFirst()
 
-      // Workaround for the throwing on findById
-      let prev: DBIngredient | undefined = undefined
-      try {
-        prev = await this.findById(data.slug, false, trx)
-      } catch (e) {
-        if (!(e instanceof NotFound)) throw e
-      }
+      if (!value.insertId)
+        throw Object.assign(new Error('Failed to insert pricing'), {
+          code: 'ERR_INTERNAL_SERVER_ERROR_500',
+        })
 
-      if (prev && prev.supplierSlug !== supplier) {
-        throw new Error(
-          `Cannot change supplier for ingredient '${data.slug}' from '${prev.supplierSlug}' to '${supplier}'. ` +
-            `Supplier is immutable after creation. Create a new ingredient with a different slug instead.`
-        )
-      }
+      value = await trx
+        .insertInto('IngredientCost')
+        .values({
+          ...cost, // @ts-ignore Have to do it this way to prevent issues with Sqlite
+          vat: this.context.type === 'postgres' ? cost.vat : +cost.vat,
+          validFrom:
+            this.context.type === 'postgres' ? time : time.toISOString(),
+          pricingId: Number(value.insertId),
+          ingredientId,
+        })
+        .executeTakeFirst()
 
-      const hasChanged = hasChanges(prev, data, {
-        name: 'name',
-        category: 'category',
-        purchaseUnit: (data) => data.purchase.unit,
-        purchaseCost: (data) => data.purchase.cost,
-        conversionRule: 'conversionRate',
-        notes: 'notes',
-        lastPurchased: 'lastPurchased',
-      })
+      if (!value.insertId)
+        throw Object.assign(new Error('Failed to insert costing'), {
+          code: 'ERR_INTERNAL_SERVER_ERROR_500',
+        })
 
-      if (prev && !hasChanged) return 'ignored'
-
-      const res = await this.upsert(data.slug, data, supplier, trx)
-      if (res.insertId === undefined)
-        throw new Error('Failed to upsert ingredient')
-
-      return prev ? 'upserted' : 'created'
+      return this.__unsafe_findMostRecentCosting(ingredientId, trx)
     }
 
-    return trx ? query(trx) : this.database.transaction().execute(query)
+    return trx ? query(trx) : this.transaction.execute(query)
   }
+
+  async __unsafe_findMostRecentCosting(
+    ingredientId: number,
+    trx?: Transaction<DB>
+  ): Promise<IngredientPricing> {
+    return (trx ?? this.database)
+      .selectFrom('IngredientCost')
+      .innerJoin('Pricing', 'IngredientCost.pricingId', 'Pricing.id')
+      .select([
+        'IngredientCost.id',
+        'IngredientCost.unit',
+        'IngredientCost.vat',
+        'IngredientCost.validFrom',
+        'IngredientCost.validTo',
+        'Pricing.cost',
+        'Pricing.currency',
+      ])
+      .where((eb) =>
+        eb.and([
+          eb('IngredientCost.ingredientId', '=', ingredientId),
+          eb('IngredientCost.validTo', 'is', null),
+        ])
+      )
+      .executeTakeFirstOrThrow(handleError({ ingredientId }))
+  }
+
+  async exists(slug: string, trx?: Transaction<DB>) {
+    return !!(await (trx ?? this.database)
+      .selectFrom('Ingredient')
+      .select('id')
+      .where('slug', '=', slug)
+      .executeTakeFirst())
+  }
+
+}
+
+function splitCostingToTables(
+  data: Omit<NewIngredientCost, 'ingredientId' | 'pricingId'> & NewPricing
+): [Omit<NewIngredientCost, 'ingredientId' | 'pricingId'>, NewPricing] {
+  const { cost, currency, ...rest } = data
+
+  return [rest, { cost, currency }]
 }

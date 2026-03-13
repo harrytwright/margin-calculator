@@ -1,6 +1,6 @@
 import { register } from '@harrytwright/api/dist/core'
 import { InternalServerError } from '@hndlr/errors'
-import type { Supplier } from '@menubook/types'
+import type { Supplier } from '@menubook/shared'
 import { Insertable, Selectable, Updateable } from 'kysely'
 
 import { Base } from './base'

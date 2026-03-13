@@ -30,7 +30,8 @@ model RecipeIngredients {
   subRecipeId  Int?
 
   // Freeform unit string: "50g", "2 bags", "1.5 pints"
-  unit String
+  quantity Decimal
+  unit     String
 
   // Optional notes for the recipe
   notes String? // "finely chopped", "to taste", etc.

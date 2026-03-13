@@ -8,7 +8,7 @@ import {
   type MigrationResult,
 } from 'kysely'
 
-import type { DB } from '@menubook/types'
+import type { DB } from '@menubook/shared'
 
 /**
  * Get the path to the migrations directory.

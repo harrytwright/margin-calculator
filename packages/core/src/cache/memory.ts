@@ -1,3 +1,5 @@
+import logger from '@harrytwright/logger'
+
 import type { CacheAdapter } from './adapter'
 
 interface CacheEntry<T> {
@@ -63,6 +65,12 @@ export class TTLCache implements CacheAdapter {
   }
 
   async invalidatePattern(pattern: string): Promise<void> {
+    logger.verbose(
+      'cache:memory',
+      { pattern },
+      'Invalidating cache entries matching %s',
+      pattern
+    )
     const regex = this.globToRegex(pattern)
 
     for (const key of this.store.keys()) {
@@ -103,6 +111,13 @@ export class TTLCache implements CacheAdapter {
    * Called automatically on get/has, but can be called manually for maintenance.
    */
   cleanup(): void {
+    logger.verbose(
+      'cache:memory',
+      { size: this.size },
+      'Cleaning up %s expired entries...',
+      this.size
+    )
+
     const now = Date.now()
     for (const [key, entry] of this.store.entries()) {
       if (now > entry.expiresAt) {

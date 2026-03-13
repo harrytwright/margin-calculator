@@ -9,7 +9,7 @@
  * and re-run `@lanelink/tools generate` to regenerate this file
  * */
 
-import type { Supplier as supplier } from '@menubook/types'
+import type { Supplier as supplier } from '@menubook/shared'
 import type { Insertable, Selectable, Updateable } from 'kysely'
 
 export type Supplier = Selectable<supplier>

@@ -7,8 +7,8 @@ import type { DB } from '@menubook/prisma'
  * These differ between SQLite and PostgreSQL, so they're provided by the adapter.
  */
 export type JsonHelpers = {
-  jsonArrayFrom: typeof import('kysely/helpers/sqlite').jsonArrayFrom
-  jsonObjectFrom: typeof import('kysely/helpers/sqlite').jsonObjectFrom
+  jsonArrayFrom: typeof import('kysely/helpers/postgres').jsonArrayFrom
+  jsonObjectFrom: typeof import('kysely/helpers/postgres').jsonObjectFrom
 }
 
 /**
@@ -20,4 +20,6 @@ export interface DatabaseContext {
   db: Kysely<DB>
   /** Database-specific helper functions (jsonArrayFrom, jsonObjectFrom) */
   helpers: JsonHelpers
+  /** Helpful to handle edge cases between SQLite and Postgres */
+  type: 'sqlite' | 'postgres'
 }

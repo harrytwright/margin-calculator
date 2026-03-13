@@ -8,7 +8,7 @@ import {
   Migrator,
 } from 'kysely'
 
-import { DB } from '@menubook/types'
+import { DB } from '@menubook/shared'
 
 /**
  * Get the path to the migrations directory.

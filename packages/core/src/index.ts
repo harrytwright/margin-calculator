@@ -33,8 +33,8 @@ export type { DatabaseAdapter } from './datastore/adapter'
 // Database context
 export type { DatabaseContext, JsonHelpers } from './datastore/context'
 
-// Re-export types from @menubook/types for convenience
-export { RecipeClass, RecipeStage } from '@menubook/types'
+// Re-export types from @menubook/shared for convenience
+export { RecipeClass, RecipeStage } from '@menubook/shared'
 export type {
   DB,
   Generated,
@@ -43,7 +43,7 @@ export type {
   RecipeIngredients,
   Supplier,
   Timestamp,
-} from '@menubook/types'
+} from '@menubook/shared'
 
 // Services
 export {

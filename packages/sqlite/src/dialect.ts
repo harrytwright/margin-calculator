@@ -1,4 +1,4 @@
-import type { DB } from '@menubook/types'
+import type { DB } from '@menubook/shared'
 import Database from 'better-sqlite3'
 import { Kysely, ParseJSONResultsPlugin, SqliteDialect } from 'kysely'
 

@@ -2,27 +2,31 @@ model Ingredient {
   id       Int    @id @default(autoincrement())
   slug     String @unique
   name     String
-  // Used by the UI to handle grouping
   category String
 
-  // Optional: for custom units that convert-units can't handle
-  // Format: "X unitA = Y unitB" (e.g., "1 box = 24 bags")
   conversionRule String?
 
-  // Supplier
   supplierId Int?
   supplier   Supplier? @relation(fields: [supplierId], references: [id])
 
-  // Metadata
   notes         String?
   lastPurchased DateTime?
 
-  // Relations
+  // Allergen flags (UK/EU 14 fit easily; BigInt gives plenty of headroom)
+  allergensContains   BigInt @default(0)
+  allergensMayContain BigInt @default(0)
+
+  // Optional detail fields for the “bucket” allergens (recommended)
+  glutenCereals String? // e.g. "wheat, barley" or JSON text
+  treeNuts      String? // e.g. "almond, hazelnut"
+
   recipes  RecipeIngredients[]
   costings IngredientCost[]
 
   @@index([category])
   @@index([slug])
+  @@index([allergensContains])
+  @@index([allergensMayContain])
 }
 
 model IngredientCost {
@@ -33,8 +37,8 @@ model IngredientCost {
   /// Does this value have VAT already added
   vat       Boolean
   // Handling historical costings
-  validFrom DateTime  @default(now())
-  validTo   DateTime?
+  validFrom DateTime  @default(now()) @db.Timestamp(0)
+  validTo   DateTime? @db.Timestamp(0)
 
   // References
   ingredientId Int

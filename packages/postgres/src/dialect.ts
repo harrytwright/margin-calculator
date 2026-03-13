@@ -1,4 +1,4 @@
-import type { DB } from '@menubook/types'
+import type { DB } from '@menubook/shared'
 import { Kysely, PostgresDialect } from 'kysely'
 import { Pool } from 'pg'
 
