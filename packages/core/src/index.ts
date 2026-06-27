@@ -48,8 +48,6 @@ export type {
 // Services
 export {
   ConfigService,
-  DashboardService,
-  ExportService,
   IngredientService,
   RecipeService,
   SupplierService,
