@@ -13,6 +13,14 @@ model Pricing {
   @@index([cost, currency])
 }
 
+model Settings {
+  id Int @id @default(1)
+
+  vatRateBps              Int     @default(2000)
+  marginTarget            Int     @default(20)
+  defaultPriceIncludesVat Boolean @default(true)
+}
+
 enum RecipeStage {
   development
   active
