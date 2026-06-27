@@ -1,10 +1,18 @@
-import { createDatabase, destroy } from './dialect'
+import type { DatabaseAdapter } from '@menubook/shared'
 
+import { createDatabase, destroy } from './dialect'
+import { jsonArrayFrom, jsonObjectFrom } from './helpers'
 import { getMigrationsPath, migrate, seed } from './migrate'
 
-// SQLite-specific helpers
-import { DatabaseAdapter } from '@menubook/shared'
-import { jsonArrayFrom, jsonObjectFrom } from './helpers'
+export {
+  createDatabase,
+  destroy,
+  getMigrationsPath,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+  seed,
+}
 
 // Re-export types for convenience
 export type { DatabaseContext, DB } from '@menubook/shared'
