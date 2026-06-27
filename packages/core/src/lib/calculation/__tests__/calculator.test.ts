@@ -1,8 +1,8 @@
 jest.mock('../../../services/config', () => ({
   ConfigService: jest.fn().mockImplementation(() => ({
-    getVatRate: jest.fn().mockResolvedValue(0.2),
-    getMarginTarget: jest.fn().mockResolvedValue(20),
-    getDefaultPriceIncludesVat: jest.fn().mockResolvedValue(true),
+    findVatRate: jest.fn().mockResolvedValue(0.2),
+    findMarginTarget: jest.fn().mockResolvedValue(20),
+    findDefaultPriceIncludesVat: jest.fn().mockResolvedValue(true),
   })),
 }))
 
@@ -33,7 +33,7 @@ describe('Calculator', () => {
 
   beforeEach(async () => {
     context = await createTestContext()
-    configService = new ConfigService('')
+    configService = new ConfigService(context)
     ingredientService = new IngredientService(context)
     recipeService = new RecipeService(context, configService)
     calculator = new Calculator(recipeService, ingredientService, configService)

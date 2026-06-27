@@ -1,12 +1,8 @@
-import fs from 'fs/promises'
-import path from 'path'
+import type { DatabaseContext, Settings, UpdateSettings } from '@menubook/shared'
 
-import log from '@harrytwright/logger'
-import toml from 'toml'
+// TODO: Add tenant-aware settings lookup when tenant scoped data lands.
 
-import { tomlWriter } from '../utils/toml-writer'
-
-interface MarginConfig {
+export interface MarginConfig {
   vat?: number
   marginTarget?: number
   defaultPriceIncludesVat?: boolean
@@ -15,125 +11,137 @@ interface MarginConfig {
 const defaultConfig: Required<MarginConfig> = {
   vat: 0.2,
   marginTarget: 20,
-  defaultPriceIncludesVat: true, // UK/EU default: prices include VAT
+  defaultPriceIncludesVat: true,
 }
 
+const SETTINGS_ID = 1
+
 export class ConfigService {
-  private cache: MarginConfig | null = null
+  constructor(private readonly context: DatabaseContext) {}
 
-  private readonly configPath: string
-
-  constructor(workingDir: string) {
-    this.configPath = path.join(workingDir, 'conf', 'margin.toml')
+  private get database() {
+    return this.context.db
   }
 
-  async initialise(force: boolean, overrides: Partial<MarginConfig> = {}) {
-    this.invalidate()
-
-    const prev = await this.read()
-
+  async initialise(
+    force: boolean,
+    overrides: Partial<MarginConfig> = {}
+  ): Promise<Settings> {
     if (force) {
-      await this.save({
-        ...prev,
-        ...overrides,
-      })
-    } else {
-      await this.save({
+      return this.upsert({
         ...defaultConfig,
-        ...prev,
         ...overrides,
       })
     }
+
+    const settings = await this.database
+      .selectFrom('Settings')
+      .selectAll()
+      .where('id', '=', SETTINGS_ID)
+      .executeTakeFirst()
+
+    if (!settings) {
+      return this.upsert({
+        ...defaultConfig,
+        ...overrides,
+      })
+    }
+
+    if (hasUpdates(overrides)) {
+      return this.update(overrides)
+    }
+
+    return settings
   }
 
-  private async set<K extends keyof MarginConfig>(
-    key: K,
-    value: MarginConfig[K]
-  ) {
-    return this.save({
-      ...this.cache,
-      [key]: value,
+  async find(): Promise<Settings> {
+    return this.database
+      .selectFrom('Settings')
+      .selectAll()
+      .where('id', '=', SETTINGS_ID)
+      .executeTakeFirstOrThrow()
+  }
+
+  async findVatRate(): Promise<number> {
+    const settings = await this.find()
+    return settings.vatRateBps / 10000
+  }
+
+  async findMarginTarget(): Promise<number> {
+    const settings = await this.find()
+    return settings.marginTarget
+  }
+
+  async findDefaultPriceIncludesVat(): Promise<boolean> {
+    const settings = await this.find()
+    return Boolean(settings.defaultPriceIncludesVat)
+  }
+
+  async update(updates: Partial<MarginConfig>): Promise<Settings> {
+    const values = this.configToSettings(updates)
+
+    if (Object.keys(values).length > 0) {
+      await this.database
+        .updateTable('Settings')
+        .set(values)
+        .where('id', '=', SETTINGS_ID)
+        .executeTakeFirst()
+    }
+
+    return this.find()
+  }
+
+  async upsert(settings: Partial<MarginConfig>): Promise<Settings> {
+    const insertValues = this.configToSettings({
+      ...defaultConfig,
+      ...settings,
     })
+    const updateValues = this.configToSettings(settings)
+
+    await this.database
+      .insertInto('Settings')
+      .values({
+        id: SETTINGS_ID,
+        vatRateBps:
+          insertValues.vatRateBps ?? Math.round(defaultConfig.vat * 10000),
+        marginTarget: insertValues.marginTarget ?? defaultConfig.marginTarget,
+        defaultPriceIncludesVat:
+          insertValues.defaultPriceIncludesVat ??
+          defaultConfig.defaultPriceIncludesVat,
+      } as any)
+      .onConflict((oc) =>
+        Object.keys(updateValues).length > 0
+          ? oc.column('id').doUpdateSet(updateValues)
+          : oc.column('id').doNothing()
+      )
+      .execute()
+
+    return this.find()
   }
 
-  // Save the file to the directory and then set the cache value.
-  private async save(cache: MarginConfig = defaultConfig) {
-    await fs.writeFile(
-      this.configPath,
-      tomlWriter(cache, { newlineAfterSection: true }),
-      'utf-8'
-    )
-    this.cache = cache
-    return cache
-  }
+  private configToSettings(settings: Partial<MarginConfig>): UpdateSettings {
+    const values: UpdateSettings = {}
 
-  // Read the value or return the default config. Throw if any error other than `ENOENT`
-  private async read(): Promise<MarginConfig> {
-    try {
-      const content = await fs.readFile(this.configPath, 'utf-8')
-      return toml.parse(content) as MarginConfig
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
-        log.warn('config', 'No config file found. Using default config')
-        return defaultConfig
-      }
-
-      throw error
-    }
-  }
-
-  // Load the data setting as we go
-  private async load(): Promise<MarginConfig> {
-    if (!this.cache) {
-      this.cache = await this.read()
+    if (settings.vat !== undefined) {
+      values.vatRateBps = Math.round(settings.vat * 10000)
     }
 
-    return this.cache
-  }
-
-  async getVatRate(): Promise<number> {
-    const config = await this.load()
-    return config.vat ?? defaultConfig.vat // Default 20% (0.2)
-  }
-
-  async getMarginTarget(): Promise<number> {
-    const config = await this.load()
-    return config.marginTarget ?? defaultConfig.marginTarget // Default 20%
-  }
-
-  async getDefaultPriceIncludesVat(): Promise<boolean> {
-    const config = await this.load()
-    return (
-      config.defaultPriceIncludesVat ?? defaultConfig.defaultPriceIncludesVat
-    )
-  }
-
-  // Get all config settings at once (useful for settings page)
-  async getAll(): Promise<Required<MarginConfig>> {
-    const config = await this.load()
-    return {
-      vat: config.vat ?? defaultConfig.vat,
-      marginTarget: config.marginTarget ?? defaultConfig.marginTarget,
-      defaultPriceIncludesVat:
-        config.defaultPriceIncludesVat ?? defaultConfig.defaultPriceIncludesVat,
+    if (settings.marginTarget !== undefined) {
+      values.marginTarget = settings.marginTarget
     }
-  }
 
-  // Update config settings
-  async update(
-    updates: Partial<MarginConfig>
-  ): Promise<Required<MarginConfig>> {
-    const current = await this.load()
-    const updated = {
-      ...current,
-      ...updates,
+    if (settings.defaultPriceIncludesVat !== undefined) {
+      values.defaultPriceIncludesVat = (
+        this.context.type === 'sqlite'
+          ? Number(settings.defaultPriceIncludesVat)
+          : settings.defaultPriceIncludesVat
+      ) as UpdateSettings['defaultPriceIncludesVat']
     }
-    await this.save(updated)
-    return this.getAll()
-  }
 
-  // Force reload from disk (useful after config changes)
-  invalidate(): void {
-    this.cache = null
+    return values
   }
+}
+
+function hasUpdates(settings: Partial<MarginConfig>): boolean {
+  return Object.values(settings).some((value) => value !== undefined)
 }

@@ -1,5 +1,3 @@
-import path from 'path'
-
 import log from '@harrytwright/logger'
 
 import { ConfigService, IngredientService, RecipeIngredientReference, RecipeService } from '../../services'
@@ -12,9 +10,7 @@ export class Calculator {
   constructor(
     private readonly recipe: RecipeService,
     private readonly ingredient: IngredientService,
-    private readonly config: ConfigService = new ConfigService(
-      path.join(process.cwd(), 'app')
-    )
+    private readonly config: ConfigService
   ) {}
 
   private async ingredientCost(
@@ -54,7 +50,7 @@ export class Calculator {
     const purchaseCostInPence = Number(lookup.cost?.cost ?? 0)
 
     // If ingredient purchase cost includes VAT, strip it out
-    const vatRate = await this.config.getVatRate()
+    const vatRate = await this.config.findVatRate()
     const purchaseCostExVat = lookup.cost?.vat
       ? purchaseCostInPence / (1 + vatRate)
       : purchaseCostInPence
@@ -122,7 +118,7 @@ export class Calculator {
   async margin(recipe: RecipeCostResult) {
     const { totalCost, recipe: recipeData } = recipe // totalCost is in pence
 
-    const vatRate = await this.config.getVatRate()
+    const vatRate = await this.config.findVatRate()
     const vatApplicable = !!recipeData.cost?.vat
 
     // sellPrice is already in pence (what customer pays if VAT-inclusive)
