@@ -57,7 +57,6 @@ export async function migrate(
  * @param db - Kysely database instance
  */
 export async function seed(db: Kysely<DB>): Promise<void> {
-  // Seed the generic supplier (used as default for ingredients without a specific supplier)
   await db
     .insertInto('Supplier')
     .values({
@@ -65,5 +64,16 @@ export async function seed(db: Kysely<DB>): Promise<void> {
       name: 'Generic Supplier',
     })
     .onConflict((oc) => oc.column('slug').doNothing())
+    .execute()
+
+  await db
+    .insertInto('Settings')
+    .values({
+      id: 1,
+      vatRateBps: 2000,
+      marginTarget: 20,
+      defaultPriceIncludesVat: 1 as any,
+    } as any)
+    .onConflict((oc) => oc.column('id').doNothing())
     .execute()
 }
