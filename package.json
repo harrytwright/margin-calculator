@@ -27,13 +27,17 @@
     "prisma-kysely": "^2.0.0",
     "prompts": "2.4.2",
     "turbo": "^2.5.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "zx": "^8.8.5"
   },
   "packageManager": "pnpm@10.22.0",
   "engines": {
     "node": ">=18"
   },
   "pnpm": {
+    "overrides": {
+      "kysely": "^0.28.11"
+    },
     "onlyBuiltDependencies": [
       "-",
       "3",

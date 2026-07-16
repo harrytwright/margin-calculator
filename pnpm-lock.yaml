@@ -38,6 +38,9 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      zx:
+        specifier: ^8.8.5
+        version: 8.8.5
 
   apps/web:
     devDependencies:
@@ -4665,6 +4668,11 @@ packages:
 
   zod@4.3.5:
     resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
+
+  zx@8.8.5:
+    resolution: {integrity: sha512-SNgDF5L0gfN7FwVOdEFguY3orU5AkfFZm9B5YSHog/UDHv+lvmd82ZAsOenOkQixigwH2+yyH198AwNdKhj+RA==}
+    engines: {node: '>= 12.17.0'}
+    hasBin: true
 
 snapshots:
 
@@ -9705,3 +9713,5 @@ snapshots:
       readable-stream: 4.7.0
 
   zod@4.3.5: {}
+
+  zx@8.8.5: {}
