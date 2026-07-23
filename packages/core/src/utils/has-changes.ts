@@ -7,6 +7,25 @@ type ComparisonMap<T, U> = {
   [K in keyof T]?: keyof U | ((importData: U) => T[K] | null | undefined)
 }
 
+const isEqual = <T>(a: T, b: T): boolean => {
+  if (a === b) {
+    return true
+  }
+
+  const bothAreObjects =
+    a &&
+    b &&
+    typeof a === 'object' &&
+    typeof b === 'object' &&
+    Array.isArray(a) === Array.isArray(b)
+
+  return Boolean(
+    bothAreObjects &&
+    Object.keys(a).length === Object.keys(b).length &&
+    Object.entries(a).every(([k, v]) => isEqual(v, b[k as keyof T]))
+  )
+}
+
 export function hasChanges<TDatabase, TImport>(
   existing: TDatabase | undefined,
   importData: TImport,
@@ -29,7 +48,7 @@ export function hasChanges<TDatabase, TImport>(
     const normalizedDbValue = dbValue ?? null
     const normalizedImportValue = importValue ?? null
 
-    if (normalizedDbValue !== normalizedImportValue) {
+    if (!isEqual(normalizedDbValue, normalizedImportValue)) {
       return true
     }
   }

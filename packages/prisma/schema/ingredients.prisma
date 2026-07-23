@@ -1,0 +1,51 @@
+model Ingredient {
+  id       Int    @id @default(autoincrement())
+  slug     String @unique
+  name     String
+  category String
+
+  conversionRule String?
+
+  supplierId Int?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  notes         String?
+  lastPurchased DateTime?
+
+  // Allergen flags (UK/EU 14 fit easily; BigInt gives plenty of headroom)
+  allergensContains   BigInt @default(0)
+  allergensMayContain BigInt @default(0)
+
+  // Optional detail fields for the “bucket” allergens (recommended)
+  glutenCereals String? // e.g. "wheat, barley" or JSON text
+  treeNuts      String? // e.g. "almond, hazelnut"
+
+  recipes  RecipeIngredients[]
+  costings IngredientCost[]
+
+  @@index([category])
+  @@index([slug])
+  @@index([allergensContains])
+  @@index([allergensMayContain])
+}
+
+model IngredientCost {
+  id Int @id @default(autoincrement())
+
+  /// "1kg", "1 box", "1 keg", "500ml bottle"
+  unit      String
+  /// Does this value have VAT already added
+  vat       Boolean
+  // Handling historical costings
+  validFrom DateTime  @default(now()) @db.Timestamp(0)
+  validTo   DateTime? @db.Timestamp(0)
+
+  // References
+  ingredientId Int
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+
+  pricingId Int
+  pricing   Pricing @relation(fields: [pricingId], references: [id])
+
+  @@index([pricingId])
+}

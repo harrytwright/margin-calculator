@@ -1,14 +1,32 @@
-// Database operations
+import type { DatabaseAdapter } from '@menubook/shared'
+
+import { createDatabase, destroy } from './dialect'
+import { jsonArrayFrom, jsonObjectFrom } from './helpers'
+import { getMigrationsPath, migrate, seed } from './migrate'
+
 export {
+  createDatabase,
+  destroy,
+  getMigrationsPath,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+  seed,
+}
+
+// Re-export types for convenience
+export type { DatabaseContext, DB } from '@menubook/shared'
+
+const Sqlite: DatabaseAdapter = {
   createDatabase,
   destroy,
   getMigrationsPath,
   migrate,
   seed,
-} from './dialect'
+  // @ts-ignore
+  jsonArrayFrom,
+  // @ts-ignore
+  jsonObjectFrom,
+}
 
-// SQLite-specific helpers
-export { jsonArrayFrom, jsonObjectFrom } from './helpers'
-
-// Re-export types for convenience
-export type { DB } from '@menubook/types'
+export default Sqlite

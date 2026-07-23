@@ -1,14 +1,30 @@
-// Database operations
+import type { DatabaseAdapter } from '@menubook/shared'
+
+import { createDatabase, destroy } from './dialect'
+import { jsonArrayFrom, jsonObjectFrom } from './helpers'
+import { getMigrationsPath, migrate, seed } from './migrate'
+
 export {
+  createDatabase,
+  destroy,
+  getMigrationsPath,
+  jsonArrayFrom,
+  jsonObjectFrom,
+  migrate,
+  seed,
+}
+
+// Re-export types for convenience
+export type { DatabaseContext, DB } from '@menubook/shared'
+
+const Postgres: DatabaseAdapter = {
   createDatabase,
   destroy,
   getMigrationsPath,
   migrate,
   seed,
-} from './dialect'
+  jsonArrayFrom,
+  jsonObjectFrom,
+}
 
-// PostgreSQL-specific helpers
-export { jsonArrayFrom, jsonObjectFrom } from './helpers'
-
-// Re-export types for convenience
-export type { DB } from '@menubook/types'
+export default Postgres

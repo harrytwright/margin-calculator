@@ -1,0 +1,34 @@
+/// Model to hold all the pricing data, for any linked model
+model Pricing {
+  id Int @id @default(autoincrement())
+
+  /// Styled the way stripe handles currency, removes deciaml from the equation. Handled by the server
+  cost     BigInt
+  /// The currency this value is stored in. Used mainly to workout the cost value
+  currency String @db.Char(3)
+
+  ingredients IngredientCost[]
+  recipes     RecipePrice[]
+
+  @@index([cost, currency])
+}
+
+model Settings {
+  id Int @id @default(1)
+
+  vatRateBps              Int     @default(2000)
+  marginTarget            Int     @default(20)
+  defaultPriceIncludesVat Boolean @default(true)
+}
+
+enum RecipeStage {
+  development
+  active
+  discontinued
+}
+
+enum RecipeClass {
+  menu_item // What customers can order
+  base_template // For inheritance (base_pizza)
+  sub_recipe // Compound ingredient (sauce, dressing)
+}

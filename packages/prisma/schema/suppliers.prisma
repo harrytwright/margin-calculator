@@ -1,0 +1,24 @@
+// Allow for one `Generic` supplier
+model Supplier {
+  id    Int     @id @default(autoincrement())
+  slug  String  @unique
+  name  String
+  notes String? @db.VarChar(512)
+
+  contact SupplierContact?
+
+  ingredients Ingredient[]
+}
+
+// Concept for the future, handle historical contact details, but for now, stored here, useful for expanding
+model SupplierContact {
+  id Int @id @default(autoincrement())
+
+  name  String?
+  email String?
+  phone String?
+
+  supplierId Int @unique
+
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+}

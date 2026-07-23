@@ -1,0 +1,27 @@
+{
+  "name": "@menubook/shared",
+  "version": "0.3.0",
+  "description": "Shared TypeScript types and enums for Menu Book packages",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "kysely": "^0.28.11",
+    "@menubook/prisma": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "dist"
+  ]
+}

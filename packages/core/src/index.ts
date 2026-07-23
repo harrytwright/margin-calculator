@@ -33,8 +33,8 @@ export type { DatabaseAdapter } from './datastore/adapter'
 // Database context
 export type { DatabaseContext, JsonHelpers } from './datastore/context'
 
-// Re-export types from @menubook/types for convenience
-export { RecipeClass, RecipeStage } from '@menubook/types'
+// Re-export types from @menubook/shared for convenience
+export { RecipeClass, RecipeStage } from '@menubook/shared'
 export type {
   DB,
   Generated,
@@ -43,18 +43,16 @@ export type {
   RecipeIngredients,
   Supplier,
   Timestamp,
-} from '@menubook/types'
+} from '@menubook/shared'
 
 // Services
 export {
   ConfigService,
-  DashboardService,
-  ExportService,
   IngredientService,
   RecipeService,
   SupplierService,
 } from './services'
-export type { RecipeIngredientsLookup, RecipeWithIngredients } from './services'
+export type { RecipeIngredientReference, RecipeWithPricing } from './services'
 export type {
   DBIngredient,
   DBIngredientWithSupplier,
@@ -65,7 +63,7 @@ export { Calculator } from './lib/calculation/calculator'
 export type {
   MarginResult,
   RecipeCostNode,
-  RecipeResult,
+  RecipeCostResult,
 } from './lib/calculation/types'
 export {
   convertUnits,

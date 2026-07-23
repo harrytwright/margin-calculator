@@ -1,50 +1,147 @@
-# Repository Guidelines
+# Agent Guide to Menubook
 
-## Monorepo Layout
+This document provides context and instructions for AI agents working on the menubook codebase.
 
-- Root uses pnpm workspaces + turbo; packages live under `packages/` and the marketing site under `apps/`.
-- `packages/core`: business logic, importer, calculator, storage backends, Prisma schema (`prisma/schema.prisma`), and Kysely migrations in `src/datastore/migrations`; tests live beside code in `__tests__`.
-- `packages/cli`: Commander-based `margin` CLI (commands in `src/commands`, reporters in `src/reporters`, shared helpers in `src/lib`/`src/utils`); builds to `packages/cli/dist`.
-- `packages/app`: Express API + HTMX/EJS UI; controllers in `src/controllers`, services in `src/services`, schemas in `src/schemas`, views in `views/` (layouts/pages/components/islands/modals), static assets in `public/`, and SSE events at `/api/events/sse`.
-- `apps/web`: Parcel + Tailwind marketing site/blog (scripts in `apps/web/scripts`, sources in `apps/web/src`, build output in `apps/web/dist`).
-- Templates and helper scripts sit in `templates/` and `scripts/`; note the active schema/migrations live in `packages/core`, not the root `src/` path referenced by legacy scripts.
+This is a monorepo, powered by pnpm and turbo, to handle all the elements of the codebase. Menubook is a easy to use,
+open source, and extensible restaurant and bar margin and menu system. Allowing users to self-host the system, as well
+as cloud-hosted solutions.
 
-## Build, Test, and Development Commands
+> In the `packages/core/rebuild` branch, the codebase is being rebuilt from scratch. If you are working in core, 
+> do not make changes to `@packages/app` or `@packages/cli`. These are only to be worked on once the core has been 
+> rebuilt. They will break, this is intentional. Make sure you create tests for your changes and validate the tests 
+> are working, this is the only way to ensure the codebase is working as expected. As the upstream packages are broken
 
-- Use pnpm (pnpm 10+, Node >=18). Root scripts run through turbo across packages; avoid mixing npm/yarn.
-- `pnpm build` → turbo build (tsc for core/cli, tailwind + asset copy for app; outputs under each `packages/*/dist`).
-- `pnpm test` / `pnpm test:watch` / `pnpm test:coverage` → turbo-run Jest suites.
-- `pnpm dev` runs all package dev tasks; targeted: `pnpm dev:cli` (tsc watch), `pnpm dev:app` (tailwind + tsc watch), `pnpm dev:web` (Parcel dev server).
-- `pnpm format` runs Prettier across `packages/**` and `apps/**`; `pnpm clean` clears turbo caches and `node_modules`.
-- Package-specific: `pnpm --filter @menubook/core generate` after editing `packages/core/prisma/schema.prisma` to regenerate Kysely types; `pnpm --filter @menubook/app build` to rebuild server assets; `pnpm --filter @menubook/web build` for the marketing site.
+## Repository Structure
 
-## Runtime & CLI Usage
+The margin codebase is a monorepo with the following structure:
 
-- Global options: `--location` for system data/config/database (default `~/margin`), `--workspace` for YAML files (default `./data`), `--working` is a deprecated alias for `--location`, `--storage <fs|database-only>`, `-d/--database` for DB filename, plus `--verbose/--quiet`.
-- `margin initialise` creates location + workspace folders, prompts for VAT pricing model, writes `conf/margin.toml`, and can force database recreation (`--force` asks for confirmation).
-- `margin import [files] [--watch]` auto-detects entities, uses `FileWatcher` + `HashService`, and populates workspace folders (`suppliers/`, `ingredients/`, `recipes/`); `--root` is deprecated, `--fail-fast` stops on the first error.
-- Deprecated per-entity imports remain under `margin recipe/ingredient/supplier import`; prefer the global `margin import`.
-- Calculations: `margin recipe calculate <slugs...>` (DefaultReporter or JSON via `--json`) and `margin recipe report` (SummaryReporter or JSON); exit non-zero if any recipe fails to calculate.
-- `margin ui [-p <port>] [--no-open] [--no-watch] [--standalone] [--storage <fs|database-only>]` runs the @menubook/app server; file watching feeds `/api/events` SSE for live UI updates. `standalone` forces database-only storage and disables watching/writes to disk.
+### Core
 
-## Coding Style & Naming
+* `packages/core`: The job of the core is to provide a common interface to the database and the adaptors. It also 
+  provides the business logic for the system, including the calculation engine.
 
-- Prettier config enforces single quotes, no semicolons, trailing commas, and organizes imports; stick to ASCII unless a file already uses other characters.
-- Prefer camelCase for variables/functions, PascalCase for exported classes, and kebab-case for file names. Keep CLI commands small and layer adapters/helpers under `packages/core/src/lib` or `packages/core/src/services` rather than inside command handlers.
+### Data Layer
 
-## Testing Guidelines
+* `packages/prisma`: Stores the database schema. The database schema is set for postgres.
+* `packages/postgres`: Our postgres database adapter.
+* `packages/sqlite`: Our sqlite database adapter.
 
-- Jest with ts-jest per package; tests are colocated in `__tests__` next to source files.
-- Use in-memory `better-sqlite3` + `migrate` from `packages/core/src/datastore/database` to apply real migrations in tests; mirror existing patterns for importer/service tests and assert created/upserted/ignored/failed paths.
-- Favor deterministic fixtures over snapshots; cover both happy paths and failure handling for import/validation flows.
+### CLI
 
-## Data & Configuration Tips
+* `packages/cli`: CLI command implementations and infrastructure.
 
-- Config lives at `<location>/conf/margin.toml` (VAT rate, margin target, default VAT pricing model set during initialise); the database defaults to `<location>/margin.sqlite3`.
-- Workspace YAML lives under `<workspace>/suppliers|ingredients|recipes`; storage mode `fs` writes via `FileSystemStorage`, while `database-only` avoids filesystem output (used for standalone UI/API).
-- `ExportService` supports YAML/CSV exports for suppliers/ingredients/recipes and full dataset bundles; wired through the API/UI.
-- Treat anything in `data/` as local fixtures and keep `.env` secrets out of git. UI/import flows rely on file watching/SSE—leave watch enabled unless constrained.
+### App
 
-## Commit & PR Guidelines
+* `packages/app`: The main webapp entrypoint. It uses the core and the database adapters to provide the API and UI.
 
-- Use Conventional Commits (`feat:`, `fix:`, `chore:`, etc.) and keep PRs focused. Describe changes, list checks run (tests/format/build), and flag schema or data generation steps (e.g., `pnpm --filter @menubook/core generate`) when applicable.
+> Each package potentially has its own AGENTS.md file, for use by the AI agent. Read those before proceeding.
+
+## Setup & Build
+
+To set up the environment and build the project:
+
+```bash
+pnpm install --frozen-lockfile
+```
+
+## Testing
+
+Be wary when running all tests in the repository as it takes a lot of time.
+
+Preferred to run tests for a specific project instead:
+
+```bash
+# From the project directory
+pnpm test
+
+# From the root, filtering by package name
+pnpm --filter <package_name> test
+```
+
+Or better yet, run tests for a specific file:
+
+```bash
+pnpm --filter <package_name> test <file_path>
+```
+
+Or a specific test case in a specific file:
+
+```bash
+pnpm --filter <package_name> test <file_path> -t <test_name_pattern>
+```
+
+## Linting
+
+To run all linting checks:
+
+```bash
+npm run lint
+```
+
+## Never ignore test failures
+
+Do not dismiss a failing test as a "pre-existing" failure that is unrelated to your changes. Every test failure must be investigated and fixed. If a test was already broken before your changes, fix it as part of your work — do not silently skip it or treat it as acceptable.
+
+## Code Reuse and Avoiding Duplication
+
+**Before writing new code, always analyse the existing codebase for similar functionality.** This is a large monorepo with many shared utilities — duplication is a real risk.
+
+-   **Search before you write.** Before implementing any non-trivial logic, search the codebase for existing functions, utilities, or patterns that do the same or similar thing. Check `lib/utils/` and other shared directories first.
+-   **Extract shared code.** If you find that the logic you need already exists in another package but is not exported or reusable, refactor it into a shared package rather than duplicating it. If you are adding new code that is similar to code that already exists elsewhere in the repo, move the common parts into a shared package that both locations can use.
+-   **Prefer open source packages over custom implementations.** Do not reimplement functionality that is already available as a well-maintained open source package. Use established libraries for common tasks (e.g., path manipulation, string utilities, data structures, schema validation). Only write custom code when no suitable package exists or when the existing packages are too heavy or unmaintained.
+-   **Keep the dependency on the right level.** When adding a new open source dependency, add it to the most specific package that needs it, not to the root or to a shared package unless multiple packages depend on it.
+
+## Commit Messages
+
+Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+
+-   `feat`: a new feature
+-   `fix`: a bug fix
+-   `docs`: documentation-only changes
+-   `style`: formatting, missing semi-colons, etc.
+-   `refactor`: code change that neither fixes a bug nor adds a feature
+-   `perf`: a code change that improves performance
+-   `test`: adding missing tests
+-   `chore`: changes to build process or auxiliary tools
+
+You should use each individual package as the scope (`feat(prisma): ..., fix(core): ...`), or the package that is 
+affected the most by the change (`feat(core): ...`) even if you have touched multiple packages like CLI or webapp.
+
+The exception to the above rule is when a change affects multiple adaptors, in that case split each change in each 
+package as their own commit such as (`feat(postgres): ..., feat(sqlite): ...`)
+
+## Code Style
+
+This repository uses [Standard Style](https://github.com/standard/standard) with a few modifications:
+-   **Trailing commas** are used.
+-   **Classes** are used, they are the main way to define elemetents due to DI being used.
+-   **Functions are declared after they are used** (hoisting is relied upon).
+-   **Functions should have no more than two or three arguments.** If a function needs more parameters, use a single options object instead.
+-   **Import Order**:
+    1.  Standard libraries (e.g., `fs`, `path`).
+    2.  External dependencies (sorted alphabetically).
+    3.  Relative imports.
+
+To ensure your code adheres to the style guide, run:
+
+```bash
+pnpm lint
+```
+
+### Comments
+
+Write code that explains itself. A reader should understand what a function does from its name, parameters, and types — not from prose above the call site.
+
+Defaults:
+
+-   **Do not write a comment** that restates what the code already says. If renaming a variable, splitting a helper, or moving a check to a more obvious place would carry the information, do that instead.
+-   **Do not repeat documentation** at call sites that already lives on the callee. If the function has a JSDoc, the call site shouldn't re-explain what calling it does. Update the JSDoc once; let every call site benefit.
+-   **JSDoc is for the function's contract** — preconditions, postconditions, edge cases, why the function exists. Not for re-narrating the body.
+-   **Do not record past implementation shape, refactor history, or "the previous code did X" framing.** That's what `git log` and `git blame` are for. Describe the current contract — what the code is and what it guarantees — not what it replaced. Phrasings like "used to", "previously", "the original X", or a parenthetical naming a removed type belong in the commit message, not in the source.
+
+Write a comment only when:
+
+-   The reason for the code is non-obvious from reading it (a hidden invariant, a workaround for a known bug, a deliberate exception to the surrounding pattern).
+-   The right name doesn't fit — e.g., a temporary technical constraint that's worth flagging but doesn't justify a new symbol.
+
+Before adding a comment, ask: "Could I rename, restructure, or extract instead?" If yes, do that. The bar for prose-in-code is high; the bar for prose-that-restates-code is "don't."

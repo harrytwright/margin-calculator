@@ -5,7 +5,7 @@ import log from '@harrytwright/logger'
 import type { Kysely } from 'kysely'
 import yaml from 'yaml'
 
-import type { DB } from '@menubook/types'
+import type { DB } from '@menubook/shared'
 
 import type { DatabaseContext } from '../datastore/context'
 import {

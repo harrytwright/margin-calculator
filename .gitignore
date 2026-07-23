@@ -25,4 +25,3 @@ packages/app/test-results/
 ### Turbo template
 # Turborepo task cache
 .turbo
-

@@ -2,33 +2,39 @@
   const isEdit = typeof ingredient !== 'undefined' && ingredient !== null
 %>
 
-<!-- Modal Header -->
-<div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-  <div>
-    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-      <%= isEdit ? 'Edit Ingredient' : 'Add Ingredient' %>
-    </h2>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-      <%= isEdit ? 'Update ingredient details' : 'Add a new ingredient to your inventory' %>
-    </p>
+<div class="max-h-[80vh] flex flex-col w-full">
+  <!-- Modal Header -->
+  <div class="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700">
+    <div>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
+        <%= isEdit ? 'Edit Ingredient' : 'Add Ingredient' %>
+      </h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+        <%= isEdit ? 'Update ingredient details' : 'Add a new ingredient to your inventory' %>
+      </p>
+    </div>
+    <button
+      onclick="closeModal()"
+      class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
   </div>
-  <button
-    onclick="closeModal()"
-    class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
-  >
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  </button>
-</div>
 
-<form
-  hx-<%= isEdit ? 'put' : 'post' %>="/ingredients<%= isEdit ? '/' + ingredient.slug : '' %>"
-  hx-target="#ingredients-editor"
-  hx-swap="innerHTML"
-  class="flex-1 overflow-y-auto"
->
-  <div class="p-6 space-y-5">
+  <form
+    id="ingredient-form"
+    hx-<%= isEdit ? 'put' : 'post' %>="/ingredients<%= isEdit ? '/' + ingredient.slug : '' %>"
+    hx-target="#ingredients-editor"
+    hx-swap="innerHTML"
+    class="flex-1 overflow-y-auto"
+  >
+    <% if (returnTo && recipeSlug) { %>
+    <input type="hidden" name="returnTo" value="<%= returnTo %>" />
+    <input type="hidden" name="recipeSlug" value="<%= recipeSlug %>" />
+    <% } %>
+    <div class="p-4 sm:p-6 space-y-5">
     <!-- Name -->
     <div>
       <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -108,8 +114,11 @@
           min="0"
           step="1"
           class="w-full h-10 px-3 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500"
-          placeholder="e.g., 350 for £3.50"
+          placeholder="e.g., 350 (pence) for £3.50"
         />
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          Enter whole numbers only (pence/cents, no decimals)
+        </p>
       </div>
 
       <!-- Purchase Unit -->
@@ -182,25 +191,50 @@
   </div>
 
   <!-- Modal Footer -->
-  <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-    <button
-      type="button"
-      onclick="closeModal()"
-      class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-    >
-      Cancel
-    </button>
-    <button
-      type="submit"
-      class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-      </svg>
-      <%= isEdit ? 'Update Ingredient' : 'Create Ingredient' %>
-    </button>
-  </div>
-</form>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-700">
+      <button
+        type="button"
+        onclick="closeModal()"
+        class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <%= isEdit ? 'Update Ingredient' : 'Create Ingredient' %>
+      </button>
+    </div>
+  </form>
+<script>
+  (function () {
+    const form = document.getElementById('ingredient-form')
+    if (!form) return
+
+    const returnTo = form.querySelector('input[name="returnTo"]')?.value
+    if (returnTo === 'recipe-picker') {
+      form.setAttribute('hx-target', '#modal-content')
+      form.setAttribute('hx-swap', 'innerHTML')
+      return
+    }
+
+    if (document.getElementById('ingredients-editor')) {
+      return
+    }
+
+    if (document.getElementById('recipes-editor')) {
+      form.setAttribute('hx-target', '#recipes-editor')
+      return
+    }
+
+    form.setAttribute('hx-target', 'body')
+    form.setAttribute('hx-swap', 'none')
+  })()
+</script>
 
 <script>
   // Close modal after successful form submission

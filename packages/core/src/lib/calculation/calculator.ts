@@ -1,11 +1,7 @@
-import path from 'path'
-
 import log from '@harrytwright/logger'
 
-import { ConfigService } from '../../services/config'
-import { IngredientService } from '../../services/ingredient'
-import { RecipeIngredientsLookup, RecipeService } from '../../services/recipe'
-import { RecipeCostNode, RecipeResult } from './types'
+import { ConfigService, IngredientService, RecipeIngredientReference, RecipeService } from '../../services'
+import { RecipeCostNode, RecipeCostResult } from './types'
 import { convertUnits, parseConversionRule, parseUnit } from './units'
 
 export class Calculator {
@@ -14,13 +10,11 @@ export class Calculator {
   constructor(
     private readonly recipe: RecipeService,
     private readonly ingredient: IngredientService,
-    private readonly config: ConfigService = new ConfigService(
-      path.join(process.cwd(), 'app')
-    )
+    private readonly config: ConfigService
   ) {}
 
   private async ingredientCost(
-    ingredient: RecipeIngredientsLookup,
+    ingredient: RecipeIngredientReference,
     depth: number = 0
   ) {
     if (depth > this.maxDepth)
@@ -31,8 +25,8 @@ export class Calculator {
     // In theory should not hit this
     if (!lookup) throw new Error(`Ingredient ${ingredient.slug} not found`)
 
-    const unit = parseUnit(ingredient.unit)
-    const purchase = parseUnit(lookup.purchaseUnit)
+    const unit = parseUnit(`${ingredient.quantity} ${ingredient.unit}`)
+    const purchase = parseUnit(lookup.cost?.unit)
 
     if (!unit || !purchase)
       throw new Error(
@@ -52,12 +46,12 @@ export class Calculator {
       return null
     }
 
-    // Convert purchaseCost from pounds (Decimal) to pence (integer)
-    const purchaseCostInPence = Number(lookup.purchaseCost) * 100
+    // cost.cost is already in pence (BigInt)
+    const purchaseCostInPence = Number(lookup.cost?.cost ?? 0)
 
     // If ingredient purchase cost includes VAT, strip it out
-    const vatRate = await this.config.getVatRate()
-    const purchaseCostExVat = lookup.includesVat
+    const vatRate = await this.config.findVatRate()
+    const purchaseCostExVat = lookup.cost?.vat
       ? purchaseCostInPence / (1 + vatRate)
       : purchaseCostInPence
 
@@ -78,7 +72,7 @@ export class Calculator {
     if (depth > this.maxDepth)
       throw new RangeError('Maximum recursion depth exceeded')
 
-    const data = await this.recipe.findById(recipe)
+    const data = await this.recipe.findById(recipe, { withIngredients: true })
 
     if (!data) throw new Error(`Recipe ${recipe} not found`)
 
@@ -92,7 +86,7 @@ export class Calculator {
 
       if ('tree' in result) {
         parsed.set(ingredient.slug, {
-          ...parseUnit(ingredient.unit)!,
+          ...parseUnit(`${ingredient.quantity} ${ingredient.unit}`)!,
           type: ingredient.type,
           name: ingredient.name!,
           cost: Math.ceil(this.scaleSubRecipe(result, ingredient, depth)), // in pence
@@ -121,14 +115,14 @@ export class Calculator {
     }
   }
 
-  async margin(recipe: RecipeResult) {
+  async margin(recipe: RecipeCostResult) {
     const { totalCost, recipe: recipeData } = recipe // totalCost is in pence
 
-    const vatRate = await this.config.getVatRate()
-    const vatApplicable = recipeData.includesVat === 1
+    const vatRate = await this.config.findVatRate()
+    const vatApplicable = !!recipeData.cost?.vat
 
     // sellPrice is already in pence (what customer pays if VAT-inclusive)
-    const customerPriceInPence = recipeData.sellPrice
+    const customerPriceInPence = Number(recipeData.cost?.cost ?? 0)
 
     // If includesVat is true, sellPrice is VAT-inclusive (what customer pays)
     // Strip VAT to get the ex-VAT sell price for margin calculations
@@ -162,8 +156,8 @@ export class Calculator {
   }
 
   private scaleSubRecipe(
-    result: RecipeResult,
-    ingredient: RecipeIngredientsLookup,
+    result: RecipeCostResult,
+    ingredient: RecipeIngredientReference,
     depth: number
   ) {
     if (ingredient.type !== 'recipe')
@@ -171,7 +165,7 @@ export class Calculator {
 
     const { recipe, totalCost } = result
 
-    const reqUnit = parseUnit(ingredient.unit)
+    const reqUnit = parseUnit(`${ingredient.quantity} ${ingredient.unit}`)
 
     if (reqUnit && recipe.yieldAmount && recipe.yieldUnit) {
       const yieldUnit = parseUnit(

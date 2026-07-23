@@ -1,4 +1,4 @@
-# GoBowling Margin Calculator - Roadmap
+# GoBowling Margin Calculator – Roadmap
 
 ## Current Version: 0.2.0
 
